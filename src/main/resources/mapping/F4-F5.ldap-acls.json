@@ -1,0 +1,17 @@
+{
+  "transformerClass": "SimlpeTransform",
+  "set": {
+    "/type": "lucidworks.ldap",
+    "/connector": "lucidworks.ldap"
+  },
+  "copy": {
+    "/id": "/id",
+    "/pipeline": "/pipeline",
+    "/parserId": "/parserId",
+
+    "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
+    "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
+
+  }
+}
+

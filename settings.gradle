@@ -1,0 +1,3 @@
+rootProject.name = 'upval'
+include ":fusion-j"
+project(":fusion-j").projectDir = file("../fusion-j")

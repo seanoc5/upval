@@ -1,0 +1,94 @@
+{
+      "id" : "my_abc_acl",
+      "created" : "2020-04-17T06:20:05.291Z",
+      "modified" : "2020-04-17T06:20:05.291Z",
+      "connector" : "lucid.ldap-acls",
+      "type" : "ldap-acls",
+      "pipeline" : "_system",
+      "properties" : {
+        "refreshOlderThan" : -1,
+        "f.do_not_follow_referrals" : false,
+        "emitThreads" : 5,
+        "f.full_crawl_page_size" : 500,
+        "f.retry_attempts" : 1,
+        "f.index_upn" : true,
+        "refreshErrors" : false,
+        "dedupeSaveSignature" : false,
+        "crawlDBType" : "on-disk",
+        "delete" : true,
+        "f.userPrincipal" : "srvcacct@abc",
+        "f.zk_connect_timeout" : 30000,
+        "initial_mapping" : {
+          "mappings" : [ {
+            "source" : "charSet",
+            "operation" : "move",
+            "target" : "charSet_s"
+          }, {
+            "source" : "fetchedDate",
+            "operation" : "move",
+            "target" : "fetchedDate_dt"
+          }, {
+            "source" : "lastModified",
+            "operation" : "move",
+            "target" : "lastModified_dt"
+          }, {
+            "source" : "signature",
+            "operation" : "move",
+            "target" : "dedupeSignature_s"
+          }, {
+            "source" : "length",
+            "operation" : "move",
+            "target" : "length_l"
+          }, {
+            "source" : "mimeType",
+            "operation" : "move",
+            "target" : "mimeType_s"
+          }, {
+            "source" : "parent",
+            "operation" : "move",
+            "target" : "parent_s"
+          }, {
+            "source" : "owner",
+            "operation" : "move",
+            "target" : "owner_s"
+          }, {
+            "source" : "group",
+            "operation" : "move",
+            "target" : "group_s"
+          } ],
+          "skip" : false,
+          "id" : "FromMap",
+          "type" : "field-mapping",
+          "reservedFieldsMappingAllowed" : false
+        },
+        "fetchDelayMS" : 0,
+        "refreshAll" : true,
+        "commitAfterItems" : 10000,
+        "startLinks" : [ "ldap://my.company.com:389" ],
+        "failFastOnStartLinkFailure" : true,
+        "maxItems" : -1,
+        "dedupe" : false,
+        "chunkSize" : 1,
+        "forceRefreshClearSignatures" : true,
+        "f.adNetbiosDomain" : "ABC",
+        "collection" : "mcCollection",
+        "deleteErrorsAfter" : -1,
+        "forceRefresh" : false,
+        "retryEmit" : true,
+        "f.index_samaccountname" : true,
+        "f.ldap_user_filter" : "(&(objectcategory=person)(objectclass=user)(abcflags=1))",
+        "depth" : -1,
+        "refreshStartLinks" : false,
+        "f.ldap_search_base" : "DC=abc,DC=corp,DC=abc,DC=com",
+        "f.password" : "${secret.dataSources.my_abc_acl.f.password}",
+        "fetchThreads" : 5,
+        "indexCrawlDBToSolr" : false,
+        "f.active_directory" : true,
+        "f.zk_socket_timeout" : 60000,
+        "f.acl_collection" : "acl",
+        "f.ldap_group_filter" : "(&(objectclass=group)(groupType=123))",
+        "f.max_job_run_time_ms" : -1,
+        "f.acl_commit_after" : 30000,
+        "f.incremental_crawl_page_size" : 500
+      }
+    }
