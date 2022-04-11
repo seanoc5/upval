@@ -1,20 +1,25 @@
 # Overview of Upgrade Evaluator (UpVal) tool
 This tool is meant to inspect an existing Fusion application (pre-F5), and help the migration to Fusion 5.
 
-## Part 1: Migration LoE insight estimate
-Overview:
+*Note:* sdkman (https://sdkman.io/install) is a helpful tool to install the JVM, Gradle, Groovy, and many other JVM-based tools. It also enables switching versions of those tools rather easily. 
 
-Process `objects.json` and explode the various groups of objects (collections, pipelines, jobs, parsers,...) into sub-objects. Many of those  sub-objects will be expanded further into sub-subobjects as appropriate. The goal is to divide the large & complex objects.json into something of an atomic view where individual components can be evaluated. This helps looks for patterns as well as simplify the scope of various estimations. 
+## Pre-requisites
+### Gradle
+Gradle (https://gradle.org/) is a build tool which tends to be more flexible and powerful than Maven. This project defaults to Maven repositories and basic (gradle) build operations. 
 
-## Part 2: Migration assistance and (semi) automation
+### Groovy
+Groovy (https://groovy-lang.org/) is a JVM based language that compiles back to straight java. 
 
-### Overview:
+### Fusion-j project
+UpVal (this project) relies on Fusion-j for session based (basic auth) communication and functionality with Fusion. During this development phase, please clone the `Fusion-j` (https://github.com/seanoc5/fusion-j) repo as a 'sister' directory to `UpVal`.
+The build.gradle in UpVal declares the dependency near the bottom of the file:
+```    implementation project(':fusion-j')```
+This allows seemless development (and build/compile) of both code bases simultaneously.
 
-Once the objects.json "big picture" has been divided into atomic-ish components, we look to automating the migration where possible. Some components will migrate without changes, others may take considerable manual effort. We start with automating the easy parts. Over time, this process should gather best-practices and guidance on how to approach the more complex components
+## Fusion 4 application migration
+The script `migratefusionApp.groovy` provides command-line parsing and migration of an exported Fusion 4 application. The script will accept either an `objects.json` file, or the full exported zip file. In addition, the script requires a destination Fusion deployment (fusion url, username, and password).
+Run the script without any params (or with the -h param) for details on the available (and required) parameters.
 
-## Assumptions & Requirements
-
-Destination Fusion collection expected to have `upval-json` index profile _(convenience profile to throw json definitions at)_
 
 ## Transformations
 ### Upgrades & Migrations
