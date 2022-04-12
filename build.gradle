@@ -20,7 +20,7 @@ repositories {
 // implementation, runtimeOnly, testImplementation, and testRuntimeOnly
 // note: apache HttpClient included with Solr as dep
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.10'
 
     // https://mvnrepository.com/artifact/io.rest-assured/rest-assured
     implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.5.1'
