@@ -59,6 +59,18 @@ class SimpleTransformSpecification extends Specification {
         result.equals("In foo(myBar)")
     }
 
+    def "simple javax-json jsonPointer testing"(){
+        given:
+        Map json = new JsonSlurper().parseText(spoMapping4_5)
+//                JsonPointerImpl jsonPointer =
+//        JsonPoi
+//        JsonPointer jsonPointer = Json.createPointer("/library");
+//        JsonString jsonString = (JsonString) jsonPointer.getValue(jsonStructure);
+
+    }
+
+
+
     String spoMapping4_5 = '''{
       "transformerClass": "SimpleTransform",
       "set": {

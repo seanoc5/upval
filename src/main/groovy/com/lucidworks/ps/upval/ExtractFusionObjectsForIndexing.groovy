@@ -26,9 +26,9 @@ public class ExtractFusionObjectsForIndexing {
     public Map connectorPluginRemapping = [
             'lucid.sharepoint-optimized': 'lucidworks.sharepoint-optimized',
             'lucid.ldap-acls'           : 'lucidworks.ldap-acls',
-            ''                          : '',
-            ''                          : '',
-            ''                          : '',
+//            ''                          : '',
+//            ''                          : '',
+//            ''                          : '',
     ]
 
     static Map readObjectsJson(File appOrJson) {
