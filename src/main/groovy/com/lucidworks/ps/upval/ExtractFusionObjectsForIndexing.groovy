@@ -26,11 +26,14 @@ public class ExtractFusionObjectsForIndexing {
     public Map connectorPluginRemapping = [
             'lucid.sharepoint-optimized': 'lucidworks.sharepoint-optimized',
             'lucid.ldap-acls'           : 'lucidworks.ldap-acls',
-//            ''                          : '',
-//            ''                          : '',
-//            ''                          : '',
     ]
 
+    /**
+     * Helper function to parse the file (application export, or just the objects.json)
+     *
+     * @param appOrJson
+     * @return Java Map with all of the 'standard' objects defined
+     */
     static Map readObjectsJson(File appOrJson) {
         String jsonString = null
         if (appOrJson?.exists() && appOrJson.isFile()) {
