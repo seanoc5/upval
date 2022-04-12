@@ -1,13 +1,18 @@
 package com.lucidworks.ps.upval.mapping
 
+import javax.json.Json;
+import javax.json.stream.JsonParser;
+
 /**
- * Perform basic configuration transformations
+ * test class for working through dynamic function invokation
  */
 class BasicTransform {
 
-    /** todo : more code */
-    static String copyConfigValue(String srcJsonPointer){
-        return "In copyConfigValue($srcJsonPointer)"
+    static String convertFoo(foo){
+        return "In foo($foo)"
     }
 
+    static def convertJsonPointer(String srcPath, String destPath, def srcJson, def destJson){
+
+    }
 }

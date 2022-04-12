@@ -2,14 +2,11 @@ package com.lucidworks.ps.upval.mapping
 
 import groovy.json.JsonSlurper
 import spock.lang.Specification
-
+//import javax.
 class BasicTransformSpecification extends Specification {
-    def "Translate foo source path to destination"() {
+    def "Transform foo property"() {
         given:
-        JsonSlurper slurper = new JsonSlurper()
-        def srcMap = slurper.parseText(srcConfig)
-        def destMap = slurper.parseText(destTemplate)
-        def mappingRules = 1
+        def transform = new SimpleTransform()
 
         when:
         String result = transform.foo('myBar')
@@ -18,53 +15,67 @@ class BasicTransformSpecification extends Specification {
         result.equals("In foo(myBar)")
     }
 
-/*
-    def "foo"() {
+    def "Dynamic function call of foo with hard coded param"() {
         given:
+        def transform = new SimpleTransform()
+        String func = 'foo'
 
         when:
+        String result = transform."${func}"('myBar')
 
         then:
+        result.equals("In foo(myBar)")
     }
-*/
 
-    String srcConfig = '''
-{
-      "id" : "my_abc_acl",
-      "created" : "2020-04-17T06:20:05.291Z",
-      "modified" : "2020-04-17T06:20:05.291Z",
-      "connector" : "lucid.ldap-acls",
-      "type" : "ldap-acls",
-      "pipeline" : "_system",
-      "properties" : {
-        "refreshOlderThan" : -1,
-        "f.do_not_follow_referrals" : false
-      }
-}      
-'''
+    def "Dynamic class and function call with hard coded param"() {
+        given:
+//        def transform = new SimpleTransform()
+        def foo = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
+//        def instance = this.class.classLoader.loadClass( 'SimpleTransform', true)?.newInstance()
+        String func = 'foo'
 
-    String destTemplate = '''
-{
-    "id" : "",
-    "properties" : {
-        "collection" : "acls"
+        when:
+        String result = foo."${func}"('myBar')
+
+        then:
+        result.equals("In foo(myBar)")
     }
-}   
-'''
-//    def
 
-    String transformInstructions = '''{
+    def "Dynamic class and function from config"() {
+        given:
+        def fu = new SimpleTransform()
+        JsonSlurper slurper = new JsonSlurper()
+        Map json =  slurper.parseText(spoMapping4_5)
+        String transformerClass = json.transformerClass
+        String className = "com.lucidworks.ps.upval.mapping.SimpleTransform"
+
+        def foo = Class.forName(className)
+        String func = 'foo'
+
+        when:
+        String result = foo."${func}"('myBar')
+
+        then:
+        result.equals("In foo(myBar)")
+    }
+
+    String basicMapping = '''{
       "transformerClass": "SimpleTransform",
       "set": {
-        "/type": "lucidworks.ldap-acls",
-        "/connector": "lucidworks.ldap-acls"
+        "type": "lucidworks.sharepoint-optimized",
+        "connector": "lucidworks.sharepoint-optimized"
       },
       "copy": {
-        "/id": "id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/diagnosticLogging": "/diagnosticMode",
-        "/properties/startLinks" : 
+        "id": "id",
+        "pipeline": "pipeline",
+        "parserId": "parserId",
+        "properties|webApplication|webApplicationUrl": "properties|startLinks",
+        "properties|webApplication|inclusiveRegexes": "properties|inclusiveRegexes",
+        "properties|webApplication|exclusiveRegexes": "properties|exclusiveRegexes",
+        "properties|webApplication|includedFileExtensions": "properties|includeExtensions",
+        "diagnosticLogging": "diagnosticMode",
+        "ntlmProperties|username": "f.username",
+        "ntlmProperties|password": "f.password"
       },
       "remove": {
         "builtInFieldNames": [
