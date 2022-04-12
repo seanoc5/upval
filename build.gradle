@@ -29,23 +29,23 @@ dependencies {
     implementation group: 'de.danielbechler', name: 'java-object-diff', version: '0.95'
 
     testImplementation platform("org.spockframework:spock-bom:2.0-groovy-3.0")
-    implementation group: 'org.spockframework', name: 'spock-core', version: '2.0-groovy-3.0'
+    implementation group: 'org.spockframework', name: 'spock-core', version: '2.1-groovy-3.0'
 
      // https://mvnrepository.com/artifact/org.apache.solr/solr-solrj
-     implementation group: 'org.apache.solr', name: 'solr-solrj', version: '8.6.2'
+     implementation group: 'org.apache.solr', name: 'solr-solrj', version: '8.11.1'
 
      implementation 'log4j:log4j:1.2.17'
 
      // https://mvnrepository.com/artifact/com.google.guava/guava
-     implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
+     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
     implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.9.0'
     implementation 'commons-codec:commons-codec:1.15'
 
     // https://mvnrepository.com/artifact/org.glassfish/javax.json
-    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.2'
-//    implementation 'javax.json:javax.json-api:1.1.4'
+    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+    implementation 'javax.json:javax.json-api:1.1.4'
 
 
 
@@ -53,3 +53,6 @@ dependencies {
 
 }
 
+test {
+    useJUnitPlatform()
+}
