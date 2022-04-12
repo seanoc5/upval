@@ -20,7 +20,7 @@ Map sourceFusionOjectsMap = parsedMap.objects
 log.info "\t\tObjects count: ${sourceFusionOjectsMap.size()} \n\t${sourceFusionOjectsMap.collect { "${it.key}(${it.value.size()})" }.join('\n\t')}"
 
 String group = fusionClient.objectsGroup ?: 'GeneralGroup'
-Map<String, String> appInfo = ExtractFusionObjectsForIndexing.getApplicationInfo(parsedMap, group)
+//Map<String, String> appInfo = ExtractFusionObjectsForIndexing.getApplicationInfo(parsedMap, group)
 
 def keys = sourceFusionOjectsMap.keySet()
 List<Map<String, Object>> apps = sourceFusionOjectsMap['fusionApps']
