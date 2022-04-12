@@ -4,7 +4,7 @@ import groovy.json.JsonSlurper
 import spock.lang.Specification
 
 class SimpleTransformSpecification extends Specification {
-    def "Foo"() {
+    def "Normal Foo transform calling method directly"() {
         given:
         def transform = new SimpleTransform()
 
@@ -15,7 +15,7 @@ class SimpleTransformSpecification extends Specification {
         result.equals("In foo(myBar)")
     }
 
-    def "Foo Dynamic function"() {
+    def "Dynamic function call of foo with hard coded param"() {
         given:
         def transform = new SimpleTransform()
         String func = 'foo'
@@ -27,7 +27,7 @@ class SimpleTransformSpecification extends Specification {
         result.equals("In foo(myBar)")
     }
 
-    def "Foo Dynamic class and function"() {
+    def "Dynamic class and function call with hard coded param"() {
         given:
 //        def transform = new SimpleTransform()
         def foo = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
