@@ -1,5 +1,5 @@
 {
-  "transformerClass": "SimlpeTransform",
+  "transformerClass": "SharepointOptimized",
   "set": {
     "type": "lucidworks.sharepoint-optimized",
     "connector": "lucidworks.sharepoint-optimized"
