@@ -72,7 +72,6 @@ class BasicTransformSpecification extends Specification {
         "properties|webApplication|webApplicationUrl": "properties|startLinks",
         "properties|webApplication|inclusiveRegexes": "properties|inclusiveRegexes",
         "properties|webApplication|exclusiveRegexes": "properties|exclusiveRegexes",
-        "properties|webApplication|includedFileExtensions": "properties|includeExtensions",
         "diagnosticLogging": "diagnosticMode",
         "ntlmProperties|username": "f.username",
         "ntlmProperties|password": "f.password"
@@ -84,23 +83,11 @@ class BasicTransformSpecification extends Specification {
       },
       "defaults": {
         "properties": {
-          "siteCollectionDeletionThreshold": 336,
           "apiQueryRowLimit": 5000,
-          "changeApiQueryRowLimit": 2000,
           "webApplication": {
             "inclusiveRegexes": [],
-            "doNotRunExporter": false,
-            "excludeContentsExtensions": [],
             "exclusiveRegexes": [],
-            "excludedFileExtensions": [],
             "siteCollections": [],
-            "includeContentsExtensions": [],
-            "forceFullCrawl": false,
-            "restrictToSpecificSubsites": [],
-            "fetchSiteCollections": true,
-            "restrictToSpecificItems": [],
-            "regexCacheSize": 10000,
-            "includedFileExtensions": []
           },
           "aclCommitAfter": 60000,
           "solrSocketTimeout": 60000,
