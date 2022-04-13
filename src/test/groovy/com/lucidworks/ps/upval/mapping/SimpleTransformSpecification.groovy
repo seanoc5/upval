@@ -59,68 +59,17 @@ class SimpleTransformSpecification extends Specification {
         result.equals("In foo(myBar)")
     }
 
-    def "simple javax-json jsonPointer testing"(){
-        given:
-        Map json = new JsonSlurper().parseText(spoMapping4_5)
+//    def "simple javax-json jsonPointer testing"(){
+//        given:
+//        Map json = new JsonSlurper().parseText()
 //                JsonPointerImpl jsonPointer =
 //        JsonPoi
 //        JsonPointer jsonPointer = Json.createPointer("/library");
 //        JsonString jsonString = (JsonString) jsonPointer.getValue(jsonStructure);
+//
+//    }
 
-    }
 
 
-
-    String spoMapping4_5 = '''{
-      "transformerClass": "SimpleTransform",
-      "set": {
-        "type": "lucidworks.sharepoint-optimized",
-        "connector": "lucidworks.sharepoint-optimized"
-      },
-      "copy": {
-        "id": "id",
-        "pipeline": "pipeline",
-        "parserId": "parserId",
-        "properties|webApplication|webApplicationUrl": "properties|startLinks",
-        "properties|webApplication|inclusiveRegexes": "properties|inclusiveRegexes",
-        "properties|webApplication|exclusiveRegexes": "properties|exclusiveRegexes",
-        "properties|webApplication|includedFileExtensions": "properties|includeExtensions",
-        "diagnosticLogging": "diagnosticMode",
-        "ntlmProperties|username": "f.username",
-        "ntlmProperties|password": "f.password"
-      },
-      "remove": {
-        "builtInFieldNames": [
-          "_no_longer_used_"
-        ]
-      },
-      "defaults": {
-        "properties": {
-          "siteCollectionDeletionThreshold": 336,
-          "apiQueryRowLimit": 5000,
-          "changeApiQueryRowLimit": 2000,
-          "webApplication": {
-            "inclusiveRegexes": [],
-            "doNotRunExporter": false,
-            "excludeContentsExtensions": [],
-            "exclusiveRegexes": [],
-            "excludedFileExtensions": [],
-            "siteCollections": [],
-            "includeContentsExtensions": [],
-            "forceFullCrawl": false,
-            "restrictToSpecificSubsites": [],
-            "fetchSiteCollections": true,
-            "restrictToSpecificItems": [],
-            "regexCacheSize": 10000,
-            "includedFileExtensions": []
-          },
-          "aclCommitAfter": 60000,
-          "solrSocketTimeout": 60000,
-          "solrConnectionTimeout": 60000,
-          "contentCommitAfter": 60000,
-          "collection": "Search"
-        }
-      }
-    }'''
 
 }
