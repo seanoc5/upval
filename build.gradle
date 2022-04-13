@@ -47,6 +47,9 @@ dependencies {
     implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
     implementation 'javax.json:javax.json-api:1.1.4'
 
+    // https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
+    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
+
 
 
     implementation project(':fusion-j')
