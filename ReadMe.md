@@ -22,6 +22,24 @@ Run the script without any params (or with the -h param) for details on the avai
 
 
 ## Transformations
+
+### General possibilities
+#### StringTemplates
+//            String stringFromDatabase = 'Hello ${name}!'
+//            String name = 'world'
+//            def engine = new groovy.text.SimpleTemplateEngine()
+//            assert 'Hello world!'== engine.createTemplate(stringFromDatabase).make([name:name])
+//            def bar = engine.createTemplate(value).make([
+
+- http://www.groovyconsole.appspot.com/edit/22004?execute
+- https://stackoverflow.com/questions/1472453/groovy-variable-substitution-in-dynamic-strings
+- https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html
+- https://stackoverflow.com/questions/37379101/how-to-convert-string-to-gstring-and-replace-placeholder-in-groovy
+- https://docs.groovy-lang.org/latest/html/api/groovy/lang/GString.html
+- https://blog.mrhaki.com/2009/08/groovy-goodness-string-strings-strings.html
+- https://blog.mrhaki.com/2015/09/groovy-goodness-inspect-method-returns.html
+- https://docs.groovy-lang.org/latest/html/api/groovy/util/Eval.html
+
 ### Upgrades & Migrations
 - convert old format to new (minor syntax changes)
 - reform old format to fundamentally different new format (i.e. Sharepoint -> sharepoint-optimized, field mapping)
