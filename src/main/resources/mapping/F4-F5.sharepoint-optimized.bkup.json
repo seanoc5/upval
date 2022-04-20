@@ -1,0 +1,20 @@
+{
+  "transformerClass": "SharepointOptimized",
+  "set": {
+    "type": "lucidworks.sharepoint-optimized",
+    "connector": "lucidworks.sharepoint-optimized"
+  },
+  "copy": {
+    "id": "id",
+    "pipeline": "pipeline",
+    "parserId": "parserId",
+    "properties|webApplication|webApplicationUrl": "properties|startLinks",
+    "properties|webApplication|inclusiveRegexes": "properties|inclusiveRegexes",
+    "properties|webApplication|exclusiveRegexes": "properties|exclusiveRegexes",
+    "properties|webApplication|includedFileExtensions": "properties|includeExtensions",
+    "diagnosticLogging": "diagnosticMode",
+    "ntlmProperties|username": "f.username",
+    "ntlmProperties|password": "f.password"
+  }
+}
+
