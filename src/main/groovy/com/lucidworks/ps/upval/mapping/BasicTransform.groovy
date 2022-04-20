@@ -4,7 +4,8 @@ import javax.json.Json;
 import javax.json.stream.JsonParser;
 
 /**
- * test class for working through dynamic function invokation
+ * Basic class for working through dynamic function invokation
+ * adding more logic and work flow
  */
 class BasicTransform {
 
