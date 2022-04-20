@@ -2,7 +2,8 @@ package com.lucidworks.ps.upval.mapping
 
 
 /**
- * test class for working through dynamic function invokation
+ * test class for working through dynamic function invocation
+ * very simple test
  */
 class SimpleTransform extends ObjectTransformer{
 
