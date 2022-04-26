@@ -7,6 +7,25 @@ package com.lucidworks.ps.upval.mapping
  */
 class SimpleTransform extends ObjectTransformer{
 
+    public static final String origJson = '''
+    {
+        "topLeaf":"one",
+        "topParent": { 
+            "secondLeaf":"two-one"
+        }
+    }    
+    '''
+
+    public static final String alteredJson = '''
+    {
+        "topLeaf":"one",
+        "topParent": { 
+            "firstLeaf":"two-one-new",
+            "addedLeaf":"found in orginal alteredJson source"        
+        }
+    }    
+    '''
+
     SimpleTransform(Map srcMap, Map destMap, Map transConfig, String separator) {
         super(srcMap, destMap, transConfig, separator)
     }
