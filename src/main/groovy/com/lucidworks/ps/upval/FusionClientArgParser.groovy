@@ -14,6 +14,7 @@ class FusionClientArgParser {
             m longOpt: 'mappingDir', args: 1, required: true, 'Folder containing object mapping instructions (subfolders grouped by object type)'
             p longOpt: 'password', args: 1, required: true, 'password for authentication in fusion cluster (assuming basicAuth for now...)'
             s longOpt: 'source', args: 1, required: true, 'Source (objects.json or appexport.zip) to read application objects from (old app to be migrated)'
+            t longOpt: 'test', 'Test connection to Fusion (fusionUrl, user, and password)'
             u longOpt: 'user', args: 1, argName: 'user', required: true, 'the fusion user to authenticate with'
             x longOpt: 'exportDir', args: 1, required: false, 'Export directory'
         }
