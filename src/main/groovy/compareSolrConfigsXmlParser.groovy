@@ -1,4 +1,5 @@
-
+import com.lucidworks.ps.compare.ComparisonResult
+import com.lucidworks.ps.compare.SolrConfigComparator as SCC
 import groovy.xml.XmlParser
 import org.apache.log4j.Logger
 
@@ -21,8 +22,9 @@ File dsFile = new File('/home/sean/work/lucidworks/data/CircuitSearch/configsets
 log.info "Deployed schema: ${dsFile.absolutePath}"
 
 Node templSchema = parser.parse(tsPath.toFile())
-def keytempl = templSchema.uniqueKey
 Node depSchema = parser.parse(dsFile)
-def keyDep = depSchema.uniqueKey
 
+ComparisonResult result = SCC.compareSchemaUniqueIds(templSchema,depSchema)
+log.info "Unique ids comparison result: $result"
 log.info "done..."
+
