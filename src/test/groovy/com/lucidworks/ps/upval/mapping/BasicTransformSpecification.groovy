@@ -6,7 +6,7 @@ import spock.lang.Specification
 class BasicTransformSpecification extends Specification {
     def "Transform foo property"() {
         given:
-        def transform = new SimpleTransform()
+        def transform = new BasicTransform()
 
         when:
         String result = transform.foo('myBar')
