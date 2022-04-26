@@ -200,6 +200,18 @@ archive: conditions
 ### metadata
 
 
+### Configsets (solr)
+- managed schema
+- solr config
+- other additions/changes (xslt files?)
+
+## Data management & transfer
+- Signals
+  - raw
+  - aggregated
+- Predictive merchandizer (?)
+- 
+
 ## TODO -- next steps
 - separate parsing from persisting
 - look at options (extendings) for outputting to filesystem, solr, fusion/solr, source repo
