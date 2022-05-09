@@ -11,7 +11,7 @@ class SimpleTransform extends ObjectTransformer{
     {
         "topLeaf":"one",
         "topParent": { 
-            "secondLeaf":"two-one"
+            "firstLeaf":"two-one"
         }
     }    
     '''

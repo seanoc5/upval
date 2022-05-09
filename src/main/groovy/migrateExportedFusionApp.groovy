@@ -1,5 +1,6 @@
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
+import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import com.lucidworks.ps.upval.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
@@ -11,8 +12,7 @@ OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
 log.info "start script ${this.class.name}..."
 
 FusionClient fusionClient = new FusionClient(options)// todo -- revisit where/how to parse the source json (file, zip, or fusionSourceCluster...?), currently mixing approaches, need to clean up
-def sourceObjects = fusionClient.getObjects()
-/*
+
 File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
 Map sourceFusionOjectsMap = parsedMap.objects
@@ -23,7 +23,6 @@ String group = fusionClient.objectsGroup
 
 def keys = sourceFusionOjectsMap.keySet()
 List<Map<String, Object>> apps = sourceFusionOjectsMap['fusionApps']
-*/
 
 // todo -- move this links stuff to the end, cleanup??
 List<Map<String, String>> oldLinks = sourceFusionOjectsMap['links']
