@@ -1,5 +1,6 @@
 # Overview of Upgrade Evaluator (UpVal) tool
 This tool is meant to inspect an existing Fusion application (pre-F5), and help the migration to Fusion 5.
+This is still a _work-in-progress_, but currently does successfully migrate a good majority of the Fusion objects from F4 to F5.
 
 *Note:* sdkman (https://sdkman.io/install) is a helpful tool to install the JVM, Gradle, Groovy, and many other JVM-based tools. It also enables switching versions of those tools rather easily. 
 
