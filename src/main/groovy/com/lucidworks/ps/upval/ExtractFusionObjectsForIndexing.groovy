@@ -208,6 +208,12 @@ public class ExtractFusionObjectsForIndexing {
         return things
     }
 
+    /**
+     *
+     * @param srcList
+     * @param appInfo
+     * @return
+     */
     static List<Map<String, Object>> searchClusters(def srcList, Map<String, String> appInfo) {
         List<Map<String, Object>> things = []
         String objType = 'searchCluster'
@@ -228,6 +234,7 @@ public class ExtractFusionObjectsForIndexing {
         }
         return things
     }
+
 
     static List<Map<String, Object>> indexPipelines(List srcList, Map<String, String> appInfo) {
         String objType = 'indexPipeline'
