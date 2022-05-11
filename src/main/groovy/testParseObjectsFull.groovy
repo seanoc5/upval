@@ -16,11 +16,9 @@ String destColl = 'upval'
 String destProfile = 'upval-json'
 
 
+// todo replace hardcoded files with cli args
 Map sourceFilesMap = [
-        'Aerospace': '/home/sean/work/lucidworks/data/Aerospace/Search_prod.json',
-//        'Lenovo ANZ': '/home/sean/work/lucidworks/upval/data/Lenovo/anz_app.zip',
-//        'AMA all-objects': '/home/sean/work/lucidworks/upval/data/AMA/all-objects-repaired.objects.json',
-//        'nlp': '/home/sean/work/lucidworks/data/na-v4-MSA-FACET-PROD-V3/objects.json',
+'todo--replace me'
 ]
 
 int timeout = 5

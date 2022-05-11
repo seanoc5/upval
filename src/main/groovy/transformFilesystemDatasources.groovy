@@ -7,7 +7,7 @@ import org.apache.log4j.Logger
 Logger log = Logger.getLogger(this.class.name);
 
 log.info "start script ${this.class.name}..."
-File objectsJsonFile = new File("/home/sean/work/lucidworks/Intel/CircuitSearch/objects.json")
+File objectsJsonFile = new File("./data/replaceme/objects.json")
 log.info "parsing file: ${objectsJsonFile.absolutePath}"
 if (objectsJsonFile.exists()) {
     Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(objectsJsonFile)

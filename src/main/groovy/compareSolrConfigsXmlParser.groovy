@@ -16,9 +16,9 @@ Path tsPath = Paths.get(templateFolder.toAbsolutePath().toString(), 'managed-sch
 log.info "Template schema: $tsPath -- ${tsPath.toFile().exists()}"
 log.info "Template path abs: ${templateFolder.toAbsolutePath()}"
 
-String depPath = "/home/sean/work/lucidworks/Intel/CircuitSearch/"
+String depPath = "./data/replacement"
 Path deployedConfigFolder = Paths.get(depPath)
-File dsFile = new File('/home/sean/work/lucidworks/data/CircuitSearch/configsets/CircuitSearch/managed-schema')
+File dsFile = new File('./replacement/configsets/testapp/managed-schema')
 log.info "Deployed schema: ${dsFile.absolutePath}"
 
 Node templSchema = parser.parse(tsPath.toFile())

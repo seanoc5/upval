@@ -12,14 +12,15 @@ log.info "Starting ${this.class.name}"
 
 XmlParser parser = new XmlParser()
 
+// todo -- revisit paths, these are broken at the moment
 Path templateFolder = Paths.get('../resources/templates/configsets/7.7.2/_default/conf')
 Path tsPath = Paths.get(templateFolder.toAbsolutePath().toString(), 'managed-schema')
 log.info "Template schema: $tsPath -- ${tsPath.toFile().exists()}"
 log.info "Template path abs: ${templateFolder.toAbsolutePath()}"
 
-String depPath = "/home/sean/work/lucidworks/Intel/CircuitSearch/"
+String depPath = "./data/"
 Path deployedConfigFolder = Paths.get(depPath)
-File dsFile = new File('/home/sean/work/lucidworks/data/CircuitSearch/configsets/CircuitSearch/managed-schema')
+File dsFile = new File('./configsets/managed-schema')
 log.info "Deployed schema: ${dsFile.absolutePath}"
 
 def control = Input.fromPath(tsPath).build();

@@ -14,7 +14,7 @@ plugins {
 }
 
 application {
-    mainClass = "checkJobSchedules"
+    mainClass = "migrateFusionApp"
 }
 
 repositories {

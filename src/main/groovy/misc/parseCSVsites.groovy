@@ -11,8 +11,8 @@ import java.nio.file.Paths
 Logger log = Logger.getLogger(this.class.name);
 log.info "Start ${this.class.name}..."
 
-
-File csvFile = new File('/home/sean/work/lucidworks/upval/data/Support Passwords-Stage.csv')
+// todo -- replace me
+File csvFile = new File('../../data/Support Passwords-Stage.csv')
 Reader reader = csvFile.newReader()
 
 Iterable<CSVRecord> csvRecord = CSVFormat.EXCEL.withFirstRecordAsHeader().parse(reader);
@@ -42,7 +42,7 @@ for (CSVRecord record : csvRecord) {
                 String appId = appObj.id
                 log.info "\t\tApp ID: ${appId}"
 
-                Path outPath = Paths.get("/home/sean/work/lucidworks/upval/data/${customer}.app.${appId}.zip")
+                Path outPath = Paths.get("../replaceme/data/${customer}.app.${appId}.zip")
                 def exp = fusionClient.exportFusionObjects("app.ids=${appId}", outPath)
                 log.debug "do something with export: $exp"
             }
