@@ -1,0 +1,19 @@
+{
+  "id": "psg_hsd-es-fs",
+  "created": "2021-04-21T19:04:31.111Z",
+  "modified": "2021-09-18T00:03:54.998Z",
+  "connector": "lucidworks.fs",
+  "type": "lucidworks.fs",
+  "description": "Filesystem based connector to import JSON files for HSD-ES bug data",
+  "pipeline": "psg_hsd-es-fs-index",
+  "parserId": "psg_json-parser",
+  "properties": {
+    "includeDirectories": false,
+    "collection": "CircuitSearch",
+    "addFileMetadata": false,
+    "initialFilePaths": [
+      "/tmp/hsdupload/"
+    ]
+  },
+  "coreProperties": {}
+}

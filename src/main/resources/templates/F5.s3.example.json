@@ -1,0 +1,29 @@
+{
+  "diagnosticLogging" : true,
+  "parserId" : "json-parser-ng",
+  "created" : "2022-04-05T18:48:57.186Z",
+  "coreProperties" : { },
+  "description" : "S3 version of FS for Social Chorus",
+  "modified" : "2022-04-05T18:59:10.995Z",
+  "id" : "social_chorus_s3",
+  "type" : "lucidworks.s3",
+  "properties" : {
+    "proxyConfig" : {
+      "proxyEndpoint" : "proxy-dmz.intel.com:912"
+    },
+    "application" : {
+      "bucketName" : "f5-data-dev",
+      "objectKeys" : [ "social-chorus/" ],
+      "region" : "us-west-1"
+    },
+    "authenticationConfig" : {
+      "awsBasicAuthConfig" : {
+        "secretKey" : "xXx-Redacted-xXx",
+        "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
+      }
+    },
+    "collection" : "CircuitSearch"
+  },
+  "pipeline" : "social_chorus",
+  "connector" : "lucidworks.s3"
+}
