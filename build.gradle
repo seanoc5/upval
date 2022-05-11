@@ -10,7 +10,11 @@ plugins {
     // Apply the groovy Plugin to add support for Groovy.
     id 'groovy'
     id 'idea'
+    id 'application'
+}
 
+application {
+    mainClass = "checkJobSchedules"
 }
 
 repositories {

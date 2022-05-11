@@ -35,31 +35,40 @@ public class ExtractFusionObjectsForIndexing {
      * @return Java Map with all of the 'standard' objects defined
      */
     static Map readObjectsJson(File appOrJson) {
-        String jsonString = null
-        if (appOrJson?.exists() && appOrJson.isFile()) {
-            if (appOrJson.name.endsWith('.zip')) {
-                ZipFile zipFile = new ZipFile(appOrJson)
-                Enumeration<? extends ZipEntry> entries = zipFile.entries()
-                entries.each { ZipEntry zipEntry ->
-                    if (zipEntry.name.contains('objects.json')) {
-                        InputStream inputStream = zipFile.getInputStream(zipEntry)
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-                        jsonString = br.text
-                        log.debug "\t\textracted json text from zip entry: $jsonString"
+        Map parsedMap = null
+        if(appOrJson?.exists()) {
+            String jsonString = null
+            if (appOrJson?.exists() && appOrJson.isFile()) {
+                if (appOrJson.name.endsWith('.zip')) {
+                    ZipFile zipFile = new ZipFile(appOrJson)
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries()
+                    entries.each { ZipEntry zipEntry ->
+                        if (zipEntry.name.contains('objects.json')) {
+                            InputStream inputStream = zipFile.getInputStream(zipEntry)
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+                            jsonString = br.text
+                            log.debug "\t\textracted json text from zip entry: $jsonString"
+                            parsedMap = new JsonSlurper().parseText(jsonString)
+
+                        }
+                        log.debug "ZipEntry: $zipEntry"
                     }
-                    log.debug "ZipEntry: $zipEntry"
+                } else if (appOrJson.name.endsWith('json')) {
+                    jsonString = appOrJson.text
+                    log.info "Get json from json file: $appOrJson -- length: ${jsonString.size()} characters"
+                    parsedMap = new JsonSlurper().parseText(jsonString)
+
+                } else {
+                    log.warn "Unknow file for objects.json contents: $appOrJson (${appOrJson.absolutePath}"
                 }
-            } else if (appOrJson.name.endsWith('json')) {
-                jsonString = appOrJson.text
-                log.info "Get json from json file: $appOrJson -- length: ${jsonString.size()} characters"
             } else {
-                log.warn "Unknow file for objects.json contents: $appOrJson (${appOrJson.absolutePath}"
+                log.warn "File arg ($appOrJson) either does not exist, or is not a (readable) file. Nothing to read from. Cancelling..."
+                throw new IllegalArgumentException("No valid source file: $appOrJson")
+
             }
         } else {
-            log.warn "File arg ($appOrJson) either does not exist, or is not a (readable) file. Nothing to read from. Cancelling..."
+            throw new IllegalArgumentException("No valid source file: $appOrJson")
         }
-
-        Map parsedMap = new JsonSlurper().parseText(jsonString)
 
         return parsedMap
     }

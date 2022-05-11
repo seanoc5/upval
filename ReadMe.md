@@ -197,6 +197,26 @@ archive: conditions
   - type is used in ?export objects.json?
   - connector is in the API output
 - lucidworks vs lucid prefix
+- filesystem (lucidworks.fs) to s3 (lucidworks.s3)
+  - copy: 
+    - id
+    - description
+    - parserId
+    - pipeline
+    - properties
+      - collection
+  - set
+    - connector: lucidworks.s3
+    - type: lucidworks.s3
+    - created
+    - modified
+    - properties
+      - proxyConfig
+        - "proxyEndpoint" : "proxy-dmz.intel.com:912"
+      - application
+      - "bucketName" : "f5-data-dev",
+      - "objectKeys" : [ "social-chorus/" ],
+      - "region" : "us-west-1"
 
 ### metadata
 

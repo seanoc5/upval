@@ -26,6 +26,7 @@ class ObjectTransformer {
             def foo = setByMapPath(destPath, value, destinationMap)
             log.info "Set '$destPath' in destinationMap to value: '$value'"
         }
+        log.warn "More code here???"
     }
 
     def transformSetValues() {

@@ -1,0 +1,30 @@
+{
+  "transformerClass": "FileSystem",
+  "set": {
+    "type": "lucidworks.fs",
+    "connector": "lucidworks.fs",
+    "properties": {
+      "proxyConfig": {
+
+      }
+    }
+  },
+  "copy": {
+    "id": "id",
+    "pipeline": "pipeline",
+    "parserId": "parserId",
+    "description": "description",
+    "properties": {
+      "collection": "collection"
+    }
+  }
+}
+
+  - properties
+    - proxyConfig
+      - "proxyEndpoint" : "proxy-dmz.intel.com:912"
+    - application
+    - "bucketName" : "f5-data-dev",
+    - "objectKeys" : [ "social-chorus/" ],
+    - "region" : "us-west-1"
+

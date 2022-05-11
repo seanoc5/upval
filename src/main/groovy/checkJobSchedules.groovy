@@ -19,13 +19,13 @@ String appName = options.appName
 List<Map<String,Object>> sourceJobs = sourceFusionOjectsMap.jobs
 def srcJobSchedules = sourceJobs.findAll {it.triggers}
 
-def foo = fusionClient.addJobSchedulesIfMissing(appName, srcJobSchedules, false)
+def foo = fusionClient.addJobSchedulesIfMissing(appName, srcJobSchedules, true)
 
 def destJobs = fusionClient.getJobs(appName)
 def destSchedules = fusionClient.getJobSchedules(destJobs)
 def responses = fusionClient.getResponses()
 responses.each {
-    log.info "Save?"
+    log.info "Save Response? ${it.response}"
 }
 log.info "done...?"
 

@@ -1,4 +1,4 @@
-package com.lucidworks.ps.upval
+package misc
 
 import com.jayway.jsonpath.*
 import com.jayway.jsonpath.internal.path.PathCompiler
