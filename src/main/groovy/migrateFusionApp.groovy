@@ -5,7 +5,7 @@ import com.lucidworks.ps.upval.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
-Logger log = Logger.getLogger(this.class.name);
+Logger log = Logger.getLogger(this.class.name)
 
 OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
 
@@ -17,7 +17,7 @@ FusionClient fusionClient = new FusionClient(options)// todo -- revisit where/ho
 ///*
 File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
-Map sourceFusionOjectsMap = parsedMap.objects
+Map sourceFusionOjectsMap = parsedMap.objects as Map
 log.info "\t\tSource Fusion Objects count: ${sourceFusionOjectsMap.size()} \n\t${sourceFusionOjectsMap.collect { "${it.key}(${it.value.size()})" }.join('\n\t')}"
 
 String group = fusionClient.objectsGroup
@@ -81,8 +81,9 @@ apps.each { Map appMap ->
         }
     }
 
-    // --------------- Create Index Pipelines ------------------
-    def jobsExisting = fusionClient.getjobs('')
+    // --------------- Create Jobs ------------------
+    // todo -- switch to "addifmissing..."
+    def jobsExisting = fusionClient.getJobs(appName)
     sourceFusionOjectsMap['indexPipelines'].each { Map<String, Object> map ->
         String idxpName = map.id
         def existingIndexPipeline = idxpExisting.find { it.id == idxpName }
@@ -93,6 +94,33 @@ apps.each { Map appMap ->
             log.info "Created index pipeline ($idxpName) "
         }
     }
+
+    // --------------- Create Index Pipelines ------------------
+
+
+    // --------------- Add Missing Job Schedules ------------------
+    List<Map<String,Object>> sourceJobs = sourceFusionOjectsMap.jobs
+    def srcJobSchedules = sourceJobs.findAll {it.triggers}
+
+    def foo = fusionClient.addJobSchedulesIfMissing(appName, srcJobSchedules, true)
+    log.info "schedules foo: $foo"
+/*
+
+    def schedulesExisting = fusionClient.getJobSchedules('')
+    sourceFusionOjectsMap['indexPipelines'].each { Map<String, Object> map ->
+        String idxpName = map.id
+        def existingIndexPipeline = idxpExisting.find { it.id == idxpName }
+        if (existingIndexPipeline) {
+            log.info "\tSkipping existing index pipeline $idxpName ... "
+        } else {
+            def httpResponse = fusionClient.createIndexPipeline(map, appName)
+            log.info "Created index pipeline ($idxpName) "
+        }
+    }
+*/
+
+
+
 
 
     // --------------- Add missing Links (move down to end?) ------------------
