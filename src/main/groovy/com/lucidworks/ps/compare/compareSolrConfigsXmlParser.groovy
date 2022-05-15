@@ -1,3 +1,5 @@
+package com.lucidworks.ps.compare
+
 import com.lucidworks.ps.compare.ComparisonResult
 import com.lucidworks.ps.compare.SolrConfigComparator as SCC
 import groovy.xml.XmlParser

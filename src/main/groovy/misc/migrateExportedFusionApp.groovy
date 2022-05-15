@@ -1,3 +1,5 @@
+package misc
+
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing

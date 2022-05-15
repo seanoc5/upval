@@ -1,3 +1,5 @@
+package com.lucidworks.ps.compare
+
 import groovy.xml.XmlParser
 import org.apache.log4j.Logger
 import org.xmlunit.builder.DiffBuilder
