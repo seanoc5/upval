@@ -42,8 +42,12 @@ apps.each { Map appMap ->
     String appName = appMap.name
     FusionResponseWrapper fusionResponseWrapper = fusionClient.addAppIfMissing(appMap)
 
-    Map<String, List<Object>> connectorsStatus = fusionClient.addConnectorPluginsIfMissing(sourceFusionOjectsMap)
-    log.debug "Connectors status: $connectorsStatus"
+    try {
+        Map<String, List<Object>> connectorsStatus = fusionClient.addConnectorPluginsIfMissing(sourceFusionOjectsMap)
+        log.debug "Connectors status: $connectorsStatus"
+    } catch (Exception e){
+        log.warn "Problem getting connectors (blocked access to repo?): $e "
+    }
 
     List<FusionResponseWrapper> addCollResults = fusionClient.addCollectionsIfMissing(appName, sourceFusionOjectsMap)
     log.info "Add Collections Fusion Response wrappers (if any): $addCollResults"
@@ -120,9 +124,6 @@ apps.each { Map appMap ->
 */
 
 
-
-
-
     // --------------- Add missing Links (move down to end?) ------------------
     def dsLinksToCheck = oldLinks.findAll {
         it.subject.startsWith("datasource:") && it.object.startsWith("app:")
@@ -134,5 +135,6 @@ apps.each { Map appMap ->
 
 }
 
+def failedRequests = fusionClient.responses.findAll {! it.wasSuccess()}
 
 log.info "done...?"

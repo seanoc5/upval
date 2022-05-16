@@ -1,0 +1,94 @@
+{
+  "id" : "myfoo_acl",
+  "created" : "2020-01-01T06:20:05.291Z",
+  "modified" : "2020-01-01T06:20:05.291Z",
+  "connector" : "lucid.ldap-acls",
+  "type" : "ldap-acls",
+  "pipeline" : "_system",
+  "properties" : {
+    "refreshOlderThan" : -1,
+    "emitThreads" : 5,
+    "f.do_not_follow_referrals" : false,
+    "f.full_crawl_page_size" : 500,
+    "f.retry_attempts" : 1,
+    "refreshErrors" : false,
+    "f.index_upn" : true,
+    "crawlDBType" : "on-disk",
+    "dedupeSaveSignature" : false,
+    "delete" : true,
+    "f.zk_connect_timeout" : 30000,
+    "f.userPrincipal" : "muser@foo",
+    "initial_mapping" : {
+      "mappings" : [ {
+        "source" : "charSet",
+        "operation" : "move",
+        "target" : "charSet_s"
+      }, {
+        "source" : "fetchedDate",
+        "operation" : "move",
+        "target" : "fetchedDate_dt"
+      }, {
+        "source" : "lastModified",
+        "operation" : "move",
+        "target" : "lastModified_dt"
+      }, {
+        "source" : "signature",
+        "operation" : "move",
+        "target" : "dedupeSignature_s"
+      }, {
+        "source" : "length",
+        "operation" : "move",
+        "target" : "length_l"
+      }, {
+        "source" : "mimeType",
+        "operation" : "move",
+        "target" : "mimeType_s"
+      }, {
+        "source" : "parent",
+        "operation" : "move",
+        "target" : "parent_s"
+      }, {
+        "source" : "owner",
+        "operation" : "move",
+        "target" : "owner_s"
+      }, {
+        "source" : "group",
+        "operation" : "move",
+        "target" : "group_s"
+      } ],
+      "skip" : false,
+      "id" : "FromMap",
+      "type" : "field-mapping",
+      "reservedFieldsMappingAllowed" : false
+    },
+    "fetchDelayMS" : 0,
+    "commitAfterItems" : 10000,
+    "refreshAll" : true,
+    "failFastOnStartLinkFailure" : true,
+    "startLinks" : [ "ldaps://my.company.com:3456" ],
+    "maxItems" : -1,
+    "forceRefreshClearSignatures" : true,
+    "chunkSize" : 1,
+    "dedupe" : false,
+    "f.adNetbiosDomain" : "Foo",
+    "collection" : "MyCollection",
+    "deleteErrorsAfter" : -1,
+    "retryEmit" : true,
+    "forceRefresh" : false,
+    "f.index_samaccountname" : true,
+    "depth" : -1,
+    "f.ldap_user_filter" : "(&(objectcategory=person)(objectclass=user)(intelflags=1))",
+    "refreshStartLinks" : false,
+    "f.ldap_search_base" : "DC=amr,DC=corp,DC=intel,DC=com",
+    "indexCrawlDBToSolr" : false,
+    "fetchThreads" : 5,
+    "f.password" : "${secret.dataSources.myfoo_acl.f.password}",
+    "f.zk_socket_timeout" : 60000,
+    "f.active_directory" : true,
+    "f.acl_commit_after" : 30000,
+    "f.max_job_run_time_ms" : -1,
+    "f.ldap_group_filter" : "(&(objectclass=group)(groupType=-123456))",
+    "f.acl_collection" : "acl",
+    "f.incremental_crawl_page_size" : 500
+  }
+}
