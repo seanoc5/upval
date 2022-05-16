@@ -5,6 +5,9 @@ This is still a _work-in-progress_, but currently does successfully migrate a go
 *Note:* sdkman (https://sdkman.io/install) is a helpful tool to install the JVM, Gradle, Groovy, and many other JVM-based tools. It also enables switching versions of those tools rather easily. 
 
 ## Pre-requisites
+### JDK 9+
+Fusion-J uses HttpClient in the JDK 9+
+
 ### Gradle
 Gradle (https://gradle.org/) is a build tool which tends to be more flexible and powerful than Maven. This project defaults to Maven repositories and basic (gradle) build operations. 
 
@@ -231,7 +234,10 @@ archive: conditions
   - raw
   - aggregated
 - Predictive merchandizer (?)
-- 
+
+## Notes
+### Proxy settings
+` export JAVA_OPTS='-Dhttp.proxyHost=my-proxy.mydomain.com -Dhttp.proxyPort=912 -Dhttp.nonProxyHosts="donotproxyme.mydomain.com" -Dhttps.proxyHost=my-proxy.mydomain.com -Dhttps.proxyPort=912 -Dhttps.nonProxyHosts="donotproxyme.mydomain.com"`
 
 ## TODO -- next steps
 - separate parsing from persisting
