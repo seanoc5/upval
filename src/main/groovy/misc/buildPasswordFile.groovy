@@ -4,6 +4,7 @@ import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import com.lucidworks.ps.upval.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
+import groovy.json.JsonBuilder
 
 /**
  * @author :    sean
@@ -23,18 +24,40 @@ FusionClient fusionClient = new FusionClient(options)// todo -- revisit where/ho
 
 File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
-def dataSources = parsedMap.objects.dataSources
-StringBuilder stringBuilder = new StringBuilder()
-def pwdConnectors = dataSources.each {Map m ->
+Map passwordEntries = [:]
+parsedMap.properties.findAll{
+    String id = it.id
+    if(id.startsWith('secret')){
+        passwordEntries[id] = ''
+    }
+}
+
+File outFile = new File(fusionClient.exportDirectory, 'passwords.json')
+outFile.text = ''           // clear previous content
+
+
+
+//def dataSources = parsedMap.objects.dataSources
+
+/*
+def pwdConnectors = dataSources.each { Map m ->
     m.properties.each { String key, def val ->
         String s = val.toString()
         if (s.containsIgnoreCase('${')) {
             log.info "Variable string: $s"
-            stringBuilder.append(s + "\n")
+            def matches = (s =~ /\$.([^\}]+)}/).findAll()
+            matches.each {
+                String matchedKey = it[1]
+                passwordEntries["$matchedKey"] = ""
+//                passwordEntries << map
+//                stringBuilder.append(it[1] + " = \n")
+            }
         }
     }
 }
+*/
+JsonBuilder jsonBuilder = new JsonBuilder(passwordEntries)
+outFile.text = jsonBuilder.toPrettyString()
+//outFile.text = stringBuildertoString()
 
-File outFile = new File(fusionClient.exportDirectory, 'passwords.groovy')
-outFile.text = stringBuilder.toString()
 log.info "Done...?"
