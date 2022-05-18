@@ -28,6 +28,7 @@ indexPipelines.each {Map idxp ->
         stages << it
     }
 }
+def groupedStages = stages.groupBy {it.type}
 idxpTypes.collect {it.type}
 
 log.info "Done...?"
