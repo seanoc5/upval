@@ -34,7 +34,7 @@ class PipelineJsAnalyzer {
                     String script = it.script?.trim()
                     String s = "// ----------------$label ($type) --------------\n$script\n\n"
                     if (script) {
-                        if(label) {
+                        if (label) {
                             log.info "Added script body '$label' ($type) to collection for analysis (good) "
                         } else {
                             log.warn "No label ($label) for script with size: ${script.size()}"
@@ -51,38 +51,44 @@ class PipelineJsAnalyzer {
         return jsCodeStages
     }
 
-//        jsCodeLines.groupBy {
-//            String line = it.trim()
-//            switch (line) {
-//                case { !line }:
-//                    'empty'
-//                    break
-//                case ~/[{}()]/:
-//                    'braces'
-//                    break
-//                case ~/var \w+ ?=.*/:
-//                    'assignment'
-//                    break
-//                case ~/ /:
-//                    ' '
-//                    break
+
+    static analyzeStage(String jsStageCode) {
+        return 'tbd'
+    }
+
+    static String analyzeLine(String codeLine) {
+        String line = codeLine.trim()
+        String tag = null
+        switch (line) {
+            case { !line }:
+                tag = 'empty'
+                break
+            case ~/[{}()]/:
+                tag = 'braces'
+                break
+            case ~/var \w+ ?=.*/:
+                tag = 'assignment'
+                break
+//            case ~/ /:
+//                ' '
+//                break
 //
-//                case ~/ /:
-//                    ' '
-//                    break
+//            case ~/ /:
+//                ' '
+//                break
 //
-//                case ~/ /:
-//                    ' '
-//                    break
+//            case ~/ /:
+//                ' '
+//                break
 //
-//                case ~/ /:
-//                    ' '
-//                    break
-//
-//                default:
-//                    'unknown'
-//
-//                    log.info "done...?"
+//            case ~/ /:
+//                ' '
+//                break
+
+            default:
+                'unknown'
 
 
+        }
+    }
 }
