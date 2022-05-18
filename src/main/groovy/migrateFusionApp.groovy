@@ -50,7 +50,7 @@ apps.each { Map appMap ->
     }
 
     List<FusionResponseWrapper> addCollResults = fusionClient.addCollectionsIfMissing(appName, sourceFusionOjectsMap)
-    log.info "Add Collections Fusion Response wrappers (if any): $addCollResults"
+    log.debug "\t\tAdd Collections Fusion Response wrappers (if any): $addCollResults"
 
 
     // --------------- Create DataSources ------------------
