@@ -32,8 +32,8 @@ class LdapAclsTransformTest extends Specification {
 
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.fs'
-        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.fs'
+        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.ldap'
+        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.ldap'
         transformer.getValueByJsonPath('$.created', destMap).contains('2022')
 
     }
