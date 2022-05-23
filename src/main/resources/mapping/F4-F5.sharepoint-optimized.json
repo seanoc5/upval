@@ -6,6 +6,7 @@
   },
   "copy": {
     "id": "id",
+    "created": "${new Date()}",
     "pipeline": "pipeline",
     "parserId": "parserId",
     "properties|webApplication|webApplicationUrl": "properties|startLinks",

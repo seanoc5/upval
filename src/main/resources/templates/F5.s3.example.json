@@ -9,7 +9,7 @@
   "type" : "lucidworks.s3",
   "properties" : {
     "proxyConfig" : {
-      "proxyEndpoint" : "proxy-dmz.intel.com:912"
+      "proxyEndpoint" : ""
     },
     "application" : {
       "bucketName" : "f5-data-dev",

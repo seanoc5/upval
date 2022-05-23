@@ -28,3 +28,8 @@ https://readlearncode.com/java-ee/java-ee-8-json-processing-1-1-json-merge-patch
 
 https://gregsdennis.github.io/Manatee.Json/usage/pointer.html
 
+https://stackoverflow.com/questions/1449001/is-there-a-java-utility-to-do-a-deep-comparison-of-two-objects
+
+https://assertj.github.io/doc/#basic-usage
+
+

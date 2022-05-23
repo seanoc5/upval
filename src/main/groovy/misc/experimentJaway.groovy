@@ -2,7 +2,6 @@ package misc
 
 import com.jayway.jsonpath.*
 import com.jayway.jsonpath.internal.path.PathCompiler
-import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 
 Logger log = Logger.getLogger(this.class.name);
@@ -18,18 +17,19 @@ String srcJson = '''
 }'''
 
 // -------------------- Default config ------------------------
-Map document = new JsonSlurper().parseText(srcJson)
+Map document = slurper.parseText(srcJson)
 //Map document = Configuration.defaultConfiguration().jsonProvider().parse(srcJson)
 String mypath = '$.a.foo'
-def foo = JsonPath.read(document, mypath)
-log.info "foo : $foo"
+def afooVal = JsonPath.read(document, mypath)
+log.info "a.foo value : $afooVal (should have gotten 'bar')"
 
-String newfoo = 'Sean'
+String newAfooVal = 'Sean'
 DocumentContext context = JsonPath.parse(document)
-def bar = context.set(mypath, newfoo)
+DocumentContext context1 = context.set(mypath, newAfooVal)
 String updatedFoo = JsonPath.read(document, mypath)
-log.info " Updated bar : $updatedFoo"
+log.info " Updated value after write: $updatedFoo (should be '$newAfooVal')"
 
+// todo -- this needs code to fill in 'missing' elements like `mynew`
 String missingPath = '$.mynew.bar'
 try {
     def missingBar = JsonPath.read(document, missingPath)
@@ -53,7 +53,7 @@ tree = { -> return [:].withDefault{ tree() } }
 def users = tree()
 users.harold.username = 'hrldcpr'
 users.yates.username = 'tim'
-def bizz = users.foo.bar
+def fooBar1 = users.foo.bar
 
 users.foo.bar = 'mytest'
 log.info "users foo: ${users.foo}"

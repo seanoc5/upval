@@ -49,17 +49,17 @@ class FStoS3ObjectTransformerTest extends Specification {
 
     public static String src = '''
 {
-  "id": "psg_hsd-es-fs",
+  "id": "sample-s3-id",
   "created": "2021-04-21T19:04:31.111Z",
   "modified": "2021-09-18T00:03:54.998Z",
   "connector": "lucidworks.fs",
   "type": "lucidworks.fs",
-  "description": "Filesystem based connector to import JSON files for HSD-ES bug data",
-  "pipeline": "psg_hsd-es-fs-index",
-  "parserId": "psg_json-parser",
+  "description": "Sample F4 Filesystem based connector to import JSON filesdata",
+  "pipeline": "sample-pipeline",
+  "parserId": "sample-parser",
   "properties": {
     "includeDirectories": false,
-    "collection": "CircuitSearch",
+    "collection": "MyCollection",
     "addFileMetadata": false,
     "initialFilePaths": [
       "/tmp/hsdupload/"
@@ -70,28 +70,35 @@ class FStoS3ObjectTransformerTest extends Specification {
 '''
 
     public static String dest = '''
-{
-    "id": "replaceme-destination",
-    "type": "overrideme.ldap",
-    "properties": {
-        "security": {},
-        "searchProperties": {
-            "apiQueryRowLimit": 1000,
-            "userSearchProp": {
-                "crawlForUsers": true,
-                "userFilter": "(&(objectclass=user)(sAMAccountName=*))"
-            },
-            "followReferrals": false,
-            "groupSearchProp": {
-                "groupFilter": "(&(objectclass=group))",
-                "crawlForGroups": true
-            },
-            "useGlobalCatalog": false
-        },
-        "collection": "${dataSource.id}-access-control-hierarchy"
-    },
-    "connector": "lucidworks.ldap"
-}
+ {
+   "id" : "#replace#",
+   "diagnosticLogging" : true,
+   "parserId" : "#replace#",
+   "created" : "",
+   "coreProperties" : { },
+   "description" : "S3 version of FS migration",
+   "modified" : "",
+   "type" : "#replace#",
+   "properties" : {
+     "proxyConfig" : {
+       "proxyEndpoint" : ""
+     },
+     "application" : {
+       "bucketName" : "f5-data-sample-bucket",
+       "objectKeys" : [ "s3-sample-key/" ],
+       "region" : "us-west-1"
+     },
+     "authenticationConfig" : {
+       "awsBasicAuthConfig" : {
+         "secretKey" : "xXx-Redacted-xXx",
+         "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
+       }
+     },
+     "collection" : "MyCollection"
+   },
+   "pipeline" : "",
+   "connector" : "lucidworks.s3"
+ }
 '''
 
     public static String configsJsonPath = '''
