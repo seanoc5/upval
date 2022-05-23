@@ -1,4 +1,4 @@
-package com.lucidworks.ps.compare
+package misc
 
 import com.lucidworks.ps.upval.mapping.SimpleTransform
 import de.danielbechler.diff.ObjectDifferBuilder

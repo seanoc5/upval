@@ -1,4 +1,4 @@
-package com.lucidworks.ps.compare
+package misc
 
 import com.lucidworks.ps.compare.ComparisonResult
 import com.lucidworks.ps.compare.SolrConfigComparator as SCC

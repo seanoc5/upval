@@ -1,4 +1,4 @@
-package com.lucidworks.ps.compare
+package misc
 
 import groovy.xml.XmlParser
 import org.apache.log4j.Logger
