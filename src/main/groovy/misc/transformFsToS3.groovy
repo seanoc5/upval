@@ -16,6 +16,9 @@ FusionClient fusionClient = new FusionClient(options)// todo -- revisit where/ho
 File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
 Map sourceFusionOjectsMap = parsedMap.objects
+log.info "\t\tSource Fusion Objects count: ${sourceFusionOjectsMap.size()} \n\t${sourceFusionOjectsMap.collect { "${it.key}(${it.value.size()})" }.join('\n\t')}"
+
+String appName = options.appName
 
 List<Map<String,Object>> sourceJobs = sourceFusionOjectsMap.jobs
 def srcJobNames = sourceJobs.collect {it.resource}
