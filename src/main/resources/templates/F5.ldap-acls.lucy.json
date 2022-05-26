@@ -1,0 +1,31 @@
+{
+  "id": "sean-test",
+  "created": "",
+  "modified": "",
+  "connector": "lucidworks.ldap-acls",
+  "type": "lucidworks.ldap-acls",
+  "pipeline": "",
+  "parserId": "",
+  "coreProperties": {
+    "fetchSettings": {}
+  },
+  "description": "UpVal migrated ldap-acls...",
+  "properties": {
+    "baseDn": "basedn",
+    "userSearchBaseDn": "userbasedn",
+    "userSearchFilter": "(&(objectclass=user)(sAMAccountName=*))",
+    "groupSearchBaseDn": "groupbasedn",
+    "groupSearchFilter": "(&(objectclass=group))",
+    "loginUserPrincipal": "#replaceme#",
+    "loginPassword": "transformer.getPassword()",
+    "adNetbiosDomain": "??value??",
+    "ldapPort": 389,
+    "ldaps": true,
+    "ldapHost": "myhost",
+    "collection": "CircuitSearch",
+    "security": {
+      "collectionId": "acls"
+    }
+  },
+  "diagnosticLogging": true
+}

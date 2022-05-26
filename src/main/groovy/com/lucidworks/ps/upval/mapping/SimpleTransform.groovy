@@ -5,7 +5,7 @@ package com.lucidworks.ps.upval.mapping
  * test class for working through dynamic function invocation
  * very simple test
  */
-class SimpleTransform extends ObjectTransformer{
+class SimpleTransform extends ObjectTransformerJayway{
 
     public static final String origJson = '''
     {

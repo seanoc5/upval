@@ -2,7 +2,7 @@ package com.lucidworks.ps.upval.mapping
 
 import org.apache.log4j.Logger
 
-class SharepointOptimizedTransformer extends ObjectTransformer {
+class SharepointOptimizedTransformer extends ObjectTransformerJayway {
     Logger log = Logger.getLogger(this.class.name);
 
     SharepointOptimizedTransformer(Map srcMap, Map destMap, Map transConfig, String separator) {

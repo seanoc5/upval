@@ -26,7 +26,8 @@ function someFunction() {
     return b + 1; 
 } 
 '''
-Source source   = new Source("test", jscode);
+Source source   = Source.sourceFor  ("test", jscode);
+//Source source   = new Source.("test", jscode);
 Parser parser = new Parser(context.getEnv(), source, errors);
 FunctionNode functionNode = parser.parse();
 Block block = functionNode.getBody();

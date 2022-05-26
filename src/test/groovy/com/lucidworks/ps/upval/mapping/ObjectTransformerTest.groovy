@@ -28,10 +28,10 @@ class ObjectTransformerTest extends Specification {
          "/modified": "${new Date()}",
          */
         given:
-        ObjectTransformer transformer = new ObjectTransformer(srcMap, destMap, rules)
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
         when:
-        transformer.transformSetValues()
+        transformer.setValues()
 
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
@@ -43,7 +43,7 @@ class ObjectTransformerTest extends Specification {
 
     def "Transform"() {
         given:
-        ObjectTransformer transformer = new ObjectTransformer(srcMap, destMap, rules)
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
         when:
         transformer.transform()
@@ -53,15 +53,29 @@ class ObjectTransformerTest extends Specification {
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
-/*
-    def "test getting entry to manipulate"(){
+    def "lamda experiment"(){
         given:
-        Map myMap = [a:[one:'1a', two:'2b']]
+        def lambdaNorma = {Object it -> return it.class.name}
+        String myLambdaStr = '{Object it -> return "foo:...${it}"}'
 
         when:
-        def myEntry =
+        def simpleEval = Eval.me("2+2")
+        def lambdaEval = Eval.me(myLambdaStr)
+        def resultEval = lambdaEval('Foo')
+
+        then:
+        simpleEval == 4
+        lambdaEval.class.name == 'Script1$_run_closure1'
+        resultEval == 'foo:...Foo'
     }
-*/
+
+//    def "transform with function from config json"(){
+//        given:
+//        Map myMap = [a:[one:'1a', two:'2b']]
+//
+//        when:
+//        def myEntry =
+//    }
 
 /*
     def "GetByMapPath"() {

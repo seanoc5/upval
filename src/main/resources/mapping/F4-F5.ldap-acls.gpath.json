@@ -11,7 +11,6 @@
 
     "/properties/searchProperties/*/userFilter": "/properties/f.ldap_user_filter",
 
-
     "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
     "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
 

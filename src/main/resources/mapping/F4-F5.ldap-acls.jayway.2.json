@@ -1,0 +1,25 @@
+{
+  "transformerClass": "LdapAclsTransformer",
+  "set": {
+    "$.type": "ldap-acls",
+    "$.connector": "lucid.ldap-acls",
+    "$.created": "${new Date()}",
+    "$.modified": "${new Date()}"
+  },
+  "copy": {
+    "$.id": "$.id",
+    "$.pipeline": "$.pipeline",
+
+    "$.properties.collection": "$.properties.collection",
+    "$.properties['f.adNetbiosDomain']": "$.properties['f.adNetbiosDomain']",
+    "$.properties.['f.userPrincipal']": "$.properties.['f.userPrincipal']",
+    "$.properties.['f.password']": "$.properties.['f.password']",
+    "$.properties.['f.active_directory']": "$.properties.['f.active_directory ']",
+    "$.properties.['f.ldap_search_base']": "$.properties['f.ldap_search_base']",
+    "$.properties.['f.ldap_user_filter']": "$.properties['f.ldap_user_filter']",
+    "$.properties.['f.ldap_group_filter']": "$.properties.['f.ldap_group_filter']",
+    "$.properties.['f.acl_collection']": "$.properties.['f.acl_collection']",
+    "$.properties.startLinks": "$.properties.startLinks"
+      }
+}
+

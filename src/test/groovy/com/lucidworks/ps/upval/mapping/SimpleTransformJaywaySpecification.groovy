@@ -1,11 +1,15 @@
 package com.lucidworks.ps.upval.mapping
 
+import com.jayway.jsonpath.DocumentContext
+import com.jayway.jsonpath.JsonPath
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class FStoS3ObjectTransformerTest extends Specification {
+class SimpleTransformJaywaySpecification extends Specification {
     Map srcMap = null
     Map destMap = null
+    DocumentContext srcContext = null
+    DocumentContext destContext = null
     Map rules = null
 
     /**
@@ -16,36 +20,45 @@ class FStoS3ObjectTransformerTest extends Specification {
     def setup(){
         JsonSlurper slurper = new JsonSlurper()
         srcMap = slurper.parseText(src)
+        srcContext = JsonPath.parse(srcMap)         // useful? necessary? for set value
+
         destMap = slurper.parseText(dest)
+        destContext = JsonPath.parse(destMap)         // useful? necessary? for set value
+
         rules = slurper.parseText(configsJsonPath)
     }
 
-    def "Transform Set Values"(){
+
+    def "check jayway read basics"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+//        String foo = 'test'
+        String srcPath = '$.properties.collection'
 
         when:
-        transformer.setValues()
+        def collection = JsonPath.read(srcMap, srcPath)
+
 
         then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.fs'
-        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.fs'
-        transformer.getValueByJsonPath('$.created', destMap).contains('2022')
-
+        collection == 'MyCollection'
     }
 
-    def "Transform"() {
+    def "check jayway write basics"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+        String srcPath = '$.properties.collection'
+        String destPath = '$.properties.collection'
 
         when:
-        transformer.transform()
+        def collection = JsonPath.read(srcMap, srcPath)
+        def previousDestValue = destContext.read(destPath)
+        destContext.set(destPath, collection)
+        def updatedDestValue = destContext.read(destPath)
 
         then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
+        previousDestValue == ''
+        updatedDestValue == 'MyCollection'
     }
+
+
 
     public static String src = '''
 {
@@ -94,7 +107,7 @@ class FStoS3ObjectTransformerTest extends Specification {
          "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
        }
      },
-     "collection" : "MyCollection"
+     "collection" : ""
    },
    "pipeline" : "",
    "connector" : "lucidworks.s3"
@@ -122,22 +135,4 @@ class FStoS3ObjectTransformerTest extends Specification {
 '''
 
 
-    public static String configsSlashy = '''
-{
-    "transformerClass": "SimlpeTransform",
-    "set": {
-        "/type": "lucidworks.ldap",
-        "/connector": "lucidworks.ldap",
-        "/created": "${new Date()}",
-        "/modified": "${new Date()}",
-    },
-    "copy": {
-        "/id": "/id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
-        "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
-    }
-}
-'''
 }

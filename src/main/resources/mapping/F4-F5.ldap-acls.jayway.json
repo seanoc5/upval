@@ -1,0 +1,35 @@
+{
+  "transformerClass": "LdapAclsTransformer",
+  "set": {
+    "$.type": "lucidworks.ldap",
+    "$.connector": "lucidworks.ldap",
+    "$.created": "${new Date()}",
+    "$.modified": "${new Date()}",
+    "$.parserId": "_system",
+    "$.description": "Migrated F4 ldap-acls to newer F5 format (UpVal)"
+  },
+  "copy": {
+    "$.id": "$.id",
+    "$.pipeline": "$.pipeline",
+
+    "$.properties.collection": "$.properties.collection",
+    "$.properties.security.collectionId": "$.properties.['f.acl_collection']",
+
+    "$.properties.loginUserPrincipal": "$.properties['f.userPrincipal']",
+    "$.properties.loginPassword": "$.properties['f.userPrincipal']",
+
+
+    "$.properties.userSearchBaseDn": "$.properties.['f.ldap_search_base']",
+    "$.properties.userSearchFilter": "$.properties.['f.ldap_user_filter']",
+    "$.properties.groupSearchFilter": "$.properties.['f.ldap_group_filter']",
+    "$.properties.adNetbiosDomain": "$.properties.['f.adNetbiosDomain']",
+
+    "$.properties.ldaps": "$.properties.startLinks",
+    "$.properties.ldapHost": "$.properties.startLinks",
+    "$.properties.ldapPort": "$.properties.startLinks",
+
+
+    "$.properties.security.collectionId": "$.properties.['f.acl_collection']"
+  }
+}
+
