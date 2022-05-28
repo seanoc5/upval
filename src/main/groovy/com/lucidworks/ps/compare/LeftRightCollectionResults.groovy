@@ -1,18 +1,20 @@
 package com.lucidworks.ps.compare
 
-class CompareCollectionResults {
+class LeftRightCollectionResults {
     public static final String SOURCE = 'source'
     public static final String DESTINATION = 'destination'
 
     String collectionType = 'unknown'
     Integer countDifference = 0
-    List<String> sourceOnlyIds = []
-    List<String> destinationOnlyIds = []
+    List<String> leftOnlyIds = []
+    List<String> rightOnlyIds = []
     List<String> sharedIds = []
-    List sourceOnlyItems = []
-    List destinationOnlyItems = []
-    List<String> sourceOnlyPaths = []
-    List<String> destinationOnlyPaths = []
+    List leftOnlyItems = []
+    List rightOnlyItems = []
+
+    Map<String, CompareObjectsResults> objectsResults = [:]
+    List<String> leftOnlyPaths = []
+    List<String> rightOnlyPaths = []
 
     List<Object> similarEntries = []
     List<Object> differentEntries = []
@@ -24,32 +26,25 @@ class CompareCollectionResults {
 
     /**
      * typical constructor, accepting a list of object property paths to consider "the same" if onlly values differ (but structure is equal)
-     * @param ignoreValueDifferences
+     * @param valueDiffsToIgnore
      */
-    CompareCollectionResults(String collectionType, List ignoreValueDifferences) {
+    LeftRightCollectionResults(String collectionType, List valueDiffsToIgnore) {
         this.collectionType = collectionType
-        this.ignoreDifferentValueEntries = ignoreValueDifferences
+        this.ignoreDifferentValueEntries = valueDiffsToIgnore
     }
 
-    String toString(String indent = '\t\t') {
+    String toString(String indent='\t\t'){
         StringBuilder sb = new StringBuilder()
         sb.append("Collection Type: $collectionType\n")
-        if (countDifference == 0) {
+        if(countDifference==0){
             sb.append("${indent}Count difference ($countDifference)\n")
         }
-        if (sourceOnlyIds) {
-            sb.append("${indent}Source only IDs: $sourceOnlyIds\n")
+        if(leftOnlyIds){
+            sb.append("${indent}Source only IDs: $leftOnlyIds\n")
         }
-        if (destinationOnlyIds) {
-            sb.append("${indent}Destination only IDs: $destinationOnlyIds\n")
+        if(rightOnlyIds){
+            sb.append("${indent}Destination only IDs: $rightOnlyIds\n")
         }
-    }
-
-    def getSimilarities() {
-        return similarEntries
-    }
-
-    def getDifferences() {
-        return differentEntries
+        return sb.toString()
     }
 }

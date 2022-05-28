@@ -7,24 +7,24 @@ import org.apache.log4j.Logger
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
  * @created :   5/23/22, Monday
- * @description: helper class to compare two different Lists of datasources
- * we use the terminology source and destination losely, but the aim is to help understand the difference reporting
+ * @description: helper class to compare two different Lists of datalefts
+ * we use the terminology left and right losely, but the aim is to help understand the difference reporting
  */
 
 class FusionObjectComparator {
     Logger log = Logger.getLogger(this.class.name);
 
     String collectionType
-    List<Map> source = []
-    List<Map> destination = []
+    List<Map> left = []
+    List<Map> right = []
     CompareCollectionResults compareCollections
     Map<String, CompareObjectsResults> compareObjectsResultsMap = [:]
 
-    FusionObjectComparator(String collectionType, List<Map<String, Object>> src, List<Map<String, Object>> dest) {
-        log.info "Starting collection (type: $collectionType) comparison with (${source.size()}) source objects, and (${destination.size()}) destination objections..."
+    FusionObjectComparator(String collectionType, List<Map<String, Object>> left, List<Map<String, Object>> dest) {
+        log.info "Starting collection (type: $collectionType) comparison with (${left.size()}) left objects, and (${right.size()}) right objections..."
         this.collectionType = collectionType
-        source = src
-        destination = dest
+        left = left
+        right = dest
         List ignoreValueDifferences = []
         compareCollections = new CompareCollectionResults(collectionType, ignoreValueDifferences)
         compare()
@@ -37,9 +37,9 @@ class FusionObjectComparator {
 
         compareCollections.sharedIds.each { String id ->
             log.info "Comparing shared object with id: $id"
-            def srcObject = source.find {it.id == id}
-            def destObject = destination.find{it.id == id}
-            CompareObjectsResults objectsResults = compareObjects(srcObject, destObject)
+            def leftObject = left.find {it.id == id}
+            def destObject = right.find{it.id == id}
+            CompareObjectsResults objectsResults = compareObjects(leftObject, destObject)
             compareObjectsResultsMap[id] = objectsResults
             log.debug "Compare results: $objectsResults"
         }
@@ -48,35 +48,44 @@ class FusionObjectComparator {
     }
 
     Integer compareItemCounts() {
-        compareCollections.countDifference = source.size() - destination.size()
+        compareCollections.countDifference = left.size() - right.size()
+        if(compareCollections.countDifference != 0){
+            log.info "\t\t(${this.collectionType}) Count difference: ${compareCollections.countDifference}"
+        }
         return compareCollections.countDifference
     }
 
     Map<String, List<String>> compareIds() {
-        def srcIds = source.collect { it.id }
-        def destIds = destination.collect { it.id }
+        def leftIds = left.collect { it.id }
+        def rightIds = right.collect { it.id }
 
-        compareCollections.sourceOnlyIds = srcIds - destIds
-        compareCollections.destinationOnlyIds = destIds - srcIds
-        compareCollections.sharedIds = srcIds.intersect(destIds)
+        compareCollections.leftOnlyIds = leftIds - rightIds
+        if(compareCollections.leftOnlyIds){
+            log.info "${this.collectionType} left only ids: ${compareCollections.leftOnlyIds}"
+        }
+        compareCollections.rightOnlyIds = rightIds - leftIds
+        if(compareCollections.rightOnlyIds){
+            log.info "${this.collectionType} d only ids: ${compareCollections.leftOnlyIds}"
+        }
+        compareCollections.sharedIds = leftIds.intersect(rightIds)
 
-        compareCollections.sourceOnlyItems = source.findAll { compareCollections.sourceOnlyIds.contains(it.id) }
-        compareCollections.destinationOnlyItems = destination.findAll { compareCollections.destinationOnlyIds.contains(it.id) }
-        Map diffMap = [sourceOnly: compareCollections.sourceOnlyIds, destinationOnly: compareCollections.destinationOnlyIds]
+        compareCollections.leftOnlyItems = left.findAll { compareCollections.leftOnlyIds.contains(it.id) }
+        compareCollections.rightOnlyItems = right.findAll { compareCollections.rightOnlyIds.contains(it.id) }
+        Map diffMap = [leftOnly: compareCollections.leftOnlyIds, rightOnly: compareCollections.rightOnlyIds]
         return diffMap
     }
 
-    CompareObjectsResults compareObjects(def src, def dest) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, src, dest)
-        def srcKeyPaths = Helper.flatten(src, 1)
+    CompareObjectsResults compareObjects(def left, def dest) {
+        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, left, dest)
+        def leftKeyPaths = Helper.flatten(left, 1)
         def destKeyPaths = Helper.flatten(dest, 1)
 
-        def srcOnly = srcKeyPaths - destKeyPaths
-        def destOnly = destKeyPaths - srcKeyPaths
-        objectsResults.sourceOnlyKeys = srcOnly
-        objectsResults.destinationOnlyKeys = destOnly
+        def leftOnly = leftKeyPaths - destKeyPaths
+        def destOnly = destKeyPaths - leftKeyPaths
+        objectsResults.leftOnlyKeys = leftOnly
+        objectsResults.rightOnlyKeys = destOnly
 
-        def shared = srcKeyPaths.intersect(destKeyPaths)
+        def shared = leftKeyPaths.intersect(destKeyPaths)
         objectsResults.sharedKeys = shared
 
         return objectsResults

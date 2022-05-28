@@ -250,3 +250,31 @@ archive: conditions
 - get list of installed plugins
 - get list of repository plugins
 - build list of 'missing' plugins
+
+
+## Environment promotion
+- read/load app
+  - compare & find differences to promote
+    - iterate things to compare
+      - 
+## object structure:
+- FusionAppComparator
+  - CollectionComparator
+    - ObjectComparator
+  - SolrConfigsetComparator
+    - SchemaComparator
+    - SolrConfigComparator
+
+### Results
+- CompareType
+- Ids/keys
+- leftOnly
+- RightOnly
+- Shared
+- Differences
+
+### Difference
+- ObjectType/name/label
+- DifferenceType: elements/structure/keys, values, order
+- Description
+- 

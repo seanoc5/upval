@@ -6,22 +6,28 @@ class CompareObjectsResults {
     Logger log = Logger.getLogger(this.class.name);
 
     String objectType
-    def source
-    def destination
-    List sourceOnlyKeys = []
-    List destinationOnlyKeys = []
+    def left
+    def right
+    List leftOnlyKeys = []
+    List rightOnlyKeys = []
     List sharedKeys = []
     def differentValues
+    boolean isDifferent
 
-    CompareObjectsResults(String objectType, source, destination) {
+    CompareObjectsResults(String objectType, left, right) {
         this.objectType = objectType
-        this.source = source
-        this.destination = destination
+        this.left = left
+        this.right = right
+        this.isDifferent = isFunctionallyDifferent()
     }
 
+    /**
+     * add code here to increase logic
+     * @return
+     */
     boolean isFunctionallyDifferent() {
         boolean different = true
-        if (sourceOnlyKeys || destinationOnlyKeys) {
+        if (leftOnlyKeys || rightOnlyKeys) {
             log.debug "Different by keys/properties"
             different = true
         } else if (differentValues) {
