@@ -1,4 +1,5 @@
 package misc
+/*
 
 import jdk.nashorn.internal.ir.Block
 import jdk.nashorn.internal.ir.FunctionNode
@@ -20,11 +21,11 @@ options.set("scripting", true);
 ErrorManager errors = new ErrorManager();
 Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
 String jscode = '''
-var a = 10; 
+var a = 10;
 var b = a + 1;
-function someFunction() { 
-    return b + 1; 
-} 
+function someFunction() {
+    return b + 1;
+}
 '''
 Source source   = Source.sourceFor  ("test", jscode);
 //Source source   = new Source.("test", jscode);
@@ -32,5 +33,6 @@ Parser parser = new Parser(context.getEnv(), source, errors);
 FunctionNode functionNode = parser.parse();
 Block block = functionNode.getBody();
 List<Statement> statements = block.getStatements();
+*/
 
 log.info "done...?"

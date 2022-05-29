@@ -33,6 +33,8 @@ https://www.javacodegeeks.com/2018/04/get-to-know-json-pointer-json-p-1-1-overvi
 
 `JsonObject jsonObject = Json .createPointer("/category") .add(jsonObject, Json.createValue("Programming"));`
 
+https://stackoverflow.com/questions/4085353/comparing-two-collections-in-java
+
 https://readlearncode.com/java-ee/java-ee-8-json-processing-1-1-json-patch-overview/
 
 https://readlearncode.com/java-ee/java-ee-8-json-processing-1-1-json-merge-patch-overview/
@@ -41,6 +43,7 @@ https://gregsdennis.github.io/Manatee.Json/usage/pointer.html
 
 https://stackoverflow.com/questions/1449001/is-there-a-java-utility-to-do-a-deep-comparison-of-two-objects
 https://stackoverflow.com/questions/50967015/how-to-compare-json-documents-and-return-the-differences-with-jackson-or-gson/50969020#50969020
+
 
 https://assertj.github.io/doc/#basic-usage
 https://www.baeldung.com/java-compare-hashmaps

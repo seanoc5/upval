@@ -4,33 +4,25 @@ import groovy.xml.XmlParser
 import org.apache.log4j.Logger
 import org.xmlunit.builder.DiffBuilder
 import org.xmlunit.builder.Input
-import org.xmlunit.diff.*
-
-import java.nio.file.Path
-import java.nio.file.Paths
+import org.xmlunit.diff.DOMDifferenceEngine
+import org.xmlunit.diff.Diff
+import org.xmlunit.diff.Difference
+import org.xmlunit.diff.DifferenceEngine
 
 Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name}"
 
 XmlParser parser = new XmlParser()
 
-// todo -- revisit paths, these are broken at the moment
-Path templateFolder = Paths.get('../resources/templates/configsets/7.7.2/_default/conf')
-Path tsPath = Paths.get(templateFolder.toAbsolutePath().toString(), 'managed-schema')
-log.info "Template schema: $tsPath -- ${tsPath.toFile().exists()}"
-log.info "Template path abs: ${templateFolder.toAbsolutePath()}"
+def leftUrl = getClass().getClassLoader().getResource("templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema")
+def rightUrl = getClass().getClassLoader().getResource("templates/configsets/fusion-4.2.6/_default/conf/managed-schema")
 
-String depPath = "./data/"
-Path deployedConfigFolder = Paths.get(depPath)
-File dsFile = new File('./configsets/managed-schema')
-log.info "Deployed schema: ${dsFile.absolutePath}"
-
-def control = Input.fromPath(tsPath).build();
-def test = Input.fromFile(dsFile).build();
+def leftObject = Input.fromURL(leftUrl)
+def rightObject = Input.fromURL(rightUrl)
 DifferenceEngine diff = new DOMDifferenceEngine();
 
-Diff myDiff = DiffBuilder.compare(control)
-        .withTest(test)
+Diff myDiff = DiffBuilder.compare(leftObject)
+        .withTest(rightObject)
         .ignoreWhitespace()
         .ignoreComments()
         .normalizeWhitespace()
