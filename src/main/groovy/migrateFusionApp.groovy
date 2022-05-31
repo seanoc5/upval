@@ -85,6 +85,7 @@ apps.each { Map appMap ->
         }
     }
 
+/*
     // --------------- Create Jobs ------------------
     // todo -- switch to "addifmissing..."
     def jobsExisting = fusionClient.getJobs(appName)
@@ -98,8 +99,8 @@ apps.each { Map appMap ->
             log.info "Created index pipeline ($idxpName) "
         }
     }
+*/
 
-    // --------------- Create Index Pipelines ------------------
 
 
     // --------------- Add Missing Job Schedules ------------------
