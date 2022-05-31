@@ -36,7 +36,7 @@ class BasicCollectionTest extends Specification {
     }
 
 
-    def "Flatten demo files"() {
+    def "Flatten demo schema files"() {
         given:
         XmlParser parser = new XmlParser()
         def leftResource = getClass().getResourceAsStream('/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema')
