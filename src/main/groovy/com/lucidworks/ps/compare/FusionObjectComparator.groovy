@@ -20,13 +20,13 @@ class FusionObjectComparator {
     CompareCollectionResults compareCollections
     Map<String, CompareObjectsResults> compareObjectsResultsMap = [:]
 
-    FusionObjectComparator(String collectionType, List<Map<String, Object>> left, List<Map<String, Object>> dest) {
+    FusionObjectComparator(String collectionType, List<Map<String, Object>> left, List<Map<String, Object>> right) {
         log.info "Starting collection (type: $collectionType) comparison with (${left.size()}) left objects, and (${right.size()}) right objections..."
         this.collectionType = collectionType
-        left = left
-        right = dest
+        this.left = left
+        this.right = right
         List ignoreValueDifferences = []
-        compareCollections = new CompareCollectionResults(collectionType, ignoreValueDifferences)
+        compareCollections = new CompareCollectionResults(collectionType, left, this.right, ignoreValueDifferences)
         compare()
     }
 

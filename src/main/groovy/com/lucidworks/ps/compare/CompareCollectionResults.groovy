@@ -6,13 +6,13 @@ class CompareCollectionResults {
 
     String collectionType = 'unknown'
     Integer countDifference = 0
+    def left
+    def right
     List<String> leftOnlyIds = []
     List<String> rightOnlyIds = []
     List<String> sharedIds = []
     List leftOnlyItems = []
     List rightOnlyItems = []
-//    List<String> leftOnlyPaths = []
-//    List<String> rightOnlyPaths = []
 
     List<Object> similarEntries = []
     List<Object> differentEntries = []
@@ -26,8 +26,10 @@ class CompareCollectionResults {
      * typical constructor, accepting a list of object property paths to consider "the same" if onlly values differ (but structure is equal)
      * @param ignoreValueDifferences
      */
-    CompareCollectionResults(String collectionType, List ignoreValueDifferences) {
+    CompareCollectionResults(String collectionType, def left, def right, List ignoreValueDifferences) {
         this.collectionType = collectionType
+        this.left = left
+        this.right = right
         this.ignoreDifferentValueEntries = ignoreValueDifferences
     }
 

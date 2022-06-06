@@ -31,12 +31,12 @@ class BasicXMLTest extends Specification {
    </value>
 </response>
 '''
-    def xml
 
-    void setup() {
-
-    }
-
+    /** hackish function to show one way to walk the tree, left here for reference, but didn't like it enough to use for real
+     *
+     * @param node
+     * @return
+     */
     def path(GPathResult node) {
         def result = [node.name()]
         def pathWalker = [hasNext: { -> node.parent() != node }, next: { -> node = node.parent() }] as Iterator

@@ -3,6 +3,8 @@ package com.lucidworks.ps.upval
 
 import org.apache.log4j.Logger
 
+import java.util.regex.Pattern
+
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
@@ -14,7 +16,7 @@ class Helper {
         List pathList = [name]
 //        node.childNodes().each { childNode ->
         node.children().each { childNode ->
-            if(childNode instanceof Node) {
+            if (childNode instanceof Node) {
                 log.debug '\t\t'.multiply(level) + "$level) child dive... ${childNode.name()}"
                 def childPaths = flattenXmlPath(childNode, level)
                 childPaths.each {
@@ -29,24 +31,41 @@ class Helper {
         return pathList
     }
 
-    static List<Map<String,Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator = '/', def attribsForPath = ~/(name|id|source|dest)/) {
+    static List<Map<String, Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator, Map<String, Pattern> attribsForPath) {
+        String nodeName = node.name()
         def attributes = node.attributes()
         List<String> sortedKeys = attributes.keySet().sort()
-        def nameKeys = sortedKeys.findAll{
-            it ==~ attribsForPath
+        Pattern pattern = attribsForPath[nodeName]
+        if (pattern) {
+            log.debug "found matching pattern for node name: $nodeName: $pattern"
+        } else {
+            pattern = attribsForPath['']
+            if(pattern) {
+                log.debug "no matching pattern for node name,: $nodeName, found default (''): $pattern"
+            } else {
+                log.debug "no matching pattern for node name,: $nodeName, nor was there a default..."
+            }
         }
-        def nameAttribs =attributes.subMap(nameKeys)
-        String name = nameAttribs ? separator + node.name() + "$nameAttribs" : separator + node.name()
+        def nameKeys = sortedKeys.findAll {
+            it ==~ pattern
+        }
+        def nameAttribs = attributes.subMap(nameKeys)
+        String name
+        if(nameAttribs) {
+            name = separator + nodeName + "$nameAttribs"
+        } else {
+            name = separator + node.name()
+        }
         level++
         log.debug '\t'.multiply(level) + "$level) $name"
-        List pathList = [[name:name, attributes:attributes]]
+        List pathList = [[name: name, attributes: attributes]]
         node.children().each { childNode ->
-            if(childNode instanceof Node) {
+            if (childNode instanceof Node) {
                 log.debug '\t\t'.multiply(level) + "$level) child dive... ${childNode.name()}"
-                def childPaths = flattenXmlPathWithAttributes(childNode, level)
-                childPaths.each {Map<String, Object> child->
+                def childPaths = flattenXmlPathWithAttributes(childNode, level, separator, attribsForPath)
+                childPaths.each { Map<String, Object> child ->
                     String path = name + child.name
-                    pathList << [name:path, attributes: child.attributes]
+                    pathList << [name: path, attributes: child.attributes]
                 }
             } else {
                 log.debug "Child Not a Node: ${childNode.class.simpleName}"
@@ -74,7 +93,7 @@ class Helper {
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
-                    entries[key] = [level:level, objectType: object.getClass().name]
+                    entries[key] = [level: level, objectType: object.getClass().name]
                     log.debug "\t" * level + "\t\tLeaf node: $key"
                 }
                 log.debug "next..."
