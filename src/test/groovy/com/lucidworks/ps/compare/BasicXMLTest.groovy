@@ -35,6 +35,17 @@ class BasicXMLTest extends Specification {
 '''
     def xml
 
+    void setup() {
+
+    }
+
+    def path(GPathResult node) {
+        def result = [node.name()]
+        def pathWalker = [hasNext: { -> node.parent() != node }, next: { -> node = node.parent() }] as Iterator
+        (result + pathWalker.collect { it.name() }).reverse().join('/')
+    }
+
+
 
     def "divepath all"() {
         given:
