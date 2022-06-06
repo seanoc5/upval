@@ -1,5 +1,6 @@
 package com.lucidworks.ps.compare
 
+import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
 import org.xmlunit.builder.DiffBuilder
 import org.xmlunit.builder.Input
@@ -15,14 +16,17 @@ import spock.lang.Specification
  * @description:
  */
 
-class SolrConfigComparatorTest extends Specification {
+class XmlunitSolrcConfigsTest extends Specification {
 
     def "check schemas"() {
         given:
         XmlParser parser = new XmlParser()
 
-        def left = getClass().getClassLoader().getResource("resources/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema").toURI()
-        def right = getClass().getClassLoader().getResource("resources/templates/configsets/fusion-4.2.6/_default/conf/managed-schema").toURI()
+        // todo -- fix loading resources
+        this.getClass().getResource('.')
+        def foo = Helper.class.getResource("resources/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema")
+        def left = foo.toURI()
+        def right = Helper.class.getResource("resources/templates/configsets/fusion-4.2.6/_default/conf/managed-schema").toURI()
 
         when:
         def control = Input.fromPath(tsPath).build();
