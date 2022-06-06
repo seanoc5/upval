@@ -5,6 +5,22 @@ import org.apache.log4j.Logger
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
+    static List diveXmlPath(def node, int level = 0, String separator = '/') {
+        String name = node.name
+        level++
+        println '\t'.multiply(level) + "$level) $name"
+        List pathList = [name]
+        node.childNodes().each { childNode ->
+            println '\t\t'.multiply(level) + "$level) child dive... ${childNode.name}"
+            def childPaths = diveXmlPath(childNode, level)
+            childPaths.each {
+                String path = name + separator + it
+                pathList << path
+            }
+        }
+        return pathList
+    }
+
     static Map<String, Object> flattenPlus(def object, int level = 0) {
         Map<String, Object> entries = [:]
         log.info "$level) flattenPlus object: $object..."
