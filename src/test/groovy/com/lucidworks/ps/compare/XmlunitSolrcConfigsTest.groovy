@@ -32,7 +32,12 @@ class XmlunitSolrcConfigsTest extends Specification {
         def results = SolrConfigComparator.compareXmlObjects(leftSchema, rightSchema)
 
         then:
-        1 == 1
+        results.sharedIds.size()==391
+        results.leftOnlyIds.size()==36
+        results.rightOnlyIds.size()==25
+        results.leftOnlyIds[0] == '/schema[name:example]/dynamicField[name:*_pi]'
+        results.rightOnlyIds[0] == '/schema[name:example]/dynamicField[name:*_s_ns]'
+
     }
 
     def "check schemas via DiffBuilder"() {
