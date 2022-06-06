@@ -7,17 +7,21 @@ class SolrConfigComparator {
     static final Logger log = Logger.getLogger(this.class.name);
 
     static def compareXmlObjects(Node left, Node right){
-        List leftPaths = Helper.flattenXmlPathWithAttributes(left, 0, '/')
-        List rightPaths = Helper.flattenXmlPathWithAttributes(right, 0, '/')
-        def leftOnly = leftPaths - rightPaths
-        def rightOnly = rightPaths - leftPaths
+        List<Map<String, Object>> leftPaths = Helper.flattenXmlPathWithAttributes(left, 0, '/')
+        List<String> leftNames = leftPaths.collect{it.name}
+        List<Map<String, Object>> rightPaths = Helper.flattenXmlPathWithAttributes(right, 0, '/')
+        List<String> rightNames = rightPaths.collect{it.name}
+
+        def leftOnly = leftNames - rightNames
+        def rightOnly = rightNames - leftNames
         def shared = leftPaths.intersect(rightPaths)
-        log.info "Left only: $leftOnly"
-        log.info "Right only: $rightOnly"
-        log.info "Shared: $shared"
+        log.info "Left only (${leftOnly.size()}): $leftOnly"
+        log.info "Right only (${rightOnly.size()}): $rightOnly"
+        log.debug "Shared: $shared"
         CompareCollectionResults comparisonResult = new CompareCollectionResults('Solr Schemas', [])
         comparisonResult.leftOnlyIds = leftOnly
         comparisonResult.rightOnlyIds = rightOnly
+        comparisonResult.sharedIds = shared
         return comparisonResult
     }
 
