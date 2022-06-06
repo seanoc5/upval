@@ -1,7 +1,32 @@
 package com.lucidworks.ps.compare
 
-class SolrConfigComparator {
+import com.lucidworks.ps.upval.Helper
+import org.apache.log4j.Logger
 
+class SolrConfigComparator {
+    static final Logger log = Logger.getLogger(this.class.name);
+
+    static def compareXmlObjects(Node left, Node right){
+        List leftPaths = Helper.flattenXmlPathWithAttributes(left, 0, '/')
+        List rightPaths = Helper.flattenXmlPathWithAttributes(right, 0, '/')
+        def leftOnly = leftPaths - rightPaths
+        def rightOnly = rightPaths - leftPaths
+        def shared = leftPaths.intersect(rightPaths)
+        log.info "Left only: $leftOnly"
+        log.info "Right only: $rightOnly"
+        log.info "Shared: $shared"
+        CompareCollectionResults comparisonResult = new CompareCollectionResults('Solr Schemas', [])
+        comparisonResult.leftOnlyIds = leftOnly
+        comparisonResult.rightOnlyIds = rightOnly
+        return comparisonResult
+    }
+
+    /**
+     * deprecated? first pass, consider removing...
+     * @param templateSchema
+     * @param deployedSchema
+     * @return
+     */
     static ComparisonResult compareSchemaUniqueIds(Node templateSchema, Node deployedSchema) {
         String label = 'Solr Unique IDs'
         ComparisonResult result = null

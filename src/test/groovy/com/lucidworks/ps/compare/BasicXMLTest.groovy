@@ -6,8 +6,6 @@ import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import spock.lang.Specification
 
-import static com.lucidworks.ps.upval.Helper.diveXmlPath
-
 class BasicXMLTest extends Specification {
     def xmlString = '''
 <response version-api="2.0">
@@ -46,18 +44,26 @@ class BasicXMLTest extends Specification {
     }
 
 
-
+    /**
+     * note: difference between xmlsluper and xmlparser:
+     * https://stackoverflow.com/questions/7558019/groovy-xmlslurper-vs-xmlparser
+     */
     def "divepath all"() {
         given:
-        GPathResult xml = new XmlSlurper().parseText(xmlString)
+//        NodeChild xml = new XmlSlurper().parseText(xmlString)
+        Node xml = new XmlParser().parseText(xmlString)
         when:
-        def divePaths = diveXmlPath(xml, 0, '/')
+        def divePaths = Helper.flattenXmlPath(xml, 0, '/')
         divePaths.each {
             println it
         }
 
         then:
         divePaths.size() == 15
+        divePaths[0] == '/response'
+        divePaths[1] == '/response/value'
+        divePaths[2] == '/response/value/books'
+        divePaths[3] == '/response/value/books/book'
     }
 
 
@@ -100,12 +106,12 @@ class BasicXMLTest extends Specification {
         def rightSchema = parser.parse(rightResource)
 
         when:
-        def flatLeft = Helper.diveXmlPath(leftSchema)
-        def flatRight = Helper.diveXmlPath(rightSchema)
+        def flatLeft = Helper.flattenXmlPath(leftSchema)
+        def flatRight = Helper.flattenXmlPath(rightSchema)
 
         then:
-        flatLeft.size() == 9
-        flatRight.size() == 11
+        flatLeft.size() == 444
+        flatRight.size() == 438
         flatLeft == flatRight
     }
 

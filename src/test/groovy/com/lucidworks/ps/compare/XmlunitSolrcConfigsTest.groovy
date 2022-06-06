@@ -18,7 +18,24 @@ import spock.lang.Specification
 
 class XmlunitSolrcConfigsTest extends Specification {
 
-    def "check schemas"() {
+    def "check schemas via Helper dive path"() {
+        given:
+        XmlParser parser = new XmlParser()
+//        SolrConfigComparator solrConfigComparator = new SolrConfigComparator()
+
+        def leftResource = getClass().getResourceAsStream('/f3.sample_tech.managed-schema.xml')
+        def rightResource = getClass().getResourceAsStream('/f4.sample_tech.managed-schema.xml')
+        Node leftSchema = parser.parse(leftResource)
+        Node rightSchema = parser.parse(rightResource)
+
+        when:
+        def results = SolrConfigComparator.compareXmlObjects(leftSchema, rightSchema)
+
+        then:
+        1 == 1
+    }
+
+    def "check schemas via DiffBuilder"() {
         given:
         XmlParser parser = new XmlParser()
 

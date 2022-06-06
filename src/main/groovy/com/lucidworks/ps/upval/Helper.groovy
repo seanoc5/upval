@@ -1,23 +1,52 @@
 package com.lucidworks.ps.upval
 
-import groovy.xml.slurpersupport.Node
+
 import org.apache.log4j.Logger
 
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
-    static List diveXmlPath(Node node, int level = 0, String separator = '/') {
-        String name = node.name
+    static List flattenXmlPath(Node node, int level = 0, String separator = '/') {
+        String name = separator + node.name()
+        def attributes = node.attributes()
         level++
-        println '\t'.multiply(level) + "$level) $name"
+        log.info '\t'.multiply(level) + "$level) $name"
         List pathList = [name]
 //        node.childNodes().each { childNode ->
         node.children().each { childNode ->
-            println '\t\t'.multiply(level) + "$level) child dive... ${childNode.name}"
-            def childPaths = diveXmlPath(childNode, level)
-            childPaths.each {
-                String path = name + separator + it
-                pathList << path
+            if(childNode instanceof Node) {
+                log.debug '\t\t'.multiply(level) + "$level) child dive... ${childNode.name()}"
+                def childPaths = flattenXmlPath(childNode, level)
+                childPaths.each {
+                    String path = name + it
+//                    String path = name + separator + it
+                    pathList << path
+                }
+            } else {
+                log.debug "Child Not a Node: ${childNode.class.simpleName}"
+            }
+        }
+        return pathList
+    }
+
+    static List<Map<String,Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator = '/') {
+        String name = separator + node.name()
+        def attributes = node.attributes()
+        level++
+        log.info '\t'.multiply(level) + "$level) $name"
+        List pathList = [[name:name, attributes:attributes]]
+//        node.childNodes().each { childNode ->
+        node.children().each { childNode ->
+            if(childNode instanceof Node) {
+                log.debug '\t\t'.multiply(level) + "$level) child dive... ${childNode.name()}"
+                def childPaths = flattenXmlPathWithAttributes(childNode, level)
+                childPaths.each {Map<String, Object> child->
+                    String path = name + child.name
+//                    String path = name + separator + it
+                    pathList << [name:path, attributes: child.attributes]
+                }
+            } else {
+                log.debug "Child Not a Node: ${childNode.class.simpleName}"
             }
         }
         return pathList

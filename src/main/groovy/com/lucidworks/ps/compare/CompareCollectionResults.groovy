@@ -1,18 +1,18 @@
 package com.lucidworks.ps.compare
 
 class CompareCollectionResults {
-    public static final String SOURCE = 'source'
-    public static final String DESTINATION = 'destination'
+//    public static final String LEFT = 'left'
+//    public static final String RIGHT = 'right'
 
     String collectionType = 'unknown'
     Integer countDifference = 0
-    List<String> sourceOnlyIds = []
-    List<String> destinationOnlyIds = []
+    List<String> leftOnlyIds = []
+    List<String> rightOnlyIds = []
     List<String> sharedIds = []
-    List sourceOnlyItems = []
-    List destinationOnlyItems = []
-    List<String> sourceOnlyPaths = []
-    List<String> destinationOnlyPaths = []
+    List leftOnlyItems = []
+    List rightOnlyItems = []
+//    List<String> leftOnlyPaths = []
+//    List<String> rightOnlyPaths = []
 
     List<Object> similarEntries = []
     List<Object> differentEntries = []
@@ -37,11 +37,11 @@ class CompareCollectionResults {
         if (countDifference == 0) {
             sb.append("${indent}Count difference ($countDifference)\n")
         }
-        if (sourceOnlyIds) {
-            sb.append("${indent}Source only IDs: $sourceOnlyIds\n")
+        if (leftOnlyIds) {
+            sb.append("${indent}left only IDs: $leftOnlyIds\n")
         }
-        if (destinationOnlyIds) {
-            sb.append("${indent}Destination only IDs: $destinationOnlyIds\n")
+        if (rightOnlyIds) {
+            sb.append("${indent}right only IDs: $rightOnlyIds\n")
         }
     }
 
