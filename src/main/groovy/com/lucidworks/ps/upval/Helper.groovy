@@ -29,20 +29,23 @@ class Helper {
         return pathList
     }
 
-    static List<Map<String,Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator = '/') {
-        String name = separator + node.name()
+    static List<Map<String,Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator = '/', def attribsForPath = ~/(name|id|source|dest)/) {
         def attributes = node.attributes()
+        List<String> sortedKeys = attributes.keySet().sort()
+        def nameKeys = sortedKeys.findAll{
+            it ==~ attribsForPath
+        }
+        def nameAttribs =attributes.subMap(nameKeys)
+        String name = nameAttribs ? separator + node.name() + "$nameAttribs" : separator + node.name()
         level++
-        log.info '\t'.multiply(level) + "$level) $name"
+        log.debug '\t'.multiply(level) + "$level) $name"
         List pathList = [[name:name, attributes:attributes]]
-//        node.childNodes().each { childNode ->
         node.children().each { childNode ->
             if(childNode instanceof Node) {
                 log.debug '\t\t'.multiply(level) + "$level) child dive... ${childNode.name()}"
                 def childPaths = flattenXmlPathWithAttributes(childNode, level)
                 childPaths.each {Map<String, Object> child->
                     String path = name + child.name
-//                    String path = name + separator + it
                     pathList << [name:path, attributes: child.attributes]
                 }
             } else {
