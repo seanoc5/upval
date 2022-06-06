@@ -49,7 +49,7 @@ class BasicXMLTest extends Specification {
 
     def "divepath all"() {
         given:
-        def xml = new XmlSlurper().parseText(xmlString)
+        GPathResult xml = new XmlSlurper().parseText(xmlString)
         when:
         def divePaths = diveXmlPath(xml, 0, '/')
         divePaths.each {
@@ -67,27 +67,24 @@ class BasicXMLTest extends Specification {
         when:
         def flatNodes = xml.'**'.findAll { it }
         def flatPaths = flatNodes.collect { path(it) }
-        flatPaths.sort().each {
-            println it
-        }
+
 
         then:
-        flatNodes[0] == '/value'
-        flatNodes[1] == '/value/books'
-        flatNodes[2] == '/value/books/book'
-        flatNodes.size() == 14
+        flatPaths[0] == 'response'
+        flatPaths[1] == 'value'
+        flatPaths[2] == 'books'
+        flatPaths[3] == 'books/book'
+        flatPaths[5] == 'books/book/author'
+        flatPaths.size() == 15
     }
 
 
     def "Flatten leaf nodes"() {
         given:
         def xml = new XmlSlurper().parseText(xmlString)
+
         when:
         def leaves = xml.'**'.findAll { it.children().size() == 0 }
-
-        leaves.each { node ->
-            println "${path(node)} = ${node.text()}"
-        }
 
         then:
         leaves.size() > 5
@@ -97,14 +94,14 @@ class BasicXMLTest extends Specification {
     def "Flatten demo schema files"() {
         given:
         XmlParser parser = new XmlParser()
-        def leftResource = getClass().getResourceAsStream('/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema')
-        def rightResource = getClass().getResourceAsStream('templates/configsets/fusion-4.2.6/_default/conf/managed-schema')
+        def leftResource = getClass().getResourceAsStream('/f3.sample_tech.managed-schema.xml')
+        def rightResource = getClass().getResourceAsStream('/f4.sample_tech.managed-schema.xml')
         def leftSchema = parser.parse(leftResource)
         def rightSchema = parser.parse(rightResource)
 
         when:
-        def flatLeft = Helper.flattenPlus(leftMap)
-        def flatRight = Helper.flattenPlus(rightMap)
+        def flatLeft = Helper.diveXmlPath(leftSchema)
+        def flatRight = Helper.diveXmlPath(rightSchema)
 
         then:
         flatLeft.size() == 9
