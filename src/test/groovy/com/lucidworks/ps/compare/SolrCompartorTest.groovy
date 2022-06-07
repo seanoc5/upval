@@ -1,7 +1,9 @@
 package com.lucidworks.ps.compare
 
+import groovy.json.JsonSlurper
 import groovy.xml.XmlParser
 import spock.lang.Specification
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -13,6 +15,31 @@ import spock.lang.Specification
  * Test custom upval SolrConfigComparator class
  */
 class SolrCompartorTest extends Specification {
+
+    def "find unused schema things"() {
+        given:
+        def schemaSource = getClass().getResourceAsStream('/f4.basic.managed-schema.xml')
+        XmlParser parser = new XmlParser()
+        def lukeSource = getClass().getResourceAsStream('/f4.luke-output-basic.json')
+        def lukeInfo = new JsonSlurper().parse(lukeSource)
+
+        when:
+        Node schema = parser.parse(schemaSource)
+        def fieldTypes = schema.'**'.findAll { Node node ->
+            node.name() == 'fieldType'
+        }
+        def definedFields = schema.'**'.findAll { Node node ->
+            node.name() == 'field'
+        }
+        Node sampleTestField = fieldTypes.find { Node it ->
+            it.attributes().name=='lowercase'
+        }
+
+        then:
+        sampleTestField.attributes().class == 'solr.TextField'
+        fieldTypes.size() == 64
+//        fieldTypes.
+    }
 
     def "check schemas"() {
         given:
@@ -48,8 +75,8 @@ class SolrCompartorTest extends Specification {
         given:
         XmlParser parser = new XmlParser()
         def attribsForPath = [
-                lib             : ~/dir|regex/,
-                ''              : ~/(name|id)/
+                lib: ~/dir|regex/,
+                '' : ~/(name|id)/
         ]
 
         def leftResource = getClass().getResourceAsStream('/f3.sample_tech.solrconfig.xml')
@@ -79,8 +106,8 @@ class SolrCompartorTest extends Specification {
                 codecFactory    : ~/class/,
                 updateHandler   : ~/class/,
                 filterCache     : ~/class/,
-                queryResultCache     : ~/class/,
-                documentCache     : ~/class/,
+                queryResultCache: ~/class/,
+                documentCache   : ~/class/,
                 filter          : ~/class/,
                 ''              : ~/(name|id)/
         ]
