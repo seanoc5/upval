@@ -1,6 +1,6 @@
-package misc
+package misc.compare
 
-import com.lucidworks.ps.compare.CompareObjectsResults
+import com.lucidworks.ps.compare.FusionObjectComparator
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 /**
@@ -15,7 +15,7 @@ log.info "Starting ${this.class.name}..."
 
 
 JsonSlurper jsonSlurper = new JsonSlurper()
-File srcF4ObjectsJson = new File('/home/sean/work/lucidworks/Intel/exports/F4.lda-acls.amrdomain.json')
+File srcF4ObjectsJson = new File('/home/sean/work/lucidworks/Intel/exports/objects.F4.json')
 Map f4Objects = jsonSlurper.parse(srcF4ObjectsJson)
 log.info "Original Json:\n\t\t${f4Objects.keySet()}"
 
@@ -23,8 +23,9 @@ File srcF5ObjectsJson = new File('/home/sean/work/lucidworks/Intel/exports/objec
 Map f5Objects = jsonSlurper.parse(srcF5ObjectsJson)
 log.info "Altered Json:\n\t\t${f5Objects.keySet()})"
 
-CompareObjectsResults objectsResults = new CompareObjectsResults("ldap-acls", f4Objects, f5Objects)
-log.info "Results: ${objectsResults.toString()}"
+
+FusionObjectComparator comparator = new FusionObjectComparator('dataSources', f4Objects.objects.dataSources, f5Objects.objects.dataSources)
+log.info "Results: ${comparator.toString()}"
 
 
 log.info "Done...?"

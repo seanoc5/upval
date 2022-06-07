@@ -1,4 +1,4 @@
-package misc
+package misc.compare
 
 import com.lucidworks.ps.compare.FusionApplicationComparator
 import com.lucidworks.ps.fusion.Application

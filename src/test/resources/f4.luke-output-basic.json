@@ -1,0 +1,73 @@
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":0},
+  "index":{
+    "numDocs":2,
+    "maxDoc":2,
+    "deletedDocs":0,
+    "indexHeapUsageBytes":-1,
+    "version":10,
+    "segmentCount":1,
+    "current":false,
+    "hasDeletions":false,
+    "directory":"org.apache.lucene.store.NRTCachingDirectory:NRTCachingDirectory(MMapDirectory@/opt/lucidworks/fusion/4.2.6/data/solr/test_shard1_replica_n1/data/index lockFactory=org.apache.lucene.store.NativeFSLockFactory@4d129a7d; maxCacheMB=48.0 maxMergeSizeMB=4.0)",
+    "segmentsFile":"segments_2",
+    "segmentsFileSizeInBytes":-1,
+    "userData":{
+      "commitTimeMSec":"1654025564700",
+      "commitCommandVer":"1734371510529818624"},
+    "lastModified":"2022-05-31T19:32:44.700Z"},
+  "fields":{
+    "_text_":{
+      "type":"text_general",
+      "schema":"IT--UM------------",
+      "index":"(unstored field)",
+      "docs":2},
+    "_version_":{
+      "type":"plong",
+      "schema":"---D--------------"},
+    "body":{
+      "type":"text_general",
+      "schema":"ITS-UM------------",
+      "index":"ITS---------------",
+      "docs":2},
+    "body_str":{
+      "type":"strings",
+      "schema":"---D-M-----------l",
+      "dynamicBase":"*_str"},
+    "id":{
+      "type":"string",
+      "schema":"I-SDU-----OF-----l",
+      "index":"ITS-------OF------",
+      "docs":2},
+    "title":{
+      "type":"text_general",
+      "schema":"ITS-UM------------",
+      "index":"ITS---------------",
+      "docs":2},
+    "title_str":{
+      "type":"strings",
+      "schema":"---D-M-----------l",
+      "dynamicBase":"*_str"}},
+  "info":{
+    "key":{
+      "I":"Indexed",
+      "T":"Tokenized",
+      "S":"Stored",
+      "D":"DocValues",
+      "U":"UnInvertible",
+      "M":"Multivalued",
+      "V":"TermVector Stored",
+      "o":"Store Offset With TermVector",
+      "p":"Store Position With TermVector",
+      "y":"Store Payloads With TermVector",
+      "O":"Omit Norms",
+      "F":"Omit Term Frequencies & Positions",
+      "P":"Omit Positions",
+      "H":"Store Offsets with Positions",
+      "L":"Lazy",
+      "B":"Binary",
+      "f":"Sort Missing First",
+      "l":"Sort Missing Last"},
+    "NOTE":"Document Frequency (df) is not updated when a document is marked for deletion.  df values include deleted documents."}}

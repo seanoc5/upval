@@ -1,4 +1,4 @@
-package misc
+package misc.old
 
 import com.lucidworks.ps.compare.ComparisonResult
 import com.lucidworks.ps.compare.SolrConfigComparator as SCC
@@ -8,6 +8,7 @@ import org.apache.log4j.Logger
 import java.nio.file.Path
 import java.nio.file.Paths
 
+// deprecated -- old approach -- remove me?
 Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name}"
 

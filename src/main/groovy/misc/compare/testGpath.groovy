@@ -1,4 +1,4 @@
-package misc
+package misc.compare
 
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger

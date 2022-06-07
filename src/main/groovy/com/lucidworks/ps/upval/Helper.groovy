@@ -128,7 +128,7 @@ class Helper {
 
     static def flatten(def object, int level = 0) {
         List entries = []
-        log.info "$level) flatten object: $object..."
+        log.debug "$level) flatten object: $object..."
         if (object instanceof Map) {
             def keyset = object.keySet()
             Map map = (Map) object

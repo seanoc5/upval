@@ -1,4 +1,4 @@
-package misc
+package misc.compare
 
 import groovy.json.JsonSlurper
 import io.restassured.path.json.JsonPath

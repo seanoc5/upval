@@ -5,6 +5,9 @@ import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
 
+/**
+ * deprecated?? old approach -- remove me?
+ */
 class SolrConfigComparator {
     static final Logger log = Logger.getLogger(this.class.name);
 

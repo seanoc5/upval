@@ -1,4 +1,4 @@
-package misc
+package misc.compare
 
 import com.jayway.jsonpath.*
 import com.jayway.jsonpath.internal.path.PathCompiler

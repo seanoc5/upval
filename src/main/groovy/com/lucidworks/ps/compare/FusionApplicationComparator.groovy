@@ -59,10 +59,10 @@ class FusionApplicationComparator {
 
                         collectionResults.sharedIds.each { String id ->
                             log.info "\t\tComparing shared object with id: $id"
-                            def srcObject = leftThings.find { it.id == id }
-                            def destObject = rightThings.find { it.id == id }
+                            def leftObject = leftThings.find { it.id == id }
+                            def rightObject = rightThings.find { it.id == id }
 
-                            CompareObjectsResults objectsResults = compareObjects(srcObject, destObject, thingType)
+                            CompareObjectsResults objectsResults = compareObjects(leftObject, rightObject, thingType)
                             collectionResults.objectsResults[id] = objectsResults
                             log.debug "Compare results: $objectsResults"
                         }
@@ -104,18 +104,31 @@ class FusionApplicationComparator {
         return results
     }
 
-    CompareObjectsResults compareObjects(def src, def dest, String collectionType) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, src, dest)
-        def leftKeyPaths = Helper.flatten(src, 1)
-        def rightKeyPaths = Helper.flatten(dest, 1)
+    /**
+     * Compare to groups of objects (fusion app objects?).
+     * These typically are maps, but can contain lists
+     * @todo -- check list and gpath accessor functionality...
+     * @param leftObjects
+     * @param rightObjects
+     * @param collectionType
+     * @return
+     */
+    CompareObjectsResults compareObjects(def leftObjects, def rightObjects, String collectionType) {
+        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, leftObjects, rightObjects)
+        def leftKeyPaths = Helper.flatten(leftObjects, 1)
+        def rightKeyPaths = Helper.flatten(rightObjects, 1)
 
         def leftOnly = leftKeyPaths - rightKeyPaths
         if (leftOnly) {
-            log.warn "Left only ids: ${leftOnly}"
+            log.info "\t\t$collectionType) Left only ids: ${leftOnly}"
+        } else {
+            log.info "\t\t$collectionType) All left ids match right ids"
         }
         def rightOnly = rightKeyPaths - leftKeyPaths
         if (rightOnly) {
-            log.warn "Right only ids: ${rightOnly}"
+            log.info "\t\t$collectionType) Right only ids: ${rightOnly}"
+        } else {
+            log.info "\t\t$collectionType) All right ids match left ids"
         }
         objectsResults.leftOnlyKeys = leftOnly
         objectsResults.rightOnlyKeys = rightOnly
@@ -123,20 +136,35 @@ class FusionApplicationComparator {
         def shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
         shared.each {
-            log.debug "Compare values: $it (more code here....)"
-            def valueComparisons = compareValues(it, it)
+            log.warn "\t\t$collectionType) Compare values: $it (more code here....)"
+            def left = leftObjects[it]
+            def rightChild = rightObjects[it]
+            def valueComparisons = compareValues(left, rightChild)
         }
 
         return objectsResults
     }
 
-    def compareValues(def left, def right) {
+    Difference compareValues(def left, def right, String objectType ) {
         //todo -- add logic to evaluate values of shared keys
+        String diffType = ''
+        String description = ''
         if (left == right) {
             log.debug "Values are the same: left:($left) and right:($right)"
+            diffType = 'EQUAL'
         } else {
+            String leftClassName = left.class.name
+            String rightClassName = right.class.name
+
+            if(leftClassName==rightClassName){
+                log.info "Same class names (which is a good start..): $leftClassName"
+            } else {
+                diffType = 'Different Classes'
+                description = "Left class: [$leftClassName] differs from Right class: [$rightClassName]"
+            }
             log.info "Values are the Different: left:($left) and right:($right)"
         }
+        Difference diff = new Difference(objectType, diffType, description)
         log.debug "\t\tMORE CODE here: compareValues..."
     }
 

@@ -1,4 +1,4 @@
-package misc
+package misc.compare
 
 import com.lucidworks.ps.clients.FusionClient
 //import com.lucidworks.ps.upval.Fusion4ObjectTransformer

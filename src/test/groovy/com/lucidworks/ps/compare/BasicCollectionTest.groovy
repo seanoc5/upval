@@ -4,9 +4,13 @@ import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
 import spock.lang.Specification
 
+/**
+ * Less of a test suite, more of seeing how things can work...
+ */
 class BasicCollectionTest extends Specification {
 
-    def "Flatten"() {
+
+    def "simple Flatten functionality demo"() {
         given:
         Map leftMap = [top1: 'first top node',
                        top2: [1, 2, 3],
@@ -36,7 +40,7 @@ class BasicCollectionTest extends Specification {
     }
 
 
-    def "Flatten demo files"() {
+    def "simple demo of 'Flatten' with files"() {
         given:
         XmlParser parser = new XmlParser()
         def leftResource = getClass().getResourceAsStream('/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema')
