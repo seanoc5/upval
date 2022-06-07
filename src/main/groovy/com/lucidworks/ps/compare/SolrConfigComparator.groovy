@@ -38,8 +38,13 @@ class SolrConfigComparator {
         return comparisonResult
     }
 
+    def findUnusedSchemaThings(Map<String, Object> schema, Map<String, Object> lukeResults){
+        log.info "Analyze schema and luke (for actual fields used as a snapshot in time)..."
+        def fields = schema.findAll {}
+    }
+
     /**
-     * deprecated? first pass, consider removing...
+     * @deprecated? first pass, consider removing...
      * @param templateSchema
      * @param deployedSchema
      * @return
