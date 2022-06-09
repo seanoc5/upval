@@ -10,6 +10,10 @@ import java.util.regex.Pattern
  */
 class SolrConfigComparator {
     static final Logger log = Logger.getLogger(this.class.name);
+    public static final Map<String, Pattern> ATTR_NAMES_DEFAULT = ['':~/(name|id|source|dest|type|class)/]
+//    public static final Map<String, Pattern> ATTR_NAMES_SCHEMA =
+//    public static final Map<String, Pattern>  =
+//    public static final Map<String, Pattern>  =
 
     /**
      * Compare solr configs (only schema has been tested at the moment)
@@ -19,7 +23,7 @@ class SolrConfigComparator {
      * @param attribsForPath    a map of node name and pattern to include identifying attributes in the 'path' for comparison, empty string is catch-all/default
      * @return
      */
-    static def compareXmlObjects(Node left, Node right, Map<String, Pattern> attribsForPath = ['':~/(name|id|source|dest|type|class)/]){
+    static def compareXmlObjects(Node left, Node right, Map<String, Pattern> attribsForPath = ATTR_NAMES_DEFAULT){
         List<Map<String, Object>> leftPaths = Helper.flattenXmlPathWithAttributes(left, 0, '/', attribsForPath)
         List<String> leftNames = leftPaths.collect{it.name}
         List<Map<String, Object>> rightPaths = Helper.flattenXmlPathWithAttributes(right, 0, '/', attribsForPath)
