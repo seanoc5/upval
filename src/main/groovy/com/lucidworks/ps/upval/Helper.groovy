@@ -74,6 +74,14 @@ class Helper {
         return pathList
     }
 
+    /**
+     * experimenting with flattening a thing (java collection?) and returning path PLUS object name
+     * todo change generic in return to string,string...?
+     *
+     * @param object
+     * @param level
+     * @return  flattened path(string) plus object name (string)
+     */
     static Map<String, Object> flattenPlus(def object, int level = 0) {
         Map<String, Object> entries = [:]
         log.info "$level) flattenPlus object: $object..."
@@ -126,8 +134,8 @@ class Helper {
     }
 
 
-    static def flatten(def object, int level = 0) {
-        List entries = []
+    static List<String> flatten(def object, int level = 0) {
+        List<String> entries = []
         log.debug "$level) flatten object: $object..."
         if (object instanceof Map) {
             def keyset = object.keySet()
@@ -139,7 +147,7 @@ class Helper {
                     level++
                     def children = flatten(value, level)
                     children.each { String child ->
-                        entries << key + "." + child
+                        entries << "${key}.${child}".toString()
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
