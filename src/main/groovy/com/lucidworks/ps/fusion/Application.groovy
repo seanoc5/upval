@@ -55,7 +55,7 @@ class Application {
         }
 
         if(objects.fusionApps) {
-            log.info "We have fusion apps (F4+??)"
+            log.info "We have a fusion app export/zip (assume fusion 4 and above...)"
             fusionApps = objects.fusionApps
             if (fusionApps.size() == 1) {
                 appName = objects.fusionApps.name
