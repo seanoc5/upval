@@ -115,8 +115,8 @@ class FusionApplicationComparator {
      */
     CompareObjectsResults compareObjects(def leftObjects, def rightObjects, String collectionType) {
         CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, leftObjects, rightObjects)
-        def leftKeyPaths = Helper.flatten(leftObjects, 1)
-        def rightKeyPaths = Helper.flatten(rightObjects, 1)
+        List<String> leftKeyPaths = Helper.flatten(leftObjects, 1)
+        List<String> rightKeyPaths = Helper.flatten(rightObjects, 1)
 
         def leftOnly = leftKeyPaths - rightKeyPaths
         if (leftOnly) {
@@ -133,13 +133,13 @@ class FusionApplicationComparator {
         objectsResults.leftOnlyKeys = leftOnly
         objectsResults.rightOnlyKeys = rightOnly
 
-        def shared = leftKeyPaths.intersect(rightKeyPaths)
+        List<String> shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
         shared.each {
-            log.warn "\t\t$collectionType) Compare values: $it (more code here....)"
-            def left = leftObjects[it]
+            log.info "\t\t$collectionType) Compare values: $it (more code here....)"
+            def leftChild = leftObjects[it]
             def rightChild = rightObjects[it]
-            def valueComparisons = compareValues(left, rightChild)
+            def valueComparisons = compareValues(leftChild, rightChild, collectionType)
         }
 
         return objectsResults
@@ -150,7 +150,7 @@ class FusionApplicationComparator {
         String diffType = ''
         String description = ''
         if (left == right) {
-            log.debug "Values are the same: left:($left) and right:($right)"
+            description = "Values are the same: left:($left) and right:($right)"
             diffType = 'EQUAL'
         } else {
             String leftClassName = left.class.name
@@ -158,24 +158,31 @@ class FusionApplicationComparator {
 
             if(leftClassName==rightClassName){
                 log.info "Same class names (which is a good start..): $leftClassName"
+                description =  "Values are the Different: left:($left) and right:($right)"
             } else {
                 diffType = 'Different Classes'
                 description = "Left class: [$leftClassName] differs from Right class: [$rightClassName]"
             }
-            log.info "Values are the Different: left:($left) and right:($right)"
         }
         Difference diff = new Difference(objectType, diffType, description)
-        log.debug "\t\tMORE CODE here: compareValues..."
+        log.info diff
+        return diff
+    }
+
+
+    def getDifferences(){
+        Map differences = [collectionComparisons:collectionComparisons, objectComparisons:objectComparisons]
+
     }
 
     String toString() {
-        def differentObjects = objectComparisons.findAll { String id, CompareObjectsResults objectsResults ->
-            objectsResults.isFunctionallyDifferent()
+        def differentObjects = objectComparisons.findAll { String id, CompareObjectsResults compareObjectsResults ->
+            compareObjectsResults.isFunctionallyDifferent()
         }
         String indentA = '\t\t'
         StringBuilder sb = new StringBuilder()
-        sb.append("Collection type: $collectionType\n")
-        sb.append(collectionComparisons.toString(indentA) + "\n")
+//        sb.append("Collection type: $collectionType\n")
+//        sb.append(collectionComparisons.toString(indentA) + "\n")
 
         String indentB = '\t\t\t\t'
         differentObjects.each { String id, CompareObjectsResults objectResults ->
@@ -184,10 +191,6 @@ class FusionApplicationComparator {
         return sb.toString()
     }
 
-    def getDifferences(){
-        Map differences = [collectionComparisons:collectionComparisons, objectComparisons:objectComparisons]
-
-    }
 }
 
 

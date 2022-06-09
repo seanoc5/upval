@@ -11,6 +11,8 @@ class Difference {
     String differenceType           // elements/structure/keys, values, order
     String description
 
+    // todo -- consider include pattern of value differences to ignore here?? or in comparator?
+
     Difference(String objectType, String differenceType, String description) {
         this.objectType = objectType
         this.differenceType = differenceType

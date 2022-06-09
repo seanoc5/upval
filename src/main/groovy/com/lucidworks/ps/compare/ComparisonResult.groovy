@@ -1,5 +1,8 @@
 package com.lucidworks.ps.compare
 
+/**
+ * @deprecated
+ */
 class ComparisonResult {
     String compareLabel = 'unknown'
     Boolean equal
