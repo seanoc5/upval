@@ -1,0 +1,35 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 0
+  },
+  "index": {
+    "numDocs": 2,
+    "maxDoc": 2,
+    "lastModified": "2022-05-31T19:32:44.700Z"
+  },
+  "fields": {
+    "title": {
+      "type": "text_general",
+      "schema": "IT--UM------------",
+      "index": "(unstored field)",
+      "docs": 2
+    },
+    "_version_": {
+      "type": "plong",
+      "schema": "---D--------------"
+    },
+    "body": {
+      "type": "text_general",
+      "schema": "ITS-UM------------",
+      "index": "ITS---------------",
+      "docs": 2
+    },
+    "fubar": {
+      "type": "text_general",
+      "schema": "ITS-UM------------",
+      "index": "ITS---------------",
+      "docs": 0
+    }
+  }
+}
