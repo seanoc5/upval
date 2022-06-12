@@ -13,29 +13,29 @@ import org.apache.log4j.Logger
 class FusionObjectComparator {
     Logger log = Logger.getLogger(this.class.name);
 
-    String collectionType
+    String compareLabel
     List<Map> left = []
     List<Map> right = []
     CompareCollectionResults compareCollections
     Map<String, CompareObjectsResults> compareObjectsResultsMap = [:]
 
-    FusionObjectComparator(String collectionType, List<Map<String, Object>> left, List<Map<String, Object>> right) {
-        log.info "Starting collection (type: $collectionType) comparison with (${left.size()}) left objects, and (${right.size()}) right objections..."
-        this.collectionType = collectionType
+    FusionObjectComparator(String compareLabel, List<Map<String, Object>> left, List<Map<String, Object>> right) {
+        log.info "Starting collection (type: $compareLabel) comparison with (${left.size()}) left objects, and (${right.size()}) right objections..."
+        this.compareLabel = compareLabel
         this.left = left
         this.right = right
         List ignoreValueDifferences = []
-        compareCollections = new CompareCollectionResults(collectionType, left, this.right, ignoreValueDifferences)
+        compareCollections = new CompareCollectionResults(compareLabel, left, this.right, ignoreValueDifferences)
 //        compare()
     }
 
-    FusionObjectComparator(String collectionType, Map<String, Object> left, Map<String, Object> right) {
-        log.info "Starting collection (type: $collectionType) comparison with (${left.keySet()}) left keys, and (${right.keySet()}) right keys..."
-        this.collectionType = collectionType
+    FusionObjectComparator(String compareLabel, Map<String, Object> left, Map<String, Object> right) {
+        log.info "Starting collection (type: $compareLabel) comparison with (${left.keySet()}) left keys, and (${right.keySet()}) right keys..."
+        this.compareLabel = compareLabel
         this.left = left
         this.right = right
         List ignoreValueDifferences = []
-        compareCollections = new CompareCollectionResults(collectionType, left, this.right, ignoreValueDifferences)
+        compareCollections = new CompareCollectionResults(compareLabel, left, this.right, ignoreValueDifferences)
     }
 
 
@@ -59,7 +59,7 @@ class FusionObjectComparator {
     Integer compareItemCounts() {
         compareCollections.countDifference = left.size() - right.size()
         if(compareCollections.countDifference != 0){
-            log.info "\t\t(${this.collectionType}) Count difference: ${compareCollections.countDifference}"
+            log.info "\t\t(${this.compareLabel}) Count difference: ${compareCollections.countDifference}"
         }
         return compareCollections.countDifference
     }
@@ -70,11 +70,11 @@ class FusionObjectComparator {
 
         compareCollections.leftOnlyIds = leftIds - rightIds
         if(compareCollections.leftOnlyIds){
-            log.info "${this.collectionType} left only ids: ${compareCollections.leftOnlyIds}"
+            log.info "${this.compareLabel} left only ids: ${compareCollections.leftOnlyIds}"
         }
         compareCollections.rightOnlyIds = rightIds - leftIds
         if(compareCollections.rightOnlyIds){
-            log.info "${this.collectionType} d only ids: ${compareCollections.leftOnlyIds}"
+            log.info "${this.compareLabel} d only ids: ${compareCollections.leftOnlyIds}"
         }
         compareCollections.sharedIds = leftIds.intersect(rightIds)
 
@@ -85,7 +85,7 @@ class FusionObjectComparator {
     }
 
     CompareObjectsResults compareObjects(def left, def right) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, left, right)
+        CompareObjectsResults objectsResults = new CompareObjectsResults(compareLabel, left, right)
         def leftKeyPaths = Helper.flatten(left, 1)
         def rightKeyPaths = Helper.flatten(right, 1)
 
@@ -106,7 +106,7 @@ class FusionObjectComparator {
         }
         String indentA = '\t\t'
         StringBuilder sb = new StringBuilder()
-        sb.append("Collection type: $collectionType\n")
+        sb.append("Collection type: $compareLabel\n")
         sb.append(compareCollections.toString(indentA) + "\n")
 
         String indentB = '\t\t\t\t'
