@@ -61,7 +61,7 @@ class FusionApplicationComparator {
                             def leftObject = leftThings.find { it.id == id }
                             def rightObject = rightThings.find { it.id == id }
 
-                            CompareObjectsResults objectsResults = compareObjects(leftObject, rightObject, thingType)
+                            CompareObjectsResults objectsResults = compareObjects(thingType, leftObject, rightObject)
                             collectionResults.objectsResults[id] = objectsResults
                             log.debug "Compare results: $objectsResults"
                         }
@@ -109,25 +109,25 @@ class FusionApplicationComparator {
      * @todo -- check list and gpath accessor functionality...
      * @param leftObjects
      * @param rightObjects
-     * @param collectionType
+     * @param compareLabel
      * @return
      */
-    CompareObjectsResults compareObjects(def leftObjects, def rightObjects, String collectionType) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, leftObjects, rightObjects)
+    CompareObjectsResults compareObjects(String compareLabel, def leftObjects, def rightObjects) {
+        CompareObjectsResults objectsResults = new CompareObjectsResults(compareLabel, leftObjects, rightObjects)
         List<String> leftKeyPaths = Helper.flatten(leftObjects, 1)
         List<String> rightKeyPaths = Helper.flatten(rightObjects, 1)
 
         def leftOnly = leftKeyPaths - rightKeyPaths
         if (leftOnly) {
-            log.info "\t\t$collectionType) Left only ids: ${leftOnly}"
+            log.info "\t\t$compareLabel) Left only ids: ${leftOnly}"
         } else {
-            log.info "\t\t$collectionType) All left ids match right ids"
+            log.info "\t\t$compareLabel) All left ids match right ids"
         }
         def rightOnly = rightKeyPaths - leftKeyPaths
         if (rightOnly) {
-            log.info "\t\t$collectionType) Right only ids: ${rightOnly}"
+            log.info "\t\t$compareLabel) Right only ids: ${rightOnly}"
         } else {
-            log.info "\t\t$collectionType) All right ids match left ids"
+            log.info "\t\t$compareLabel) All right ids match left ids"
         }
         objectsResults.leftOnlyKeys = leftOnly
         objectsResults.rightOnlyKeys = rightOnly
@@ -135,16 +135,24 @@ class FusionApplicationComparator {
         List<String> shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
         shared.each {
-            log.info "\t\t$collectionType) Compare values: $it (more code here....)"
+            log.info "\t\t$compareLabel) Compare values: $it (more code here....)"
             def leftChild = leftObjects[it]
             def rightChild = rightObjects[it]
-            def valueComparisons = compareValues(leftChild, rightChild, collectionType)
+            def valueComparisons = compareValues(leftChild, rightChild, compareLabel)
         }
 
         return objectsResults
     }
 
-    Difference compareValues(def left, def right, String objectType ) {
+    /**
+     * compare the given objects for functional equality
+     * @param left
+     * @param right
+     * @param objectType
+     * @return
+     * @deprecated -- look at BaseComparator.compareValues() for preferred approach (?)
+     */
+    Comparison compareValues(def left, def right, String objectType ) {
         //todo -- add logic to evaluate values of shared keys
         String diffType = ''
         String description = ''
@@ -163,7 +171,7 @@ class FusionApplicationComparator {
                 description = "Left class: [$leftClassName] differs from Right class: [$rightClassName]"
             }
         }
-        Difference diff = new Difference(objectType, diffType, description)
+        Comparison diff = new Comparison(objectType, diffType, description)
         log.info diff
         return diff
     }
