@@ -10,7 +10,6 @@ import org.apache.log4j.Logger
  * @created :   5/23/22, Monday
  * @description: helper class to compare two different Fusion Applications (or parts of)
  */
-
 class FusionApplicationComparator {
     Logger log = Logger.getLogger(this.class.name);
 

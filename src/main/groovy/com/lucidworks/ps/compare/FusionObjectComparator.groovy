@@ -10,7 +10,6 @@ import org.apache.log4j.Logger
  * @description: helper class to compare two different Lists of datalefts
  * we use the terminology left and right losely, but the aim is to help understand the difference reporting
  */
-
 class FusionObjectComparator {
     Logger log = Logger.getLogger(this.class.name);
 
@@ -27,8 +26,18 @@ class FusionObjectComparator {
         this.right = right
         List ignoreValueDifferences = []
         compareCollections = new CompareCollectionResults(collectionType, left, this.right, ignoreValueDifferences)
-        compare()
+//        compare()
     }
+
+    FusionObjectComparator(String collectionType, Map<String, Object> left, Map<String, Object> right) {
+        log.info "Starting collection (type: $collectionType) comparison with (${left.keySet()}) left keys, and (${right.keySet()}) right keys..."
+        this.collectionType = collectionType
+        this.left = left
+        this.right = right
+        List ignoreValueDifferences = []
+        compareCollections = new CompareCollectionResults(collectionType, left, this.right, ignoreValueDifferences)
+    }
+
 
     CompareCollectionResults compare() {
         Integer diffCount = compareItemCounts()
@@ -38,8 +47,8 @@ class FusionObjectComparator {
         compareCollections.sharedIds.each { String id ->
             log.info "Comparing shared object with id: $id"
             def leftObject = left.find {it.id == id}
-            def destObject = right.find{it.id == id}
-            CompareObjectsResults objectsResults = compareObjects(leftObject, destObject)
+            def rightObject = right.find{it.id == id}
+            CompareObjectsResults objectsResults = compareObjects(leftObject, rightObject)
             compareObjectsResultsMap[id] = objectsResults
             log.debug "Compare results: $objectsResults"
         }
@@ -75,17 +84,17 @@ class FusionObjectComparator {
         return diffMap
     }
 
-    CompareObjectsResults compareObjects(def left, def dest) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, left, dest)
+    CompareObjectsResults compareObjects(def left, def right) {
+        CompareObjectsResults objectsResults = new CompareObjectsResults(collectionType, left, right)
         def leftKeyPaths = Helper.flatten(left, 1)
-        def destKeyPaths = Helper.flatten(dest, 1)
+        def rightKeyPaths = Helper.flatten(right, 1)
 
-        def leftOnly = leftKeyPaths - destKeyPaths
-        def destOnly = destKeyPaths - leftKeyPaths
+        def leftOnly = leftKeyPaths - rightKeyPaths
+        def rightOnly = rightKeyPaths - leftKeyPaths
         objectsResults.leftOnlyKeys = leftOnly
-        objectsResults.rightOnlyKeys = destOnly
+        objectsResults.rightOnlyKeys = rightOnly
 
-        def shared = leftKeyPaths.intersect(destKeyPaths)
+        def shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
 
         return objectsResults

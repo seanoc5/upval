@@ -25,6 +25,7 @@ log.info "Altered Json:\n\t\t${f5Objects.keySet()})"
 
 
 FusionObjectComparator comparator = new FusionObjectComparator('dataSources', f4Objects.objects.dataSources, f5Objects.objects.dataSources)
+def comp = comparator.compare()
 log.info "Results: ${comparator.toString()}"
 
 

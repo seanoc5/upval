@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 /**
  * wrapper class to help with solr schema parsing and operations
  */
-class SolrSchema {
+class ManagedSchema {
     public static final Pattern OVERRIDE_FIELDNAMES = ~/id|_version_|_raw_content_|_root_/
     Logger log = Logger.getLogger(this.class.name);
     File sourceFile
@@ -21,17 +21,17 @@ class SolrSchema {
     Map<String, Map> lukeMap
     Map<String, Map> lukeFields
 
-    SolrSchema(File src) {
+    ManagedSchema(File src) {
         sourceFile = src
         parseSchema(src)
     }
 
-    SolrSchema(String src) {
+    ManagedSchema(String src) {
         lines = src.split('\n')
         parseSchema(src)
     }
 
-    SolrSchema(URL srcUrl) {
+    ManagedSchema(URL srcUrl) {
         sourceFile = new File(srcUrl.toURI())
         parseSchema(sourceFile)
         fieldTypes = collectFieldTypes()

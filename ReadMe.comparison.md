@@ -59,7 +59,17 @@ DEFAULTTHINGSTOCOMPARE = "configsets collections dataSources indexPipelines quer
 
 #### schema (managed-schema)
 
-#### solrconfig
+#### solrconfig.xml
+
+#### configsets
+Configsets are exported with an app export (f4+). It appears that only the config sets for the relevant app collections are exported with the app 
+
+*Todo -- (confirm?)*
+
+
+- all config sets
+- tree
+  - managed-schema
 
 
 ### Environment promotion (e.g. Dev to Staging)

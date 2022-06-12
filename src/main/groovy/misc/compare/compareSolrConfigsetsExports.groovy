@@ -19,7 +19,8 @@ Application leftApp = new Application(leftSource)
 File rightSource = new File(options.right)
 Application rightApp = new Application(rightSource)
 
-FusionApplicationComparator comparator = new FusionApplicationComparator(leftApp, rightApp, FusionApplicationComparator.DEFAULTTHINGSTOCOMPARE)
+List<String> thingsToCompare = ['configsets']
+FusionApplicationComparator comparator = new FusionApplicationComparator(leftApp, rightApp, thingsToCompare)
 log.info "show Comparator results: ${comparator.toString()}"
 
 log.info "done..."

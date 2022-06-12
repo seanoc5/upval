@@ -1,6 +1,7 @@
 package com.lucidworks.ps.compare
 
 import com.lucidworks.ps.upval.Helper
+import groovy.xml.XmlParser
 import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
@@ -14,6 +15,14 @@ class SolrConfigComparator {
 //    public static final Map<String, Pattern> ATTR_NAMES_SCHEMA =
 //    public static final Map<String, Pattern>  =
 //    public static final Map<String, Pattern>  =
+
+    static def compareXmlObjects(File left, File right, Map<String, Pattern> attribsForPath = ATTR_NAMES_DEFAULT){
+        XmlParser parser = new XmlParser()
+        Node leftSchema = parser.parse(left)
+        Node rightSchema = parser.parse(right)
+        compareXmlObjects(leftSchema, rightSchema)
+    }
+
 
     /**
      * Compare solr configs (only schema has been tested at the moment)
@@ -47,31 +56,4 @@ class SolrConfigComparator {
         def fields = schema.findAll {}
     }
 
-    /**
-     * @deprecated? first pass, consider removing...
-     * @param templateSchema
-     * @param deployedSchema
-     * @return
-     */
-    static ComparisonResult compareSchemaUniqueIds(Node templateSchema, Node deployedSchema) {
-        String label = 'Solr Unique IDs'
-        ComparisonResult result = null
-
-        NodeList keytempl = templateSchema.uniqueKey
-        NodeList keyDep = deployedSchema.uniqueKey
-        if (keytempl.size() == 1 && keyDep.size() == 1) {
-            Node uniqTemplate = keytempl[0]
-            String idTemplate = uniqTemplate.value()
-            Node uniqDep = keyDep[0]
-            String idDep = uniqDep.value()
-            if (idTemplate == idDep) {
-                result = new ComparisonResult(label, true, "Unique IDs match, template:$idTemplate  == Deployment: $idDep")
-            } else {
-                result = new ComparisonResult(label, false, "Unique IDs do NOT match, template:$idTemplate  == Deployment: $idDep")
-            }
-        } else {
-            result = new ComparisonResult(label, false, "unique key sizes do not match, template(${keytempl.size()}) != deployment (${keyDep.size()})")
-        }
-        return result
-    }
 }

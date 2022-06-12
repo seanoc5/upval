@@ -1,6 +1,6 @@
 package misc.compare
 
-
+import com.lucidworks.ps.compare.SolrConfigComparator
 import com.lucidworks.ps.upval.SolrComparatorArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.xml.XmlParser
@@ -24,10 +24,10 @@ Path rightPath = Paths.get(rightSource)
 log.info "Left: : $leftPath -- ${leftPath.toFile().exists()}"
 log.info "Right: : $rightPath -- ${rightPath.toFile().exists()}"
 
-Node xmlLeft = parser.parse(leftSource)
-Node xmlRight = parser.parse(rightSource)
+Node leftSchema = parser.parse(leftSource)
+Node rightSchema = parser.parse(rightSource)
 
-//ComparisonResult result = SCC.compareSchemaUniqueIds(templSchema,depSchema)
-//log.info "Unique ids comparison result: $result"
+def results = SolrConfigComparator.compareXmlObjects(leftSchema, rightSchema)
+
 log.info "done..."
 

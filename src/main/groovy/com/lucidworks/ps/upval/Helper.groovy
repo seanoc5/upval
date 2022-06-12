@@ -75,16 +75,16 @@ class Helper {
     }
 
     /**
-     * experimenting with flattening a thing (java collection?) and returning path PLUS object name
+     * experimenting with flattening a thing (java collection?) and returning path PLUS object metainfo (class name & level)
      * todo change generic in return to string,string...?
      *
      * @param object
      * @param level
      * @return  flattened path(string) plus object name (string)
      */
-    static Map<String, Object> flattenPlus(def object, int level = 0) {
+    static Map<String, Object> flattenPlusMeta(def object, int level = 0) {
         Map<String, Object> entries = [:]
-        log.info "$level) flattenPlus object: $object..."
+        log.debug "$level) flattenPlus meta-info: $object..."
         if (object instanceof Map) {
             def keyset = object.keySet()
             Map map = (Map) object
@@ -93,7 +93,7 @@ class Helper {
                 log.debug "\t" * level + "$level)Key: $key"
                 if (value instanceof Map || value instanceof List) {
                     level++
-                    Map<String, Object> children = flattenPlus(value, level)
+                    Map<String, Object> children = flattenPlusMeta(value, level)
                     children.each { String child, Object childObject ->
                         String path = key + "." + child
                         Map m = [level: level, objectType: childObject.getClass().name]
@@ -114,7 +114,7 @@ class Helper {
             list.eachWithIndex { def val, int counter ->
                 if (val instanceof Map || val instanceof List) {
                     level++
-                    def children = flattenPlus(val, level)
+                    def children = flattenPlusMeta(val, level)
                     children.each { String child ->
                         String path = "[${counter}].${child}"
                         entries[path] = [level: level, objectType: object.getClass().name]
@@ -124,6 +124,62 @@ class Helper {
                     log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
                     String path = counter
                     entries[path] = [level: level, objectType: object.getClass().name]
+                }
+            }
+            log.debug "done with list"
+        } else {
+            log.warn "$level) other?? $object"
+        }
+        return entries
+    }
+
+    /**
+     * Flatten object, get path plus object (reference?)
+     * @param nested object (list and/or map) to flatten
+     * @param level helper to track depth (is this helpful?)
+     * @return Map with flattened path(string) as key, and the given object as value
+     */
+    static Map<String, Object> flattenPlusObject(def object, int level = 0) {
+        Map<String, Object> entries = [:]
+        log.info "$level) flattenPlusObject: $object..."
+        if (object instanceof Map) {
+            def keyset = object.keySet()
+            Map map = (Map) object
+            keyset.each { String key ->
+                def value = map[key]
+                log.debug "\t" * level + "$level)Key: $key"
+                if (value instanceof Map || value instanceof List) {
+                    level++
+                    Map<String, Object> children = flattenPlusMeta(value, level)
+                    children.each { String child, Object childObject ->
+                        String path = key + "." + child
+                        entries[path] = value
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else {
+                    entries[key] = value
+                    log.debug "\t" * level + "\t\tLeaf node: $key"
+                }
+                log.debug "next..."
+            }
+            log.debug "$level) after collect entries"
+
+        } else if (object instanceof List) {
+            log.debug "\t" * level + "$level) List! $object"
+            List list = (List) object
+            list.eachWithIndex { def val, int counter ->
+                if (val instanceof Map || val instanceof List) {
+                    level++
+                    def children = flattenPlusMeta(val, level)
+                    children.each { String child ->
+                        String path = "[${counter}].${child}"
+                        entries[path] = val
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else {
+                    log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
+                    String path = counter
+                    entries[path] = val
                 }
             }
             log.debug "done with list"

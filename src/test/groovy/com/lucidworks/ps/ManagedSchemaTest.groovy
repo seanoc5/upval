@@ -1,6 +1,6 @@
 package com.lucidworks.ps
 
-import com.lucidworks.ps.solr.SolrSchema
+import com.lucidworks.ps.solr.ManagedSchema
 import spock.lang.Specification
 
 /**
@@ -10,7 +10,7 @@ import spock.lang.Specification
  * @description:
  */
 
-class SolrSchemaTest extends Specification {
+class ManagedSchemaTest extends Specification {
 
     def "parse schema fragment"() {
         given:
@@ -18,7 +18,7 @@ class SolrSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/luke-min.json')
 
         when:
-        SolrSchema schema = new SolrSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource)
         def lukeMap = schema.parseLukeOutput(lukeSource)
         def usedFields = schema.findUsedFieldsLuke()
         def unUsedFields = schema.findUnusedFields()
@@ -39,7 +39,7 @@ class SolrSchemaTest extends Specification {
         def schemaSource = getClass().getResource('/f4.basic.managed-schema.xml')
 
         when:
-        SolrSchema schema = new SolrSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource)
 
         then:
         schema.fieldTypes.size() == 64
@@ -53,7 +53,7 @@ class SolrSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        SolrSchema schema = new SolrSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource)
         def lukeMap = schema.parseLukeOutput(lukeSource)
 
         then:
@@ -69,7 +69,7 @@ class SolrSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        SolrSchema schema = new SolrSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource)
         def lukeMap = schema.parseLukeOutput(lukeSource)
         def usedFields = schema.findUsedFieldsLuke()
         def unUsedFields = schema.findUnusedFields()
@@ -82,5 +82,80 @@ class SolrSchemaTest extends Specification {
         usedFields.keySet().toList() == [ '_text_', '_version_', 'body', 'id', 'title']
         unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
 
+    }
+
+    def "ParseLukeOutput"() {
+    }
+
+    def "FindUsedFieldsLuke"() {
+    }
+
+    def "TestFindUsedFieldsLuke"() {
+    }
+
+    def "FindUnusedFields"() {
+    }
+
+    def "TestFindUnusedFields"() {
+    }
+
+    def "CollectFieldTypes"() {
+    }
+
+    def "CollectFields"() {
+    }
+
+    def "GetLog"() {
+    }
+
+    def "SetLog"() {
+    }
+
+    def "GetSourceFile"() {
+    }
+
+    def "SetSourceFile"() {
+    }
+
+    def "GetLines"() {
+    }
+
+    def "SetLines"() {
+    }
+
+    def "GetSchemaMap"() {
+    }
+
+    def "SetSchemaMap"() {
+    }
+
+    def "GetXmlSchema"() {
+    }
+
+    def "SetXmlSchema"() {
+    }
+
+    def "GetFieldTypes"() {
+    }
+
+    def "SetFieldTypes"() {
+    }
+
+    def "GetDefinedFields"() {
+    }
+
+    def "SetDefinedFields"() {
+    }
+
+    def "GetLukeMap"() {
+    }
+
+    def "SetLukeMap"() {
+    }
+
+    def "GetLukeFields"() {
+    }
+
+    def "SetLukeFields"() {
     }
 }

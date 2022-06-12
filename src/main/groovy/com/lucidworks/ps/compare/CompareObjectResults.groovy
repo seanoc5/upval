@@ -11,7 +11,7 @@ class CompareObjectsResults {
     List leftOnlyKeys = []
     List rightOnlyKeys = []
     List sharedKeys = []
-    def differentValues
+    List<Difference> differences
     boolean isDifferent
 
     CompareObjectsResults(String objectType, left, right) {
@@ -30,8 +30,8 @@ class CompareObjectsResults {
         if (leftOnlyKeys || rightOnlyKeys) {
             log.debug "Different by keys/properties"
             different = true
-        } else if (differentValues) {
-            log.debug "Different by keys values: $differentValues"
+        } else if (differences) {
+            log.debug "Different by keys values: $differences"
             different = true
         } else {
             different = false
