@@ -8,42 +8,40 @@ import spock.lang.Specification
  * Less of a test suite, more of seeing how things can work...
  */
 class BasicCollectionTest extends Specification {
-    Map leftMap = [top1: 'first top node',
-                   top2: [1, 2, 3],
-                   top3: [
-                           middle1: 'top3:middle1',
-                           middle2: [4, 5, 6],
-                           middle3: [
-                                   bottom1: 'top3:middle3:bottom1'
-                           ]]]
-    Map rightMap = [top1: 'first top node',
-                    top2: [1, 2, 3, 4],
-                    top3: [
-                            middle1: 'top3:middle1 plus change',
-                            middle2: [4, 5, 6],
-                            middle3: [
-                                    bottom1: 'top3:middle3:bottom1',
-                                    bottom2: 'new bottom element']]]
-
+    static final Map LEFT_MAP = [top1: 'first top node',
+                                        top2: [1, 2, 3],
+                                        top3: [
+                                               middle1: 'top3:middle1',
+                                               middle2: [4, 5, 6],
+                                               middle3: [
+                                                       bottom1: 'top3:middle3:bottom1'
+                                               ]]]
+    static final Map RIGHT_MAP = [top1: 'first top node',
+                                         top2: [1, 2, 3, 4],
+                                         top3: [
+                                                middle1: 'top3:middle1 plus change',
+                                                middle2: [4, 5, 6],
+                                                middle3: [
+                                                        bottom1: 'top3:middle3:bottom1',
+                                                        bottom2: 'new bottom element']]]
 
 
     def "flattenPlusMeta"() {
-        given:
         when:
-        def flatLeft = Helper.flattenPlusMeta(leftMap)
-        def flatRight = Helper.flattenPlusMeta(rightMap)
+        def leftFlatMap = Helper.flattenPlusMeta(LEFT_MAP)
+        def rightFlatMap = Helper.flattenPlusMeta(RIGHT_MAP)
 
         then:
-        flatLeft.size() == 9
-        flatRight.size() == 11
-        flatLeft == flatRight
+        leftFlatMap.size() == 9
+        rightFlatMap.size() == 11
+        leftFlatMap == rightFlatMap
     }
 
     def "flattenPlusObject"() {
         given:
         when:
-        def flatLeft = Helper.flattenPlusObject(leftMap)
-        def flatRight = Helper.flattenPlusObject(rightMap)
+        def flatLeft = Helper.flattenPlusObject(LEFT_MAP)
+        def flatRight = Helper.flattenPlusObject(RIGHT_MAP)
 
         then:
         flatLeft.size() == 9
@@ -61,8 +59,8 @@ class BasicCollectionTest extends Specification {
         def rightSchema = parser.parse(rightResource)
 
         when:
-        def flatLeft = Helper.flattenPlusMeta(leftMap)
-        def flatRight = Helper.flattenPlusMeta(rightMap)
+        def flatLeft = Helper.flattenPlusMeta(LEFT_MAP)
+        def flatRight = Helper.flattenPlusMeta(RIGHT_MAP)
 
         then:
         flatLeft.size() == 9
