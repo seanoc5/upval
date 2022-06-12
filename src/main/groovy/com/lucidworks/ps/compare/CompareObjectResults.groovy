@@ -5,20 +5,19 @@ import org.apache.log4j.Logger
 class CompareObjectsResults {
     Logger log = Logger.getLogger(this.class.name);
 
-    String objectType
+    String compareLabel
     def left
     def right
-    List leftOnlyKeys = []
-    List rightOnlyKeys = []
-    List sharedKeys = []
-    List<Difference> differences
-    boolean isDifferent
+    Collection leftOnlyKeys
+    Collection rightOnlyKeys
+    Collection sharedKeys
+    List<Comparison> differences = []
+    List<Comparison> similarities = []
 
-    CompareObjectsResults(String objectType, left, right) {
-        this.objectType = objectType
+    CompareObjectsResults(String compareLabel, left, right) {
+        this.compareLabel = compareLabel
         this.left = left
         this.right = right
-        this.isDifferent = isFunctionallyDifferent()
     }
 
     /**
