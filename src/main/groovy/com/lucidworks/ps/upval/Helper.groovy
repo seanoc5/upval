@@ -12,7 +12,7 @@ class Helper {
         String name = separator + node.name()
         def attributes = node.attributes()
         level++
-        log.info '\t'.multiply(level) + "$level) $name"
+        log.debug '\t'.multiply(level) + "$level) $name"
         List pathList = [name]
 //        node.childNodes().each { childNode ->
         node.children().each { childNode ->
@@ -141,7 +141,7 @@ class Helper {
      */
     static Map<String, Object> flattenPlusObject(def object, int level = 0) {
         Map<String, Object> entries = [:]
-        log.info "$level) flattenPlusObject: $object..."
+        log.debug "$level) flattenPlusObject: $object..."
         if (object instanceof Map) {
             def keyset = object.keySet()
             Map map = (Map) object
@@ -160,7 +160,6 @@ class Helper {
                     entries[key] = value
                     log.debug "\t" * level + "\t\tLeaf node: $key"
                 }
-                log.debug "next..."
             }
             log.debug "$level) after collect entries"
 
