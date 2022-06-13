@@ -37,4 +37,16 @@ class CompareObjectsResults {
         }
         return different
     }
+
+
+    @Override
+    public String toString() {
+        String diffs = differences.collect{"\n\t\t$it"}
+        return "CompareObjectsResults(${compareLabel})" +
+                "\n\tleftOnlyKeys(${leftOnlyKeys})" +
+                "\n\trightOnlyKeys:(${rightOnlyKeys})" +
+                "\n\tdifferences:(${diffs})" +
+                "\n\tsharedKeys count:(${sharedKeys.size()}) " +
+                "\n\tsimilarities:(${similarities})"
+    }
 }
