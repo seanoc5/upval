@@ -184,7 +184,9 @@ class FusionApplicationComparator {
 
     String toString() {
         def differentObjects = objectComparisons.findAll { String id, CompareObjectsResults compareObjectsResults ->
-            compareObjectsResults.isFunctionallyDifferent()
+            // todo -- switch to comparison and diffs
+//            compareObjectsResults.isFunctionallyDifferent()
+            compareObjectsResults.differences           // does this work? null and empty should be false here, meaning no differences
         }
         String indentA = '\t\t'
         StringBuilder sb = new StringBuilder()
