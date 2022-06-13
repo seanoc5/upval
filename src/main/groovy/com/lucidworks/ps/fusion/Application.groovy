@@ -23,7 +23,7 @@ class Application {
     List<Map> parsers
     List<Map> blobs
     List<Map> appkitApps
-    Map features
+    Map<String, List<Map>> features         // https://doc.lucidworks.com/fusion/5.5/333/collection-features-api
     List<Map> objectGroups
     List<Map> links
     List<Map> sparkJobs
