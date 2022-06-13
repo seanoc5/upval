@@ -35,7 +35,7 @@ class FusionObjectComparator {
         this.left = left
         this.right = right
         List ignoreValueDifferences = []
-        compareCollections = new CompareCollectionResults(compareLabel, left, this.right, ignoreValueDifferences)
+//        compareCollections = new CompareCollectionResults(compareLabel, left, this.right, ignoreValueDifferences)
     }
 
 
