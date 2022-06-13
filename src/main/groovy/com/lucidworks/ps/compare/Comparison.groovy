@@ -32,7 +32,7 @@ class Comparison {
 
     @Override
     public String toString() {
-        return "Compare:(${compareLabel}) [${differenceType.padLeft(20)}]:: ${description}"
+        return "Compare:(${compareLabel.padLeft(20)}) [${differenceType.padLeft(20)}]:: ${description}"
     }
 
     boolean isDifferent() {
