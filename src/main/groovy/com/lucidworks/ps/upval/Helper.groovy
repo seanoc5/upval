@@ -114,7 +114,7 @@ class Helper {
             list.eachWithIndex { def val, int counter ->
                 if (val instanceof Map || val instanceof List) {
                     level++
-                    def children = flattenPlusMeta(val, level)
+                    Map<String, Object> children = flattenPlusMeta(val, level)
                     children.each { String child ->
                         String path = "[${counter}].${child}"
                         entries[path] = [level: level, objectType: object.getClass().name]
@@ -143,17 +143,21 @@ class Helper {
         Map<String, Object> entries = [:]
         log.debug "$level) flattenPlusObject: $object..."
         if (object instanceof Map) {
-            def keyset = object.keySet()
+//            def keyset = object.keySet()
             Map map = (Map) object
-            keyset.each { String key ->
-                def value = map[key]
+            map.each { String key, Object value ->
                 log.debug "\t" * level + "$level)Key: $key"
                 if (value instanceof Map || value instanceof List) {
                     level++
-                    Map<String, Object> children = flattenPlusMeta(value, level)
+                    Map<String, Object> children = flattenPlusObject(value, level)
                     children.each { String child, Object childObject ->
                         String path = key + "." + child
-                        entries[path] = value
+                        if(childObject instanceof Map || childObject instanceof List){
+                            log.debug "skip this (${childObject.getClass().simpleName}"
+                            entries[path] = null
+                        } else {
+                            entries[path] = childObject
+                        }
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
@@ -167,17 +171,23 @@ class Helper {
             log.debug "\t" * level + "$level) List! $object"
             List list = (List) object
             list.eachWithIndex { def val, int counter ->
-                if (val instanceof Map || val instanceof List) {
+                if (val instanceof Map) {
                     level++
-                    def children = flattenPlusMeta(val, level)
-                    children.each { String child ->
-                        String path = "[${counter}].${child}"
-                        entries[path] = val
+                    def children = flattenPlusObject(val, level)
+                    children.each { String childName, Object childVal ->
+                        String path = "[${counter}].${childName}"
+                        log.info "What do we do here? $path [$childVal] -- Skip??"
+                        entries[path] = childVal
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
+                } else if(val instanceof List){
+                    String path = "[${counter}].${childName}"
+                    log.info "What do we do here? $path [$childVal] -- Skip??"
+                    entries[path] = childVal
+
                 } else {
                     log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
-                    String path = counter
+                    String path = "[${counter}]"
                     entries[path] = val
                 }
             }
