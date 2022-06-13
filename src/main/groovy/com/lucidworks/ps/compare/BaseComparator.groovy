@@ -18,6 +18,7 @@ import java.util.regex.Pattern
 class BaseComparator {
     Logger log = Logger.getLogger(this.class.name);
 
+    String compareLabel
     def left
     Map<String, Object> leftFlatMap
     Set<String> leftKeyPaths
@@ -39,15 +40,22 @@ class BaseComparator {
      * @param ignoreValueDifferences - an optional regex pattern for element names to skip comparing values (just interested in structure)
      * @param matchChildrenOrder - an optional regex pattern for element names to MATCH for comparing element order (default is order not relevant, but structure is)
      */
-    BaseComparator(def left, def right, Pattern ignoreValueDifferences = null, Pattern matchChildrenOrder = null) {
+    BaseComparator(String compareLabel, def left, def right, Pattern ignoreValueDifferences = null, Pattern matchChildrenOrder = null) {
         this.left = left
         this.right = right
+        this.compareLabel = compareLabel
         this.ignoreValueDifferences = ignoreValueDifferences
         this.matchChildrenOrder = matchChildrenOrder
+        String msg = "Constructor with Left object(${describeObject(left)}) and right object (${describeObject(right)})"
+        log.info msg
     }
 
-    CompareObjectsResults compare(String label) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(label, left, right)
+    CompareObjectsResults compare(String label = null) {
+        if(label){
+            // todo -- fixme, muddled constructor and compare() call, pick either constructor does compare, or compare() called explicitly with label.... this is a short-term hack...
+            this.compareLabel = label
+        }
+        CompareObjectsResults objectsResults = new CompareObjectsResults(this.compareLabel, left, right)
         leftFlatMap = Helper.flattenPlusObject(left, 1)
         leftKeyPaths = leftFlatMap.keySet()
 
@@ -58,40 +66,43 @@ class BaseComparator {
         rightOnlyKeys = rightKeyPaths - leftKeyPaths
         if (leftOnlyKeys) {
             objectsResults.leftOnlyKeys = leftOnlyKeys
-            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, "The LEFT object had these items which the right did not (structural diff): $leftOnlyKeys")
+            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
+//            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, "The LEFT object had these items which the right did not (structural diff): $leftOnlyKeys")
             objectsResults.differences << diff
         }
         objectsResults.rightOnlyKeys = rightOnlyKeys
         if (rightOnlyKeys) {
             objectsResults.rightOnlyKeys = rightOnlyKeys
-            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, "The RIGHT object had these items which the left did not (structural diff): $rightOnlyKeys")
+            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
+//            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, "The RIGHT object had these items which the left did not (structural diff): $rightOnlyKeys")
             objectsResults.differences << diff
         }
 
         def shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
         shared.each { String sharedItemPath ->
-            log.info "Compare objects: [${sharedItemPath}] "
+            log.debug "Compare objects: [${sharedItemPath}] "
             def leftItem = leftFlatMap[sharedItemPath]
             def rightItem = rightFlatMap[sharedItemPath]
             boolean ignoreValueDiffs = false
             boolean matchChildOrder = false
 
             if (leftItem instanceof Map) {
-                log.info "\t\t\t\tSkip comparing values for shared Map item (type: ${leftItem.getClass().simpleName}), sharedPath: $sharedItemPath"
+                log.debug "\t\t\t\tSkip comparing values for shared Map item (type: ${leftItem.getClass().simpleName}), sharedPath: $sharedItemPath"
             } else {
                 Comparison diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValueDiffs, matchChildOrder)
                 if (diff.isDifferent()) {
                     objectsResults.differences << diff
-                    log.info "\t\tAdd DIFFERENCE: $diff"
+                    log.debug "\t\tAdd DIFFERENCE: $diff"
                 } else {
                     objectsResults.similarities << diff
-                    log.info "\t\tAdd similarity: $diff"
+                    log.debug "\t\tAdd similarity: $diff"
                 }
             }
 
         }
 
+        log.info "Comparison results: ${objectsResults.toString()}"
         return objectsResults
     }
 
@@ -117,13 +128,15 @@ class BaseComparator {
             // todo -- more logic/refactoring here to focus oon the differences...
             if (left instanceof Map) {
                 log.warn "These left($left) and right ($right) are Maps ($leftClassName), we should not be comparing these here, let `BaseComparator` walk the collection and compare..."
+
             } else if (left instanceof List) {
                 diff = compareLists(compareLabel, left, right, matchChildOrder)
+
             } else {
                 boolean ignoreValues = (compareLabel ==~ ignoreValueDifferences)
                 // if comparison label matches ignore pattern, then don't compare values
                 if (ignoreValues) {
-                    log.info "[$compareLabel] ignoring values because label matches ignore pattern '$ignoreValueDifferences'"
+                    log.debug "[$compareLabel] ignoring values because label matches ignore pattern '$ignoreValueDifferences'"
                 }
                 diff = compareLeafThing(compareLabel, left, right, ignoreValues)
             }
@@ -151,7 +164,7 @@ class BaseComparator {
         String lstr = left.toString()
         String rstr = right.toString()
 
-        if (leftClassName.equalsIgnoreCase(rightClassName)) {
+        if (leftClassName.equals(rightClassName)) {
             if (lstr.equals(rstr)) {
                 description = "(toString()) Values are EQUAL: left:($lstr) == right:($rstr)"
                 diffType = Comparison.EQUAL
@@ -172,7 +185,7 @@ class BaseComparator {
             }
         }
         Comparison diff = new Comparison(compareLabel, diffType, description)
-        log.info "\t\t${diff.toString()}"
+        log.debug "\t\t${diff.toString()}"
         return diff
     }
 
@@ -204,11 +217,26 @@ class BaseComparator {
         return difference
     }
 
+    String describeObject(def object){
+        String desc
+        if(object instanceof Map){
+            Map m = (Map)object
+            def keys = m.keySet()
+            desc = "Map (${object.getClass().simpleName}) has (${keys.size()}) keys"
+        } else if(object instanceof List) {
+            List l = (List) object
+            desc = "List (${object.getClass().simpleName}) has (${l.size()}) items"
+        } else {
+            desc = "Object (${object.getClass().simpleName}) has value: (${object.toString})"
+        }
+    }
+/*
     Comparison compareMapValues(String compareLabel, Map left, Map right, Pattern ignoreValueDifferences) {
         String diffType, description
         log.warn "comparing Maps...??? Do we need this? Should be part of flatten... yes?"
         Comparison difference = new Comparison(compareLabel, diffType, description)
         return difference
     }
+*/
 
 }
