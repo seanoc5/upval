@@ -1,0 +1,66 @@
+{
+  "dataSource": {
+    "id": "demo_solr",
+    "created": "2020-09-21T00:22:24.093Z",
+    "modified": "2020-09-21T00:22:24.093Z",
+    "connector": "lucid.solr",
+    "type": "solr",
+    "pipeline": "_system",
+    "properties": {
+      "collection": "demo_signals_aggr",
+      "commit_on_finish": true,
+      "initial_mapping": {
+        "id": "lucid.solr",
+        "reservedFieldsMappingAllowed": false,
+        "retentionMappings": [],
+        "skip": false,
+        "translationMappings": [
+          {
+            "operation": "move",
+            "source": "_version_",
+            "target": "external_version_s"
+          }
+        ],
+        "type": "field-mapping",
+        "unmappedRule": {
+          "delete": false,
+          "fieldToCopyValuesTo": "",
+          "fieldToMoveValuesTo": "",
+          "keep": true,
+          "valueToAddToUnmappedFields": "",
+          "valueToSetOnUnmappedFields": ""
+        },
+        "updateMappings": []
+      },
+      "solr_base_url": "http://REPLACEME:8983/solr/",
+      "solr_field_list": "*",
+      "solr_page_size": 100,
+      "solr_query": "*:*",
+      "solr_request_handler": "/select",
+      "solr_sort_spec": "id asc",
+      "source_collection": "demo_signals_aggr",
+      "verify_access": true
+    }
+  },
+  "indexPipeline": {
+    "id": "_system",
+    "stages": [
+      {
+        "id": "solr-system",
+        "enforceSchema": true,
+        "fieldsList": false,
+        "dateFormats": [],
+        "params": [],
+        "bufferDocsForSolr": true,
+        "allowBlacklistedRequestParameters": false,
+        "type": "solr-index",
+        "skip": false,
+        "secretSourceStageId": "solr-system"
+      }
+    ],
+    "properties": {
+      "secretSourcePipelineId": "_system"
+    }
+  },
+  "parser": {}
+}

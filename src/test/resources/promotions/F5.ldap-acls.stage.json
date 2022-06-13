@@ -1,0 +1,27 @@
+{
+    "created": "2022-06-13T01:07:03.247Z",
+    "coreProperties": {
+        "someCoreProperty": "stage-value"
+    },
+    "modified": "2022-06-13T01:07:03.247Z",
+    "id": "my-test-ldap-acls",
+    "type": "lucidworks.ldap",
+    "properties": {
+        "security": {},
+        "searchProperties": {
+            "apiQueryRowLimit": 1000,
+            "userSearchProp": {
+                "crawlForUsers": true,
+                "userFilter": "(&(objectclass=user)(sAMAccountName=*))"
+            },
+            "followReferrals": false,
+            "groupSearchProp": {
+                "groupFilter": "(&(objectclass=group))",
+                "crawlForGroups": true
+            },
+            "useGlobalCatalog": false
+        },
+        "collection": "Search-stage"
+    },
+    "connector": "lucidworks.ldap"
+}
