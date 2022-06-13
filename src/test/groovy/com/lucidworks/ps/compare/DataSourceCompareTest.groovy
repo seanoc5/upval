@@ -9,7 +9,7 @@ import spock.lang.Specification
 class DataSourceCompareTest extends Specification {
 
 
-    def "compare similar F5 s3 datasources"() {
+    def "compare similar F5 s3 datasources with outdated FusionObjectComparator"() {
         given:
         JsonSlurper jsonSlurper = new JsonSlurper()
         def lfile = getClass().getResourceAsStream('/F5.s3.example.json')
@@ -25,6 +25,32 @@ class DataSourceCompareTest extends Specification {
 
         then:
         comparator
+    }
+
+    def "compare similar F5 s3 datasources with BaseComparator"() {
+        given:
+        String label = "compare similar F5 s3 datasources with BaseComparator"
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        def lfile = getClass().getResourceAsStream('/F5.s3.example.json')
+        Map left = jsonSlurper.parse(lfile)
+
+        def rfile = getClass().getResourceAsStream('/F5.s3.example2.json')
+        Map right = jsonSlurper.parse(rfile)
+
+        when:
+        BaseComparator comparator = new BaseComparator(label, left, right)
+        CompareObjectsResults results = comparator.compare()
+
+        then:
+        comparator.leftOnlyKeys.size()==0
+        comparator.rightOnlyKeys.size()==0
+
+        results.differences.size()==2
+        results.differences[0].differenceType==Comparison.DIFF_VALUES
+        results.differences[0].description=='Values are DIFFERENT: left:() and right:(proxy-dmz.intel.com:912)'
+        results.differences[1].differenceType==Comparison.DIFF_VALUES
+        results.differences[1].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
+
     }
 
 
