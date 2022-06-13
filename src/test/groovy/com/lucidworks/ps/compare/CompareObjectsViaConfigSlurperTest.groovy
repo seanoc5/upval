@@ -18,7 +18,8 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
         when:
         def left = config.leftobject
         def right = config.rightobject
-        BaseComparator comparator = new BaseComparator(left, right)
+        String label = "Simple object compare"
+        BaseComparator comparator = new BaseComparator(label, left, right)
         CompareObjectsResults results = comparator.compare('SimpleConfigObject')
 
         then:
@@ -29,6 +30,7 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
 
     def "Moderate object compare"() {
         given:
+        String label = "Moderate object compare"
         def configSource = getClass().getResource('/testObjects.config.groovy')
         ConfigSlurper slurper = new ConfigSlurper('moderate')     // get definitions from 'simple' environment
         def config = slurper.parse(configSource)
@@ -37,7 +39,7 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
         when:
         def left = config.leftobject
         def right = config.rightobject
-        BaseComparator comparator = new BaseComparator(left, right)
+        BaseComparator comparator = new BaseComparator(label, left, right)
         CompareObjectsResults results = comparator.compare('ModerateConfigObject')
 
         then:
@@ -62,7 +64,9 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
         when:
         def left = config.leftobject
         def right = config.rightobject
-        BaseComparator comparator = new BaseComparator(left, right)
+
+        String label = "Advanced object compare"
+        BaseComparator comparator = new BaseComparator(label, left, right)
         CompareObjectsResults results = comparator.compare('ModerateConfigObject')
 
         then:
