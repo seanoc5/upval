@@ -1,5 +1,12 @@
 # Comparison strategy/operations overview
 
+## Where to start
+### Unit tests
+- BaseComparatorTest.groovy
+  - generic object comparison 
+  - non-fusion, just comparing two hybrid maps (mixing map, list, and base objects such as strings and numbers)
+- DataSourceCompareTest.groovy
+
 ## flattened path comparisons
 "Flatten" the collection of objects (a 'slurped' json or xml configuration file or api response). 
 Do this for both 'left' and 'right' (source and destination) instances. 
