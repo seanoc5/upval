@@ -15,25 +15,26 @@ class BaseComparatorTest extends Specification {
             top1: 'first top node',
             top2: [1, 2, 3],
             top3: [
-                    middle1: 'top3:middle1',
+                    middle1: 'top3-middle1',
                     middle2: [4, 5, 6],
                     middle3: [
-                            bottom1: 'top3:middle3:bottom1'
+                            bottom1: 'top3-middle3-bottom1'
                     ]]]
     static final Map RIGHT_MAP = [
             top1: 'first top node',
             top2: [1, 2, 3, 4],
             top3: [
-                    middle1: 'top3:middle1 plus change',
+                    middle1: 'top3-middle1 plus change',
                     middle2: [4, 5, 6],
                     middle3: [
-                            bottom1: 'top3:middle3:bottom1',
+                            bottom1: 'top3-middle3-bottom1',
                             bottom2: 'new bottom element']]]
 
 
     def "Compare"() {
         given:
-        BaseComparator comparator = new BaseComparator(LEFT_MAP, RIGHT_MAP,)
+String label = 'Compare unit test'
+        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP,)
 
         when:
         CompareObjectsResults results = comparator.compare('GenericObjectMap')
@@ -42,5 +43,13 @@ class BaseComparatorTest extends Specification {
         results.leftOnlyKeys == null
 
         results.rightOnlyKeys.size() == 2
+
+        results.sharedKeys.size() == 9
+
+        results.differences.size() == 2
+        results.differences[0].differenceType == Comparison.DIFF_RIGHT_ONLY
+        results.differences[0].description == '[top2.3, top3.middle3.bottom2]'
+        results.differences[1].differenceType == Comparison.DIFF_VALUES
+        results.differences[1].description == 'Values are DIFFERENT: left:(top3-middle1) and right:(top3-middle1 plus change)'
     }
 }
