@@ -83,79 +83,21 @@ class ManagedSchemaTest extends Specification {
         unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
 
     }
+    def "check dynamic fields"() {
+        given:
+        def schemaSource = getClass().getResource('/f4.basic.managed-schema.xml')
+        def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
-    def "ParseLukeOutput"() {
+        when:
+        ManagedSchema schema = new ManagedSchema(schemaSource)
+        def dynamicFields = schema.dynamicFields
+        def lukeMap = schema.parseLukeOutput(lukeSource)
+        def unusedDynamic = schema.findUnusedDynamicfields(lukeMap)
+
+        then:
+        dynamicFields.size() == 68
+//        unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
+
     }
 
-    def "FindUsedFieldsLuke"() {
-    }
-
-    def "TestFindUsedFieldsLuke"() {
-    }
-
-    def "FindUnusedFields"() {
-    }
-
-    def "TestFindUnusedFields"() {
-    }
-
-    def "CollectFieldTypes"() {
-    }
-
-    def "CollectFields"() {
-    }
-
-    def "GetLog"() {
-    }
-
-    def "SetLog"() {
-    }
-
-    def "GetSourceFile"() {
-    }
-
-    def "SetSourceFile"() {
-    }
-
-    def "GetLines"() {
-    }
-
-    def "SetLines"() {
-    }
-
-    def "GetSchemaMap"() {
-    }
-
-    def "SetSchemaMap"() {
-    }
-
-    def "GetXmlSchema"() {
-    }
-
-    def "SetXmlSchema"() {
-    }
-
-    def "GetFieldTypes"() {
-    }
-
-    def "SetFieldTypes"() {
-    }
-
-    def "GetDefinedFields"() {
-    }
-
-    def "SetDefinedFields"() {
-    }
-
-    def "GetLukeMap"() {
-    }
-
-    def "SetLukeMap"() {
-    }
-
-    def "GetLukeFields"() {
-    }
-
-    def "SetLukeFields"() {
-    }
 }
