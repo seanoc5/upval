@@ -17,6 +17,7 @@ class ManagedSchema {
     Map schemaMap = [:]
     Node xmlSchema = null
     List<Node> fieldTypes
+    List<Node> dynamicFields
     List<Node> definedFields
     Map<String, Map> lukeMap
     Map<String, Map> lukeFields
@@ -36,6 +37,7 @@ class ManagedSchema {
         parseSchema(sourceFile)
         fieldTypes = collectFieldTypes()
         definedFields = collectFields()
+        dynamicFields = collectDynamicFields()
     }
 
 
@@ -48,7 +50,7 @@ class ManagedSchema {
             xmlSchema = parser.parse(src)
             schema = xmlSchema
         } else if (lines[0].contains('{')) {
-            log.info "File (${src} appears to be JSON, parse with JsonSlurper"
+            log.warn "File (${src} appears to be JSON, parse with JsonSlurper (untested code: Json source...!!!)"
             JsonSlurper slurper = new JsonSlurper()
             schemaMap = slurper.parse(src)
             schema = schemaMap
@@ -105,6 +107,8 @@ class ManagedSchema {
         return unused
     }
 
+    def findUnused
+
 
     def collectFieldTypes() {
         def fieldTypes = xmlSchema.'**'.findAll { Node node ->
@@ -118,5 +122,28 @@ class ManagedSchema {
             node.name() == 'field'
         }
         return fields
+    }
+
+    List<Node> collectDynamicFields() {
+        dynamicFields = xmlSchema.'**'.findAll { Node node ->
+            node.name() == 'dynamicField'
+        }
+    }
+
+    /**
+     * get all the (default) dynamic field definitions, and return those that not actually used compared to the luke request handler output
+     * @param lukeFields
+     */
+    def findUnusedDynamicfields(Map lukeFields) {
+        def dynamicFieldNames = dynamicFields.collect { Node n ->
+            n.attributes()['name']
+        }
+        def lukeDynamicBases = lukeFields.findAll{String key, Object val ->
+            def db = val.dynamicBase
+            return db
+        }.collect {String key, Object val ->
+            val.dynamicBase
+        }
+        return dynamicFieldNames
     }
 }
