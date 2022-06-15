@@ -1,5 +1,6 @@
 package com.lucidworks.ps.fusion
 
+import com.lucidworks.ps.solr.ConfigSetCollection
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 
@@ -27,7 +28,8 @@ class Application {
     List<Map> objectGroups
     List<Map> links
     List<Map> sparkJobs
-    Map<String, Object> configsets = [:]
+    Map<String, Object> configsetMap = [:]
+    ConfigSetCollection configsets
 
     /**
      * helper main function to test functionality, change the file arg accordingly...
@@ -50,7 +52,7 @@ class Application {
         this.metadata = parsedMap.metadata
         this.appProperties = objects['properties']
         if(parsedMap.configsets){
-            configsets = parsedMap.configsets
+            configsetMap = new ConfigSetCollection(((Map)parsedMap.configsets))
             log.info "\t\tGot configsets from parsed source file..."
         }
 
