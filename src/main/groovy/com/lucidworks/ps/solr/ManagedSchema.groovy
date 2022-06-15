@@ -48,12 +48,17 @@ class ManagedSchema {
     }
 
 
-    Node parseSchema(def src) throws InvalidParameterException {
+    /**
+     * assume XML format, create the wrapper object, and return that (as something to check/review)
+     * @param src
+     * @return ManagedSchema -- parsed wrapper object to encapsulate some functionality and relevant structure
+     * @throws InvalidParameterException
+     */
+    def parseSchema(def src) throws InvalidParameterException {
         content = getSchemaContent(src)
         List<String> lines = content.split('\n')
         // better way to determine json or xml? should we just have two different classes or methods?
 
-        def schema
         if (lines[0].contains('xml')) {
             log.info "File (${src} appears to be xml, parse with XMLParser (not xml slurper)"
             XmlParser parser = new XmlParser()
@@ -65,9 +70,8 @@ class ManagedSchema {
             log.warn "File (${src} appears to be JSON, parse with JsonSlurper (untested code: Json source...!!!)"
             JsonSlurper slurper = new JsonSlurper()
             schemaMap = slurper.parse(src)
-            schema = schemaMap
         }
-        return schema
+        return schemaMap
     }
 
     String getSchemaContent(Serializable src) {

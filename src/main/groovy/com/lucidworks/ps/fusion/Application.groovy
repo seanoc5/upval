@@ -24,7 +24,7 @@ class Application {
     List<Map> parsers
     List<Map> blobs
     List<Map> appkitApps
-    Map<String, List<Map>> features         // https://doc.lucidworks.com/fusion/5.5/333/collection-features-api
+    Map featuresMap         // https://doc.lucidworks.com/fusion/5.5/333/collection-features-api
     List<Map> objectGroups
     List<Map> links
     List<Map> sparkJobs
@@ -47,21 +47,17 @@ class Application {
         parsedMap = parseSourceFile(appOrJson)
 
 
-        Map<String, Object> objects = parsedMap.objects
+        Map<String, Object> parsedObjects = parsedMap.objects
 
         this.metadata = parsedMap.metadata
-        this.appProperties = objects['properties']
-        if(parsedMap.configsets){
-            configsetMap = new ConfigSetCollection(((Map)parsedMap.configsets))
-            log.info "\t\tGot configsets from parsed source file..."
-        }
+        this.appProperties = parsedObjects['properties']
 
-        if(objects.fusionApps) {
+        if(parsedObjects.fusionApps) {
             log.info "We have a fusion app export/zip (assume fusion 4 and above...)"
-            fusionApps = objects.fusionApps
+            fusionApps = parsedObjects.fusionApps
             if (fusionApps.size() == 1) {
-                appName = objects.fusionApps.name
-                appID = objects.fusionApps.id
+                appName = parsedObjects.fusionApps?.name[0]
+                appID = parsedObjects.fusionApps.id[0]
             } else {
                 log.warn "Expected one (1) app in App export!?!?! But we have (${fusionApps.size()} ... Mind blown... how....why... who? Consider everything from here on suspect!!"
             }
@@ -69,17 +65,21 @@ class Application {
             log.warn "No fusionApps in export!!?! What is this, year 2016??"
         }
 
-        collections = objects.collections
-        dataSources = objects.dataSources
-        indexPipelines = objects.indexPipelines
-        queryPipelines = objects.queryPipelines
-        parsers = objects.parsers
-        blobs = objects.blobs
-        appkitApps = objects.appkitApps
-        features = objects.features
-        objectGroups = objects.objectGroups
-        links = objects.links
-        sparkJobs = objects.sparkJobs
+        if(parsedMap.configsets){
+            configsets = new ConfigSetCollection(((Map)parsedMap.configsets), appName)
+            log.info "\t\tGot configsets from parsed source file..."
+        }
+        collections = parsedObjects.collections
+        dataSources = parsedObjects.dataSources
+        indexPipelines = parsedObjects.indexPipelines
+        queryPipelines = parsedObjects.queryPipelines
+        parsers = parsedObjects.parsers
+        blobs = parsedObjects.blobs
+        appkitApps = parsedObjects.appkitApps
+        featuresMap = parseFeaturesMap(parsedObjects.features)
+        objectGroups = parsedObjects.objectGroups
+        links = parsedObjects.links
+        sparkJobs = parsedObjects.sparkJobs
 
         log.debug "loaded application: $this"
     }
@@ -147,6 +147,13 @@ class Application {
     @Override
     public String toString() {
         return "Application";
+    }
+
+    Map<String, List<Feature>> parseFeaturesMap(Map featuresMap) {
+        Map<String, List<Feature>> featuresParsed = featuresMap.collectEntries {String name, List items ->
+            ["$name":new Feature(items)]
+        }
+
     }
 }
 

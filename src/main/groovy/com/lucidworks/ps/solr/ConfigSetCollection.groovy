@@ -59,17 +59,24 @@ class ConfigSetCollection {
             log.debug "setting deploymentName: $deploymentName"
             this.deploymentName = deploymentName
         }
+        Map groupedEntries = groupConfigsetEntries(configsetEntries, keyPattern)
+        groupedEntries.each { String configsetName, def entries ->
+            ConfigSet configset = new ConfigSet(configsetName, entries)
+            configsetMap[configsetName] = configset
+        }
+
+        // is there a better return value? true/false?  void?
+        return configsetMap.size()
+    }
+
+    Map<String, Object> groupConfigsetEntries(LinkedHashMap<String, Object> configsetEntries, Pattern keyPattern) {
         Map<String, Map<String, Object>> groupedItems = [:].withDefault { [:] }
         configsetEntries.each { String configPath, def val ->
             if (val) {
                 Matcher match = (configPath =~ keyPattern)
-                String configName
-                String childPath
                 if (match.matches()) {
-
-                    configName = match[0][1]
-                    childPath = match[0][2]
-//                Map newkey = [collection: configName, childPath: childPath]
+                    String configName = match[0][1]
+                    String childPath = match[0][2]
                     groupedItems[configName][childPath] = val
                 } else {
                     log.warn "Pattern does not match-- path:$configPath - val:$val"
@@ -78,29 +85,6 @@ class ConfigSetCollection {
                 log.info "No value for item: $configPath -> $val -- skipping(...?)"
             }
         }
-
-        def configsetsGrouped = configsetEntries.groupBy { String configPath, def val ->
-            Matcher match = (configPath =~ keyPattern)
-            String configName
-            if (match.matches()) {
-                configName = match[0][1]
-                log.debug "Match: $configName"
-            } else {
-                log.debug "No match, leave as 'none available': $configPath"
-                configName = ''
-            }
-            return configName
-        }
-        configsetsGrouped.each { String configName, def items ->
-            if (configName) {
-//                def itemsTrimmed = items.collectEntries {}
-                ConfigSet configSet = new ConfigSet(configName, items)
-                configsetMap[configName] = configSet
-            } else {
-                log.info "\t\tSkipping 'empty' configset path: $configName with items (empty??): $items"
-            }
-        }
-        // is there a better return value? true/false?  void?
-        return configsetMap.size()
+        return groupedItems
     }
 }
