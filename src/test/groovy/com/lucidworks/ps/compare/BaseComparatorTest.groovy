@@ -3,6 +3,8 @@ package com.lucidworks.ps.compare
 
 import spock.lang.Specification
 
+import java.util.regex.Pattern
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -33,7 +35,7 @@ class BaseComparatorTest extends Specification {
 
     def "Compare"() {
         given:
-String label = 'Compare unit test'
+        String label = 'Compare unit test'
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP,)
 
         when:
@@ -52,4 +54,31 @@ String label = 'Compare unit test'
         results.differences[1].differenceType == Comparison.DIFF_VALUES
         results.differences[1].description == 'Values are DIFFERENT: left:(top3-middle1) and right:(top3-middle1 plus change)'
     }
+
+    def "Compare ignoring values for top3.middle2"() {
+        given:
+        String label = 'Compare unit test'
+        Pattern ignoreValues = ~/(top2.*|top3.middle1)/
+        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
+
+        when:
+        CompareObjectsResults results = comparator.compare()
+        def similarButDifferent = results.similarities.findAll{it.differenceType==Comparison.SIMILAR}
+
+        then:
+        results.leftOnlyKeys == null
+
+        results.rightOnlyKeys.size() == 2
+
+        results.sharedKeys.size() == 9
+
+        results.differences.size() == 1
+        results.differences[0].differenceType == Comparison.DIFF_RIGHT_ONLY
+        results.differences[0].description == '[top2.3, top3.middle3.bottom2]'
+
+        results.similarities.size() == 9
+        similarButDifferent.size()==2
+
+    }
+
 }

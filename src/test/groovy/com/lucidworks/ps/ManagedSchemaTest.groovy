@@ -53,13 +53,13 @@ class ManagedSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource)
-        def lukeMap = schema.parseLukeOutput(lukeSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
+//        def lukeMap = schema.parseLukeOutput(lukeSource)
 
         then:
         schema.fieldTypes.size() == 64
         schema.definedFields.size() == 7
-        schema.lukeFields.size() == 7
+        schema.lukeFields.size() == 9
 
     }
 
@@ -83,20 +83,37 @@ class ManagedSchemaTest extends Specification {
         unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
 
     }
+
     def "check dynamic fields"() {
         given:
         def schemaSource = getClass().getResource('/f4.basic.managed-schema.xml')
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource)
-        def dynamicFields = schema.dynamicFields
-        def lukeMap = schema.parseLukeOutput(lukeSource)
-        def unusedDynamic = schema.findUnusedDynamicfields(lukeMap)
+        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
+        def dynamicFields = schema.dynamicFieldDefinitions
+        def unusedDynamic = schema.findUnusedDynamicfields()
 
         then:
         dynamicFields.size() == 68
-//        unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
+        unusedDynamic.size() == 65
+
+    }
+
+    def "check other things"() {
+        given:
+        def schemaSource = getClass().getResource('/f4.basic.managed-schema.xml')
+        def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
+
+        when:
+        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
+        def dynamicFields = schema.dynamicFieldDefinitions
+        def unusedDynamic = schema.findUnusedDynamicfields()
+
+
+        then:
+        dynamicFields.size() == 68
+        unusedDynamic.size() == 65
 
     }
 

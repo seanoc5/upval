@@ -32,7 +32,13 @@ class Comparison {
 
     @Override
     public String toString() {
-        return "Compare:(${compareLabel.padLeft(20)}) [${differenceType.padLeft(20)}]:: ${description}"
+        String s = null
+        if(compareLabel){
+            s = "Compare:(${compareLabel.padLeft(20)}) [${differenceType?.padLeft(20)}]:: ${description}"
+        } else {
+            s = "Compare:(${'no label given?'.padLeft(20)}) [${differenceType?.padLeft(20)}]:: ${description}"
+        }
+        return s
     }
 
     boolean isDifferent() {
@@ -40,7 +46,7 @@ class Comparison {
             log.debug "\t\t Values are equal"
             return false
 
-        } else if (this.differenceType == EQUAL) {
+        } else if (this.differenceType == SIMILAR) {
             log.info "\t\t Objects are Similar (typically true if we are ignoring value differences, just looking at structure): ${this.toString()}"
             return false
 

@@ -66,14 +66,14 @@ class BaseComparator {
         rightOnlyKeys = rightKeyPaths - leftKeyPaths
         if (leftOnlyKeys) {
             objectsResults.leftOnlyKeys = leftOnlyKeys
-            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
+            Comparison diff = new Comparison(this.compareLabel, Comparison.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
 //            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, "The LEFT object had these items which the right did not (structural diff): $leftOnlyKeys")
             objectsResults.differences << diff
         }
         objectsResults.rightOnlyKeys = rightOnlyKeys
         if (rightOnlyKeys) {
             objectsResults.rightOnlyKeys = rightOnlyKeys
-            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
+            Comparison diff = new Comparison(this.compareLabel, Comparison.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
 //            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, "The RIGHT object had these items which the left did not (structural diff): $rightOnlyKeys")
             objectsResults.differences << diff
         }
@@ -84,13 +84,17 @@ class BaseComparator {
             log.debug "Compare objects: [${sharedItemPath}] "
             def leftItem = leftFlatMap[sharedItemPath]
             def rightItem = rightFlatMap[sharedItemPath]
-            boolean ignoreValueDiffs = false
+            boolean ignoreValues = false
             boolean matchChildOrder = false
 
             if (leftItem instanceof Map) {
                 log.debug "\t\t\t\tSkip comparing values for shared Map item (type: ${leftItem.getClass().simpleName}), sharedPath: $sharedItemPath"
             } else {
-                Comparison diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValueDiffs, matchChildOrder)
+                ignoreValues = (sharedItemPath ==~ ignoreValueDifferences)
+                if(ignoreValues){
+                    log.info "IGNORE value differences for this shared path: $sharedItemPath"
+                }
+                Comparison diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValues, matchChildOrder)
                 if (diff.isDifferent()) {
                     objectsResults.differences << diff
                     log.debug "\t\tAdd DIFFERENCE: $diff"
@@ -133,12 +137,12 @@ class BaseComparator {
                 diff = compareLists(compareLabel, left, right, matchChildOrder)
 
             } else {
-                boolean ignoreValues = (compareLabel ==~ ignoreValueDifferences)
+//                boolean ignoreValues = (compareLabel ==~ ignoreValueDifferences)
                 // if comparison label matches ignore pattern, then don't compare values
-                if (ignoreValues) {
+                if (ignoreValueDifferences) {
                     log.debug "[$compareLabel] ignoring values because label matches ignore pattern '$ignoreValueDifferences'"
                 }
-                diff = compareLeafThing(compareLabel, left, right, ignoreValues)
+                diff = compareLeafThing(compareLabel, left, right, ignoreValueDifferences)
             }
         } else {
             diff = new Comparison(compareLabel, Comparison.DIFF_CLASSES, "Left class name: [$leftClassName] differs from Right class name: [$rightClassName]")

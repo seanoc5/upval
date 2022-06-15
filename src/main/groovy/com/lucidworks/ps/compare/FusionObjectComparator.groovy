@@ -8,6 +8,7 @@ import org.apache.log4j.Logger
  * @mailto :    seanoc5@gmail.com
  * @created :   5/23/22, Monday
  * @description: helper class to compare two different Lists of datalefts
+ * @deprecated -- see BaseComparator as newer approach
  * we use the terminology left and right losely, but the aim is to help understand the difference reporting
  */
 class FusionObjectComparator {
