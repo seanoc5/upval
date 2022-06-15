@@ -11,34 +11,16 @@ import java.util.regex.Pattern
  */
 class ConfigSet {
     Logger log = Logger.getLogger(this.class.name);
-    String name
-    List<Object> allEntries
+    String configsetName
+    def items
     List langFolder
     def configOverlay
     def solrConfig
 
-
-    /**
-     * Constructor with F4+ app export (zip) file to get
-     * @param appExport
-     */
-    ConfigSet(File appExport) {
-        sourceFile = src
-        parseSchema(src)
+    ConfigSet(String configsetName, def items) {
+        this.configsetName = configsetName
+        this.items = items
     }
-
-    ConfigSet(String src) {
-        lines = src.split('\n')
-        parseSchema(src)
-    }
-
-    ConfigSet(URL srcUrl) {
-        sourceFile = new File(srcUrl.toURI())
-        parseSchema(sourceFile)
-        fieldTypes = collectFieldTypes()
-        definedFields = collectFields()
-    }
-
 
     Node parseSchema(File src) {
         lines = sourceFile.readLines()
