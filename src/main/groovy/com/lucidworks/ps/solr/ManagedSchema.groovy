@@ -60,7 +60,7 @@ class ManagedSchema {
         // better way to determine json or xml? should we just have two different classes or methods?
 
         if (lines[0].contains('xml')) {
-            log.info "File (${src} appears to be xml, parse with XMLParser (not xml slurper)"
+            log.debug "Source (${src} appears to be xml, parse with XMLParser (not xml slurper)"
             XmlParser parser = new XmlParser()
             xmlSchema = parser.parseText(content)
             definedFields = collectSchemaFields()

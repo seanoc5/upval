@@ -22,16 +22,24 @@ class SolrConfig {
     String luceneMatchVersion
 
     SolrConfig(String s) {
-        log.info "String based constructor (ASSUME XML format)..."
         this.sourceContent = s
         xml = parseXml(s)
+        def ver = xml.luceneMatchVersion
+        if(ver && ver instanceof List){
+            this.luceneMatchVersion = ver[0]
+        }
+        log.info "String based constructor (ASSUME XML format)..."
     }
 
     SolrConfig(URI uri) {
         log.info "File (${uri}) based constructor (ASSUME XML format)..."
-//        this.sourceContent = uri.getText()
+        String content = uri.get
+        this.sourceContent = uri
         xml = parseXml(uri)
     }
+//    SolrConfig(Map items){
+//        def sc = items['/solrconfig.xml']
+//    }
 
 
     Node parseXml(String s) {
