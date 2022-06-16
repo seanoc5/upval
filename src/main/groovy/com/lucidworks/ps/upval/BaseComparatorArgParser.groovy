@@ -7,7 +7,7 @@ import groovy.cli.picocli.OptionAccessor
  * General helper class trying to standardize args specific to solr operations
  * probably can be deprecated or removed, but leaving for now
  */
-class SolrComparatorArgParser {
+class BaseComparatorArgParser {
 
     public static OptionAccessor parse(String toolName, String[] args) {
         CliBuilder cli = new CliBuilder(usage: "${toolName}.groovy -fhttp://myFusion5addr:6764 -uadmin -psecret123 -s~/data/MyApp.objects.json -m ~/Fusion/migration/F4/mappingFolder", width: 160)
