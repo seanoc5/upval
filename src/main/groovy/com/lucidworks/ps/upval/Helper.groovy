@@ -249,5 +249,26 @@ class Helper {
         }
         return entries
     }
+
+    static File getOrMakeDirectory(String dirPath) {
+        File folder = new File(dirPath)
+        if (folder.exists()) {
+            if (folder.isDirectory()) {
+                log.debug "Folder (${folder.absolutePath} exists, which is good"
+            } else {
+                log.warn "Folder (${folder.absolutePath}) exists, but is not a folder, which is bad"
+                throw new IllegalAccessException("Job Folder (${folder.absolutePath}) exists, but is not a folder, which is bad, aborting")
+            }
+        } else {
+            def success = folder.mkdirs()
+            if (success) {
+                log.info "\t\tCreated folder: ${folder.absolutePath}"
+            } else {
+                log.warn "Folder (${folder.absolutePath}) could not be created, which is bad"
+                throw new IllegalAccessException("Folder (${folder.absolutePath}) exists, could not be created which is bad, aborting")
+            }
+        }
+        folder
+    }
 }
 
