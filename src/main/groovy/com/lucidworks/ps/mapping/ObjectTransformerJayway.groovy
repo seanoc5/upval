@@ -5,6 +5,11 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
+/**
+ * Jayway based transformer
+ * todo refactor or remove
+ *
+ */
 class ObjectTransformerJayway {
     Logger log = Logger.getLogger(this.class.name);
     Map sourceMap
