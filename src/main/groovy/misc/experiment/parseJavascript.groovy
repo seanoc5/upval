@@ -1,4 +1,13 @@
 package misc.experiment
+
+import org.apache.log4j.Logger
+
+/**
+ * sample script exploring how to usefully parse javascript and get functional blocks of code, or even just generalize each individual statement
+ * e.g. var a= 'foo' ==> set a variable to a string
+ * this seems jdk dependent, and packages are not visible (i.e. expects jdk 8, but project using 9+...?
+ */
+
 /*
 
 import jdk.nashorn.internal.ir.Block
@@ -11,8 +20,11 @@ import jdk.nashorn.internal.runtime.Source
 import jdk.nashorn.internal.runtime.options.Options
 import org.apache.log4j.Logger
 
-Logger log = Logger.getLogger(this.class.name);
+*/
 
+Logger log = Logger.getLogger(this.class.name)
+
+/*
 Options options = new Options("nashorn");
 options.set("anon.functions", true);
 options.set("parse.only", true);
