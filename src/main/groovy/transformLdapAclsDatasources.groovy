@@ -1,5 +1,5 @@
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
-import com.lucidworks.ps.upval.mapping.ObjectTransformerJayway
+import com.lucidworks.ps.mapping.ObjectTransformerJayway
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger

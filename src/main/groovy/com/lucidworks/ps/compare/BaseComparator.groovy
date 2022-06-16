@@ -50,12 +50,12 @@ class BaseComparator {
         log.info msg
     }
 
-    CompareObjectsResults compare(String label = null) {
+    CompareObjectResults compare(String label = null) {
         if(label){
             // todo -- fixme, muddled constructor and compare() call, pick either constructor does compare, or compare() called explicitly with label.... this is a short-term hack...
             this.compareLabel = label
         }
-        CompareObjectsResults objectsResults = new CompareObjectsResults(this.compareLabel, left, right)
+        CompareObjectResults objectsResults = new CompareObjectResults(this.compareLabel, left, right)
         leftFlatMap = Helper.flattenPlusObject(left, 1)
         leftKeyPaths = leftFlatMap.keySet()
 

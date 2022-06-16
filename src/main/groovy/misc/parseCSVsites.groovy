@@ -8,6 +8,11 @@ import org.apache.log4j.Logger
 import java.nio.file.Path
 import java.nio.file.Paths
 
+/**
+ * misplaced helper script to parse the csv export of support MF sites, and export snapshots
+ * DO NOT RUN THIS without checking with PaaS first
+ * @deprecated
+ */
 Logger log = Logger.getLogger(this.class.name);
 log.info "Start ${this.class.name}..."
 

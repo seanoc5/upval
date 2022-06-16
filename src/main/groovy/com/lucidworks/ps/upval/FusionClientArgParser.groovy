@@ -3,6 +3,9 @@ package com.lucidworks.ps.upval
 import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
 
+/**
+ * Helper class to standardize argument syntax for FusionClient programs and driver-scripts
+ */
 class FusionClientArgParser {
 
     public static OptionAccessor parse(String toolName, String[] args) {

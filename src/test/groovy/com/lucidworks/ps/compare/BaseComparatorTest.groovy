@@ -33,13 +33,13 @@ class BaseComparatorTest extends Specification {
                             bottom2: 'new bottom element']]]
 
 
-    def "Compare"() {
+    def "Compare simple maps"() {
         given:
         String label = 'Compare unit test'
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP,)
 
         when:
-        CompareObjectsResults results = comparator.compare('GenericObjectMap')
+        CompareObjectResults results = comparator.compare('GenericObjectMap')
 
         then:
         results.leftOnlyKeys == null
@@ -62,7 +62,7 @@ class BaseComparatorTest extends Specification {
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
 
         when:
-        CompareObjectsResults results = comparator.compare()
+        CompareObjectResults results = comparator.compare()
         def similarButDifferent = results.similarities.findAll{it.differenceType==Comparison.SIMILAR}
 
         then:

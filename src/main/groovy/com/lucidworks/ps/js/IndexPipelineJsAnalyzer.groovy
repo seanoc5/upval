@@ -9,6 +9,7 @@ package com.lucidworks.ps.js
 
 /**
  * helper class to analyze javascript in index pipeline stages (regular or managed)
+ * todo -- remove or flesh out...
  */
 class IndexPipelineJsAnalyzer {
 }

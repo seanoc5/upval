@@ -1,5 +1,10 @@
 package com.lucidworks.ps.compare
 
+/**
+ * outdated approach? please review and refactor or revive as necessary...
+ * @see BaseComparator
+ * @see Comparison
+ */
 class LeftRightCollectionResults {
     public static final String SOURCE = 'source'
     public static final String DESTINATION = 'destination'
@@ -12,7 +17,7 @@ class LeftRightCollectionResults {
     List leftOnlyItems = []
     List rightOnlyItems = []
 
-    Map<String, CompareObjectsResults> objectsResults = [:]
+    Map<String, CompareObjectResults> objectsResults = [:]
     List<String> leftOnlyPaths = []
     List<String> rightOnlyPaths = []
 

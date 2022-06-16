@@ -20,6 +20,7 @@ import java.util.zip.ZipFile
  * blobs, experiments,
  * fusionApps,
  * dataSources
+ * @deprecated @see FusionClient for some more recent fusion-aware access
  */
 public class ExtractFusionObjectsForIndexing {
     static Logger log = Logger.getLogger(this.class.name);

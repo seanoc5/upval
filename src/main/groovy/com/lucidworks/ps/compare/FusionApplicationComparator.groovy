@@ -9,6 +9,8 @@ import org.apache.log4j.Logger
  * @mailto :    seanoc5@gmail.com
  * @created :   5/23/22, Monday
  * @description: helper class to compare two different Fusion Applications (or parts of)
+ * @deprecated
+ * todo -- move to using BaseComparator ...?
  */
 class FusionApplicationComparator {
     Logger log = Logger.getLogger(this.class.name);
@@ -17,7 +19,7 @@ class FusionApplicationComparator {
     Application rightApp
 
     Map<String, CompareCollectionResults> collectionComparisons = [:]
-    Map<String, CompareObjectsResults> objectComparisons = [:]
+    Map<String, CompareObjectResults> objectComparisons = [:]
 
     public static final List<String> DEFAULTTHINGSTOCOMPARE = "configsets collections dataSources indexPipelines queryPipelines parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
 
@@ -61,7 +63,7 @@ class FusionApplicationComparator {
                             def leftObject = leftThings.find { it.id == id }
                             def rightObject = rightThings.find { it.id == id }
 
-                            CompareObjectsResults objectsResults = compareObjects(thingType, leftObject, rightObject)
+                            CompareObjectResults objectsResults = compareObjects(thingType, leftObject, rightObject)
                             collectionResults.objectsResults[id] = objectsResults
                             log.debug "Compare results: $objectsResults"
                         }
@@ -112,8 +114,8 @@ class FusionApplicationComparator {
      * @param compareLabel
      * @return
      */
-    CompareObjectsResults compareObjects(String compareLabel, def leftObjects, def rightObjects) {
-        CompareObjectsResults objectsResults = new CompareObjectsResults(compareLabel, leftObjects, rightObjects)
+    CompareObjectResults compareObjects(String compareLabel, def leftObjects, def rightObjects) {
+        CompareObjectResults objectsResults = new CompareObjectResults(compareLabel, leftObjects, rightObjects)
         List<String> leftKeyPaths = Helper.flatten(leftObjects, 1)
         List<String> rightKeyPaths = Helper.flatten(rightObjects, 1)
 
@@ -183,7 +185,7 @@ class FusionApplicationComparator {
     }
 
     String toString() {
-        def differentObjects = objectComparisons.findAll { String id, CompareObjectsResults compareObjectsResults ->
+        def differentObjects = objectComparisons.findAll { String id, CompareObjectResults compareObjectsResults ->
             // todo -- switch to comparison and diffs
 //            compareObjectsResults.isFunctionallyDifferent()
             compareObjectsResults.differences           // does this work? null and empty should be false here, meaning no differences
@@ -194,7 +196,7 @@ class FusionApplicationComparator {
 //        sb.append(collectionComparisons.toString(indentA) + "\n")
 
         String indentB = '\t\t\t\t'
-        differentObjects.each { String id, CompareObjectsResults objectResults ->
+        differentObjects.each { String id, CompareObjectResults objectResults ->
             sb.append("${indentB}${id}:${objectResults.toString()}\n")
         }
         return sb.toString()

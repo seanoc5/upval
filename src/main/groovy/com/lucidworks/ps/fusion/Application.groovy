@@ -7,6 +7,11 @@ import org.apache.log4j.Logger
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
+/**
+ * Fusion Application helper class
+ * Mix of composite objects (@see ConfigSetCollection) and regular lists/maps
+ * We may convert to more explicit composite objects as necessary
+ */
 class Application {
     Logger log = Logger.getLogger(this.class.name);
     String appName = 'unknown'

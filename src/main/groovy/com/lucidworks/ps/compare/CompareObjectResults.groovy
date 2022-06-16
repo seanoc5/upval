@@ -2,7 +2,11 @@ package com.lucidworks.ps.compare
 
 import org.apache.log4j.Logger
 
-class CompareObjectsResults {
+/**
+ * early attempt to compare objects, perhaps replaced with @see:Base
+ * @deprecated
+ */
+class CompareObjectResults {
     Logger log = Logger.getLogger(this.class.name);
 
     String compareLabel
@@ -14,7 +18,7 @@ class CompareObjectsResults {
     List<Comparison> differences = []
     List<Comparison> similarities = []
 
-    CompareObjectsResults(String compareLabel, left, right) {
+    CompareObjectResults(String compareLabel, left, right) {
         this.compareLabel = compareLabel
         this.left = left
         this.right = right
@@ -42,7 +46,7 @@ class CompareObjectsResults {
     @Override
     public String toString() {
         String diffs = differences.collect{"\n\t\t$it"}
-        return "CompareObjectsResults(${compareLabel})" +
+        return "CompareObjectResults(${compareLabel})" +
                 "\n\tleftOnlyKeys(${leftOnlyKeys})" +
                 "\n\trightOnlyKeys:(${rightOnlyKeys})" +
                 "\n\tdifferences:(${diffs})" +

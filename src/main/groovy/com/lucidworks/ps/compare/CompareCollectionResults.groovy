@@ -1,8 +1,11 @@
 package com.lucidworks.ps.compare
 
+/**
+ * outdated approach?
+ * @see BaseComparator
+ * @deprecated
+ */
 class CompareCollectionResults {
-//    public static final String LEFT = 'left'
-//    public static final String RIGHT = 'right'
 
     String collectionType = 'unknown'
     Integer countDifference = 0

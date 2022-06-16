@@ -5,6 +5,10 @@ import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
 
+/**
+ * General helper class
+ * todo consider refactoring flattening operations to a more obvious classname (low-priority as it is a low-level op, not big picture processing)
+ */
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 

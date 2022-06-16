@@ -3,6 +3,10 @@ package com.lucidworks.ps.upval
 import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
 
+/**
+ * General helper class trying to standardize args specific to solr operations
+ * probably can be deprecated or removed, but leaving for now
+ */
 class SolrComparatorArgParser {
 
     public static OptionAccessor parse(String toolName, String[] args) {

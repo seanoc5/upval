@@ -41,7 +41,7 @@ class PipelineJsAnalyzer {
                         }
                         jsCodeStages[type] << s
                     } else {
-                        log.warn "No script in Query stage (label:$label)?? Script:$it (bad)"
+                        log.warn "No script in (?Query?) stage (label:$label)?? Script:$it (bad)"
                     }
                 }
             } else {

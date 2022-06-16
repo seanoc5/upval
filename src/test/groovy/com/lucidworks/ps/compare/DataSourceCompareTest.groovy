@@ -25,7 +25,7 @@ class DataSourceCompareTest extends Specification {
 
         when:
         BaseComparator comparator = new BaseComparator(label, left, right)
-        CompareObjectsResults results = comparator.compare()
+        CompareObjectResults results = comparator.compare()
 
         then:
         comparator.leftOnlyKeys.size()==0
@@ -52,7 +52,7 @@ class DataSourceCompareTest extends Specification {
 
         when:
         BaseComparator comparator = new BaseComparator(label, left, right, )
-        CompareObjectsResults results = comparator.compare()
+        CompareObjectResults results = comparator.compare()
 
         then:
         comparator.leftOnlyKeys.size()==0

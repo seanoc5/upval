@@ -1,6 +1,7 @@
 package misc.compare
 
-import com.lucidworks.ps.compare.CompareObjectsResults
+
+import com.lucidworks.ps.compare.CompareObjectResults
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 /**
@@ -23,7 +24,7 @@ File srcF5ObjectsJson = new File('/home/sean/work/lucidworks/Intel/exports/objec
 Map f5Objects = jsonSlurper.parse(srcF5ObjectsJson)
 log.info "Altered Json:\n\t\t${f5Objects.keySet()})"
 
-CompareObjectsResults objectsResults = new CompareObjectsResults("ldap-acls", f4Objects, f5Objects)
+CompareObjectResults objectsResults = new CompareObjectResults("ldap-acls", f4Objects, f5Objects)
 log.info "Results: ${objectsResults.toString()}"
 
 

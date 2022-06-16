@@ -1,5 +1,6 @@
 package com.lucidworks.ps.upval.mapping
 
+import com.lucidworks.ps.mapping.SimpleTransform
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
