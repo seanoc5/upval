@@ -7,6 +7,8 @@ import groovy.json.JsonBuilder
 import groovy.transform.Field
 import org.apache.log4j.Logger
 
+import java.text.SimpleDateFormat
+
 //import com.lucidworks.ps.upval.Fusion4ObjectTransformer
 
 @Field
@@ -21,6 +23,9 @@ File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
 Map sourceFusionOjectsMap = parsedMap.objects
 String appName = sourceFusionOjectsMap.fusionApps[0].id
+Date now = new Date()
+String versionFolderName = Helper.getVersionName(now)
+String fooFolderName = Helper.getVersionName(now, new SimpleDateFormat('yyyy-MM-dd/hh-mm'))
 
 def jobsWithTriggers = sourceFusionOjectsMap.jobs.findAll { it.triggers?.size() }
 File exportDir = fusionClient.exportDirectory
@@ -41,7 +46,9 @@ jobsWithTriggers.each { Map<String, Object> job ->
         String type = parts[0]
         String name = parts[1]
 
-        File jobFolder = Helper.getOrMakeDirectory("${exportDir}/jobs/$type/$name")
+        // todo -- do we want to split date and time? e.g. /20220616/10-2/
+        File jobFolder = Helper.getOrMakeDirectory("${exportDir}/${versionFolderName}/jobs/$type/$name")
+        File fooFolder = Helper.getOrMakeDirectory("${exportDir}/${fooFolderName}/jobs/$type/$name")
 
         File f = new File(jobFolder, "${name}.json")
         Map triggers = [triggers: job.triggers]
