@@ -4,6 +4,10 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 
+/**
+ * early-going code exploring how to map-transform a 'thing',
+ * chose ldap-acls because it has significant (but fairly easy) structural changes from f4->f5
+ */
 Logger log = Logger.getLogger(this.class.name);
 
 log.info "start script ${this.class.name}..."
