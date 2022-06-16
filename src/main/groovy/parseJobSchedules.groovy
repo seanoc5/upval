@@ -1,13 +1,13 @@
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import com.lucidworks.ps.upval.FusionClientArgParser
+import com.lucidworks.ps.upval.Helper
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonBuilder
 import groovy.transform.Field
+import org.apache.log4j.Logger
 
 //import com.lucidworks.ps.upval.Fusion4ObjectTransformer
-
-import org.apache.log4j.Logger
 
 @Field
 Logger log = Logger.getLogger(this.class.name);
@@ -41,7 +41,7 @@ jobsWithTriggers.each { Map<String, Object> job ->
         String type = parts[0]
         String name = parts[1]
 
-        File jobFolder = getOrMakeDirectory("${exportDir}/jobs/$type/$name")
+        File jobFolder = Helper.getOrMakeDirectory("${exportDir}/jobs/$type/$name")
 
         File f = new File(jobFolder, "${name}.json")
         Map triggers = [triggers: job.triggers]
@@ -63,24 +63,3 @@ log.info "Done...?"
 
 
 
-// --------------------- Functions -------------------------------
-public File getOrMakeDirectory(String dirPath) {
-    File folder = new File(dirPath)
-    if (folder.exists()) {
-        if (folder.isDirectory()) {
-            log.debug "Folder (${folder.absolutePath} exists, which is good"
-        } else {
-            log.warn "Folder (${folder.absolutePath}) exists, but is not a folder, which is bad"
-            throw new IllegalAccessException("Job Folder (${folder.absolutePath}) exists, but is not a folder, which is bad, aborting")
-        }
-    } else {
-        def success = folder.mkdirs()
-        if (success) {
-            log.info "\t\tCreated folder: ${folder.absolutePath}"
-        } else {
-            log.warn "Folder (${folder.absolutePath}) could not be created, which is bad"
-            throw new IllegalAccessException("Folder (${folder.absolutePath}) exists, could not be created which is bad, aborting")
-        }
-    }
-    folder
-}
