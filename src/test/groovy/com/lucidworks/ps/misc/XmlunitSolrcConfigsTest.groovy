@@ -1,4 +1,4 @@
-package com.lucidworks.ps.compare
+package com.lucidworks.ps.misc
 
 
 import groovy.xml.XmlParser

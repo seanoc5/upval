@@ -1,4 +1,4 @@
-package com.lucidworks.ps.upval
+package com.lucidworks.ps.misc
 
 import spock.lang.Specification
 /**

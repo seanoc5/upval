@@ -1,4 +1,4 @@
-package com.lucidworks.ps.compare
+package com.lucidworks.ps.misc
 
 import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
@@ -6,6 +6,10 @@ import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import spock.lang.Specification
 
+/**
+ * exploring xml parsing & processing
+ *
+ */
 class BasicXMLTest extends Specification {
     def xmlString = '''
 <response version-api="2.0">

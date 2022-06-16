@@ -1,8 +1,7 @@
-package com.lucidworks.ps
+package com.lucidworks.ps.solr
 
-import com.lucidworks.ps.solr.ManagedSchema
+
 import spock.lang.Specification
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com

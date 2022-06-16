@@ -1,4 +1,4 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.mapping
 
 
 /**

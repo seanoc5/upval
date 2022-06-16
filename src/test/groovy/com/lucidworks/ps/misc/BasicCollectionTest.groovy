@@ -1,13 +1,15 @@
-package com.lucidworks.ps.compare
+package com.lucidworks.ps.misc
 
 import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
 import spock.lang.Specification
-
 /**
- * Less of a test suite, more of seeing how things can work...
+ * delete me -- first pass at comparing, moved
+ * @deprecated
+ * @see com.lucidworks.ps.misc.HelperSpecification
  */
 class BasicCollectionTest extends Specification {
+/*
     static final Map LEFT_MAP = [top1: 'first top node',
                                         top2: [1, 2, 3],
                                         top3: [
@@ -25,47 +27,26 @@ class BasicCollectionTest extends Specification {
                                                         bottom1: 'top3:middle3:bottom1',
                                                         bottom2: 'new bottom element']]]
 
-
-    def "flattenPlusMeta"() {
-        when:
-        def leftFlatMap = Helper.flattenPlusMeta(LEFT_MAP)
-        def rightFlatMap = Helper.flattenPlusMeta(RIGHT_MAP)
-
-        then:
-        leftFlatMap.size() == 9
-        rightFlatMap.size() == 11
-        leftFlatMap == rightFlatMap
-    }
-
-    def "flattenPlusObject"() {
-        given:
-        when:
-        def flatLeft = Helper.flattenPlusObject(LEFT_MAP)
-        def flatRight = Helper.flattenPlusObject(RIGHT_MAP)
-
-        then:
-        flatLeft.size() == 9
-        flatRight.size() == 11
-        flatLeft == flatRight
-    }
-
+*/
 
     def "simple demo of 'Flatten' with files"() {
         given:
         XmlParser parser = new XmlParser()
-        def leftResource = getClass().getResourceAsStream('/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema')
-        def rightResource = getClass().getResourceAsStream('templates/configsets/fusion-4.2.6/_default/conf/managed-schema')
-        def leftSchema = parser.parse(leftResource)
-        def rightSchema = parser.parse(rightResource)
+        InputStream leftResource = getClass().getResourceAsStream('/templates/configsets/fusion-3.1.5/basic_configs/conf/managed-schema')
+        InputStream rightResource = getClass().getResourceAsStream('/templates/configsets/fusion-4.2.6/_default/conf/managed-schema')
+        Node leftSchema = parser.parse(leftResource)
+        Node rightSchema = parser.parse(rightResource)
 
         when:
         def flatLeft = Helper.flattenPlusMeta(LEFT_MAP)
         def flatRight = Helper.flattenPlusMeta(RIGHT_MAP)
+        Set rightOnlyKeys = flatRight.keySet() - flatLeft.keySet()
 
         then:
         flatLeft.size() == 9
         flatRight.size() == 11
-        flatLeft == flatRight
+        rightOnlyKeys.size()==2
+        rightOnlyKeys.toArray() == ['top2.3','top3.middle3.bottom2']
     }
 
 }

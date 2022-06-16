@@ -1,7 +1,8 @@
-package com.lucidworks.ps.upval
+package com.lucidworks.ps.misc
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
+import com.lucidworks.ps.upval.Helper
 import spock.lang.Specification
 
 /**

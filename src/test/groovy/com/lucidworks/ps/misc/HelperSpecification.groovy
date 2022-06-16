@@ -1,5 +1,6 @@
-package com.lucidworks.ps.upval
+package com.lucidworks.ps.misc
 
+import com.lucidworks.ps.upval.Helper
 import spock.lang.Specification
 
 class HelperSpecification extends Specification {
@@ -18,7 +19,7 @@ class HelperSpecification extends Specification {
     ]
 
 
-    def "flatten"() {
+    def "simple flatten functionality"() {
         given:
 
         when:
@@ -48,5 +49,6 @@ class HelperSpecification extends Specification {
         paths[13] == 'top2.middle2b.bottom2b1'
         flatties[paths[13]] == 'endleaf3'
     }
+
 
 }

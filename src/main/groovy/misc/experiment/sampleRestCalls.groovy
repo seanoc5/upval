@@ -1,8 +1,10 @@
-package misc
+package misc.experiment
 /**
  * @author : sean
  * @mailto : seanoc5@gmail.com
  * @created : 5/8/22, Sunday
+ * checking the viability of writing fusionClient.responses to file (or elsewhere) for "Playback" ability
+ * todo -- complete me...
  * */
 
 

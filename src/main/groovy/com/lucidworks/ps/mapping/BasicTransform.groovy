@@ -1,8 +1,4 @@
-package com.lucidworks.ps.upval.mapping
-
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-
+package com.lucidworks.ps.mapping
 /**
  * Basic class for working through dynamic function invokation
  * adding more logic and work flow

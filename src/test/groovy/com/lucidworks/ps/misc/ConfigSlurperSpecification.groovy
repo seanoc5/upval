@@ -1,8 +1,12 @@
-package com.lucidworks.ps.upval
+package com.lucidworks.ps.misc
 
 import spock.lang.Specification
 
-class ConfigSpecification extends Specification {
+/**
+ * very experimental test to explore Groovy ConfigSlurper
+ * @see ConfigSlurper
+ */
+class ConfigSlurperSpecification extends Specification {
     String configString = '''
 dev {
     startLink = 'http://www.lucidworks.com:8764/api'
@@ -12,8 +16,7 @@ def getProtocol(){
     return 'https'
 }
 '''
-//    void setup() {
-//    }
+
 
     def "simple test config"() {
         given:

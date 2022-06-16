@@ -1,4 +1,4 @@
-package com.lucidworks.ps.upval
+package com.lucidworks.ps.misc
 
 import de.danielbechler.diff.ObjectDifferBuilder
 import de.danielbechler.diff.node.DiffNode

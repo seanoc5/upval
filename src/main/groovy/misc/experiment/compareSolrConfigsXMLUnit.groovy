@@ -1,4 +1,4 @@
-package misc.old
+package misc.experiment
 
 import groovy.xml.XmlParser
 import org.apache.log4j.Logger
@@ -9,6 +9,10 @@ import org.xmlunit.diff.Diff
 import org.xmlunit.diff.Difference
 import org.xmlunit.diff.DifferenceEngine
 
+/**
+ * demo script exploring XmlUnit for xml diffs
+ * SoC: I found it too verbose and general, but worth keeping here in for general interest/review?
+ */
 Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name}"
 
