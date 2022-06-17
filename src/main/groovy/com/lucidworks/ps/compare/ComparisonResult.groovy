@@ -5,7 +5,7 @@ import org.apache.log4j.Logger
 /**
  * Base Object to track and report on comparison results
  */
-class Comparison {
+class ComparisonResult {
     Logger log = Logger.getLogger(this.class.name)
 
     public static final String EQUAL = 'EQUAL'
@@ -24,7 +24,7 @@ class Comparison {
 
     // todo -- consider include pattern of value differences to ignore here?? or in comparator?
 
-    Comparison(String compareLabel, String differenceType, String description) {
+    ComparisonResult(String compareLabel, String differenceType, String description) {
         this.compareLabel = compareLabel
         this.differenceType = differenceType
         this.description = description

@@ -154,7 +154,7 @@ class FusionApplicationComparator {
      * @return
      * @deprecated -- look at BaseComparator.compareValues() for preferred approach (?)
      */
-    Comparison compareValues(def left, def right, String objectType ) {
+    ComparisonResult compareValues(def left, def right, String objectType ) {
         //todo -- add logic to evaluate values of shared keys
         String diffType = ''
         String description = ''
@@ -173,7 +173,7 @@ class FusionApplicationComparator {
                 description = "Left class: [$leftClassName] differs from Right class: [$rightClassName]"
             }
         }
-        Comparison diff = new Comparison(objectType, diffType, description)
+        ComparisonResult diff = new ComparisonResult(objectType, diffType, description)
         log.info diff
         return diff
     }

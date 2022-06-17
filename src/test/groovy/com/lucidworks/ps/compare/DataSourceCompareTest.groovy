@@ -32,9 +32,9 @@ class DataSourceCompareTest extends Specification {
         comparator.rightOnlyKeys.size()==0
 
         results.differences.size()==2
-        results.differences[0].differenceType==Comparison.DIFF_VALUES
+        results.differences[0].differenceType==ComparisonResult.DIFF_VALUES
         results.differences[0].description=='Values are DIFFERENT: left:() and right:(proxy-dmz.intel.com:912)'
-        results.differences[1].differenceType==Comparison.DIFF_VALUES
+        results.differences[1].differenceType==ComparisonResult.DIFF_VALUES
         results.differences[1].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
 
     }
@@ -59,9 +59,9 @@ class DataSourceCompareTest extends Specification {
         comparator.rightOnlyKeys.size()==0
 
         results.differences.size()==2
-        results.differences[0].differenceType==Comparison.DIFF_VALUES
+        results.differences[0].differenceType==ComparisonResult.DIFF_VALUES
         results.differences[0].description=='Values are DIFFERENT: left:() and right:(proxy-dmz.intel.com:912)'
-        results.differences[1].differenceType==Comparison.DIFF_VALUES
+        results.differences[1].differenceType==ComparisonResult.DIFF_VALUES
         results.differences[1].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
 
     }

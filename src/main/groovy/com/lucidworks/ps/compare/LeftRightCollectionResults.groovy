@@ -3,7 +3,7 @@ package com.lucidworks.ps.compare
 /**
  * outdated approach? please review and refactor or revive as necessary...
  * @see BaseComparator
- * @see Comparison
+ * @see ComparisonResult
  */
 class LeftRightCollectionResults {
     public static final String SOURCE = 'source'

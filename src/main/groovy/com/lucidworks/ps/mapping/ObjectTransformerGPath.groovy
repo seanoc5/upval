@@ -5,6 +5,10 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
+/**
+ * An attempt to use built-in groovy GPath (which is great for XML, questionable for maps/lists)
+ * @deprecated review status, I think jayaway is better at the moment
+ */
 class ObjectTransformerGPath {
     Logger log = Logger.getLogger(this.class.name);
     Map sourceMap

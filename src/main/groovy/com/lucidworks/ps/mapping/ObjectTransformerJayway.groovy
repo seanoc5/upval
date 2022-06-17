@@ -6,8 +6,7 @@ import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
 /**
- * Jayway based transformer
- * todo refactor or remove
+ * <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer
  *
  */
 class ObjectTransformerJayway {

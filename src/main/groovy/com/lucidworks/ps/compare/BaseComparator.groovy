@@ -66,14 +66,14 @@ class BaseComparator {
         rightOnlyKeys = rightKeyPaths - leftKeyPaths
         if (leftOnlyKeys) {
             objectsResults.leftOnlyKeys = leftOnlyKeys
-            Comparison diff = new Comparison(this.compareLabel, Comparison.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
+            ComparisonResult diff = new ComparisonResult(this.compareLabel, ComparisonResult.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
 //            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, "The LEFT object had these items which the right did not (structural diff): $leftOnlyKeys")
             objectsResults.differences << diff
         }
         objectsResults.rightOnlyKeys = rightOnlyKeys
         if (rightOnlyKeys) {
             objectsResults.rightOnlyKeys = rightOnlyKeys
-            Comparison diff = new Comparison(this.compareLabel, Comparison.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
+            ComparisonResult diff = new ComparisonResult(this.compareLabel, ComparisonResult.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
 //            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, "The RIGHT object had these items which the left did not (structural diff): $rightOnlyKeys")
             objectsResults.differences << diff
         }
@@ -94,7 +94,7 @@ class BaseComparator {
                 if(ignoreValues){
                     log.info "IGNORE value differences for this shared path: $sharedItemPath"
                 }
-                Comparison diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValues, matchChildOrder)
+                ComparisonResult diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValues, matchChildOrder)
                 if (diff.isDifferent()) {
                     objectsResults.differences << diff
                     log.debug "\t\tAdd DIFFERENCE: $diff"
@@ -114,7 +114,7 @@ class BaseComparator {
      * Compare an 'object' non-hierarchically -- just at the given level. Look for functional equivalence
      *
      */
-    Comparison compareValues(String compareLabel, def left, def right, boolean ignoreValueDifferences, boolean matchChildOrder) {
+    ComparisonResult compareValues(String compareLabel, def left, def right, boolean ignoreValueDifferences, boolean matchChildOrder) {
         String leftClassName = left.getClass().name
         if (!leftClassName) {
             log.warn "Special class (lazy map???) more code here"
@@ -125,7 +125,7 @@ class BaseComparator {
             log.warn "Special class (lazy map???) more code here"
         }
 
-        Comparison diff
+        ComparisonResult diff
 
         if (leftClassName == rightClassName) {
             log.debug "\t\tSame class names (which is a good start..): ${left.getClass().simpleName}"
@@ -145,7 +145,7 @@ class BaseComparator {
                 diff = compareLeafThing(compareLabel, left, right, ignoreValueDifferences)
             }
         } else {
-            diff = new Comparison(compareLabel, Comparison.DIFF_CLASSES, "Left class name: [$leftClassName] differs from Right class name: [$rightClassName]")
+            diff = new ComparisonResult(compareLabel, ComparisonResult.DIFF_CLASSES, "Left class name: [$leftClassName] differs from Right class name: [$rightClassName]")
         }
         log.debug "\t\t${diff}"
 
@@ -160,7 +160,7 @@ class BaseComparator {
      * @param ignoreValueDifferences if true,
      * @return Difference
      */
-    Comparison compareLeafThing(String compareLabel, Object left, Object right, boolean ignoreValueDifferences) {
+    ComparisonResult compareLeafThing(String compareLabel, Object left, Object right, boolean ignoreValueDifferences) {
         String diffType, description
 
         String leftClassName = left.getClass().name
@@ -171,16 +171,16 @@ class BaseComparator {
         if (leftClassName.equals(rightClassName)) {
             if (lstr.equals(rstr)) {
                 description = "(toString()) Values are EQUAL: left:($lstr) == right:($rstr)"
-                diffType = Comparison.EQUAL
+                diffType = ComparisonResult.EQUAL
             } else if (ignoreValueDifferences) {
                 description = "Ignore value differences==true, objects have same class, so are SIMILAR: left class:($leftClassName) and right class:($rightClassName)"
-                diffType = Comparison.SIMILAR
+                diffType = ComparisonResult.SIMILAR
             } else {
                 description = "Values are DIFFERENT: left:($lstr) and right:($rstr)"
-                diffType = Comparison.DIFF_VALUES
+                diffType = ComparisonResult.DIFF_VALUES
             }
         } else {
-            diffType = Comparison.DIFF_CLASSES
+            diffType = ComparisonResult.DIFF_CLASSES
             description = "Left class name: [$leftClassName] differs from Right class name: [$rightClassName]"
             if (lstr.equals(rstr)) {
                 String msg = "string values are equal!! LStr:(${lstr} == (${rstr})"
@@ -188,12 +188,12 @@ class BaseComparator {
                 description += " -- ${msg}"
             }
         }
-        Comparison diff = new Comparison(compareLabel, diffType, description)
+        ComparisonResult diff = new ComparisonResult(compareLabel, diffType, description)
         log.debug "\t\t${diff.toString()}"
         return diff
     }
 
-    Comparison compareLists(String compareLabel, List left, List right, boolean matchChildOrder) {
+    ComparisonResult compareLists(String compareLabel, List left, List right, boolean matchChildOrder) {
         String diffType, description
         log.debug "$compareLabel) comparing lists..."
         if (matchChildOrder) {
@@ -201,23 +201,23 @@ class BaseComparator {
             String rstr = right.toString()
             if (lstr.equalsIgnoreCase(rstr)) {
                 description = "Values are the Similar: left:($lstr) and right:($rstr)"
-                diffType = Comparison.EQUAL
+                diffType = ComparisonResult.EQUAL
             } else {
                 description = "Values (or order) are the Different: left:($lstr) and right:($rstr)"
-                diffType = Comparison.DIFF_VALUES
+                diffType = ComparisonResult.DIFF_VALUES
                 log.debug "\t\t$diffType) $description"
             }
         } else {
             log.debug "\t\tCompare list without order... $left to $right"
             if (left.sort() == right.sort()) {
-                diffType = Comparison.EQUAL
+                diffType = ComparisonResult.EQUAL
                 description = "Values are equivalent (not comparing order): $left"
             } else {
-                diffType = Comparison.DIFF_VALUES
+                diffType = ComparisonResult.DIFF_VALUES
                 description = "Values DIFFER (not comparing order): left(${left}) != right(${right})"
             }
         }
-        Comparison difference = new Comparison(compareLabel, diffType, description)
+        ComparisonResult difference = new ComparisonResult(compareLabel, diffType, description)
         return difference
     }
 
