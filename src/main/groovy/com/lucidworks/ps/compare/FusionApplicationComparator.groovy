@@ -9,7 +9,7 @@ import org.apache.log4j.Logger
  * @mailto :    seanoc5@gmail.com
  * @created :   5/23/22, Monday
  * @description: helper class to compare two different Fusion Applications (or parts of)
- * @deprecated
+ * @ deprecated ??
  * todo -- move to using BaseComparator ...?
  */
 class FusionApplicationComparator {
@@ -42,7 +42,7 @@ class FusionApplicationComparator {
      * @param thingsToCompare
      * @return
      */
-    Map<String, CompareCollectionResults> compare(def thingsToCompare, List valueDiffsToIgnore) {
+    Map<String, CompareCollectionResults> compare(List<String> thingsToCompare, List valueDiffsToIgnore) {
         log.info "Compare things matching: (${thingsToCompare}) -- Value Diffs to ignore: $valueDiffsToIgnore"
 
         thingsToCompare.each { String thingType ->

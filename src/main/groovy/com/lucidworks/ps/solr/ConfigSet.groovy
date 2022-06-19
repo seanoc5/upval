@@ -27,6 +27,7 @@ class ConfigSet {
         this.configsetName = configsetName
         this.items = items
         def foo = populateParsedItems()
+        log.info "Constructor(name, items)-> ${this.toString()}"
     }
 
 
@@ -37,26 +38,26 @@ class ConfigSet {
             def schema = items['/managed-schema']
             if (schema) {
                 managedSchema = new ManagedSchema(schema)
-                log.info "Parsed new ManagedSchema, return code: $managedSchema"
+                log.debug "Parsed new ManagedSchema, return code: $managedSchema"
             } else {
                 log.warn "No schema file found in configset!!?"
             }
             solrConfig = parseSolrconfig(items)
-            log.info "Parse solrconfig"
+            log.debug "Parse solrconfig"
 
-            log.info "Parse lang folder"
+            log.debug "Parse lang folder"
             def lf = populateLangFolder()
 
-            log.info "Parse config overlay"
+            log.debug "Parse config overlay"
             def co = parseConfigOverlay()
 
-            log.info "Parse stopwords"
+            log.debug "Parse stopwords"
             stopwords = items['/stopwords.txt']         // getting lazy, plus: stopwords are evil, don't use them!!
 
-            log.info "Parse synonyms"
+            log.debug "Parse synonyms"
             def syn = parseSynonyms()
 
-            log.info "Parse protwords"
+            log.debug "Parse protwords"
             def pw = parseProtwords()
 
             log.info "done parsing configset: $this"
@@ -126,5 +127,9 @@ class ConfigSet {
      */
     def parseProtwords(String path = '/protwords.txt') {
         String pw = items[path]
+    }
+
+    String toString(){
+        String s = "Configset ($configsetName): Schema:(${managedSchema.toString()}) SolrConfig:(${solrConfig.toString()}) ... "
     }
 }

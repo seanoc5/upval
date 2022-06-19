@@ -13,6 +13,7 @@ import java.util.regex.Pattern
 class ManagedSchema {
     public static final Pattern OVERRIDE_FIELDNAMES = ~/id|_version_|_raw_content_|_root_/
     Logger log = Logger.getLogger(this.class.name);
+    /** source of content, if string, these will be equal, if file, or url, that will be different */
     def source
     String content
     Map schemaMap = [:]
@@ -42,7 +43,16 @@ class ManagedSchema {
      */
     ManagedSchema(def src, def lukeOutput) {
         log.info "Src(${src.getClass().simpleName}) AND luke output (${lukeOutput.getClass().simpleName})"
-        source = src
+        if(src instanceof  String){
+            if(src[0..20].contains(XML_START_TAG)){
+                source = "XML Source string"
+            } else {
+                source = 'Unexpected Source string...'
+            }
+        } else {
+            // file? url?....
+            source = src
+        }
         parseSchema(src)
         parseLukeOutput(lukeOutput)
     }
@@ -266,5 +276,9 @@ class ManagedSchema {
         }.toSet()
         List<String> unusedFieldTypes = fieldTypes - usedFieldTypes
         return unusedFieldTypes
+    }
+
+    String toString() {
+        String s = ""
     }
 }

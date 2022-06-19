@@ -48,21 +48,23 @@ class DataSourceCompareTest extends Specification {
 
         def rfile = getClass().getResourceAsStream('/F5.s3.example2.json')
         Map right = jsonSlurper.parse(rfile)
-        Pattern ignoreValues = ~/.*(proxyEndpoint|region).*/
+        Pattern ignoreValues = ~/.*(proxyEndpoint).*/
 
         when:
-        BaseComparator comparator = new BaseComparator(label, left, right, )
+        BaseComparator comparator = new BaseComparator(label, left, right, ignoreValues)
         CompareObjectResults results = comparator.compare()
+        def similarities = results.similarities.findAll {it.differenceType==ComparisonResult.SIMILAR}
 
         then:
         comparator.leftOnlyKeys.size()==0
         comparator.rightOnlyKeys.size()==0
 
-        results.differences.size()==2
+        results.differences.size()==1
         results.differences[0].differenceType==ComparisonResult.DIFF_VALUES
-        results.differences[0].description=='Values are DIFFERENT: left:() and right:(proxy-dmz.intel.com:912)'
-        results.differences[1].differenceType==ComparisonResult.DIFF_VALUES
-        results.differences[1].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
+        results.differences[0].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
+
+        similarities.size()==1
+        similarities[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left class:(java.lang.String) and right class:(java.lang.String)'
 
     }
 

@@ -54,7 +54,7 @@ class ConfigSetCollection {
      * @return
      */
     protected Integer parseConfigsetCollection(LinkedHashMap<String, Object> configsetEntries, String deploymentName = 'Unnamed', Pattern keyPattern = DEFAULT_KEY_PATTERN) {
-        log.info "parseConfigsetCollection with ${configsetEntries.size()} entries"
+        log.info "parseConfigsetCollection with ${configsetEntries.size()} (flat/ungrouped) entries, need to group them by collection..."
         if (deploymentName) {
             log.debug "setting deploymentName: $deploymentName"
             this.deploymentName = deploymentName
