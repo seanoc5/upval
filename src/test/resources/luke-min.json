@@ -25,7 +25,7 @@
       "index": "ITS---------------",
       "docs": 2
     },
-    "fubar": {
+    "exampleNoDocs": {
       "type": "text_general",
       "schema": "ITS-UM------------",
       "index": "ITS---------------",

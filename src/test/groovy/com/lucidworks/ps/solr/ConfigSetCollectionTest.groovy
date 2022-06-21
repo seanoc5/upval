@@ -10,11 +10,12 @@ class ConfigSetCollectionTest extends Specification {
         Application app = new Application(appZip)
 
         when:
-        ConfigSetCollection configsets = app.configsets
+        ConfigSetCollection configSetCollection = app.configsets
+        ConfigSet testConfigSet = configSetCollection.configsetMap['test']
 
         then:
-        configsets.deploymentName == 'test'
-        configsets.configsetMap.keySet().toArray() == ['test', 'test_signals', 'test_signals_aggr']
+        configSetCollection.deploymentName == 'test'
+        configSetCollection.configsetMap.keySet().toArray() == ['test', 'test_signals', 'test_signals_aggr']
 
     }
 }

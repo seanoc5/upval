@@ -28,11 +28,11 @@ class SolrConfig {
         if(ver && ver instanceof List){
             this.luceneMatchVersion = ver[0]
         }
-        log.info "String based constructor (ASSUME XML format)..."
+        log.debug "String based constructor (ASSUME XML format)..."
     }
 
     SolrConfig(URI uri) {
-        log.info "File (${uri}) based constructor (ASSUME XML format)..."
+        log.debug "File (${uri}) based constructor (ASSUME XML format)..."
         String content = uri.get
         this.sourceContent = uri
         xml = parseXml(uri)

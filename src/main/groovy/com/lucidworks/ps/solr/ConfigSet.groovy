@@ -34,10 +34,10 @@ class ConfigSet {
     protected Integer populateParsedItems() {
         if (items) {
 //            def schema = items.fin
-            log.info "Parse schema"
+            log.debug "Parse schema"
             def schema = items['/managed-schema']
             if (schema) {
-                managedSchema = new ManagedSchema(schema)
+                managedSchema = new ManagedSchema(schema, this.configsetName)
                 log.debug "Parsed new ManagedSchema, return code: $managedSchema"
             } else {
                 log.warn "No schema file found in configset!!?"
@@ -46,26 +46,32 @@ class ConfigSet {
             log.debug "Parse solrconfig"
 
             log.debug "Parse lang folder"
-            def lf = populateLangFolder()
+            langFolder = populateLangFolder(items)
 
             log.debug "Parse config overlay"
-            def co = parseConfigOverlay()
+            configOverlay = parseConfigOverlay(items)
 
             log.debug "Parse stopwords"
-            stopwords = items['/stopwords.txt']         // getting lazy, plus: stopwords are evil, don't use them!!
+            stopwords = parseStopwords(items)         // getting lazy, plus: stopwords are evil, don't use them!!
 
             log.debug "Parse synonyms"
-            def syn = parseSynonyms()
+            synonyms = parseSynonyms(items)
 
             log.debug "Parse protwords"
-            def pw = parseProtwords()
+            protwords = parseProtwords(items)
 
-            log.info "done parsing configset: $this"
+            log.debug "done parsing configset: $this"
         } else {
             log.warn "We don't have 'items' yet, can't process...?"
         }
     }
 
+    /**
+     * one approach to parsing the schema -- probably not the one you want...?
+     * @deprecated @see ManagedSchema
+     * @param src file to parse
+     * @return the node for groovy gpath xml processing
+     */
     Node parseSchema(File src) {
         lines = sourceFile.readLines()
         def schema
@@ -75,7 +81,7 @@ class ConfigSet {
             xmlSchema = parser.parse(src)
             schema = xmlSchema
         } else if (lines[0].contains('{')) {
-            log.info "File (${src} appears to be JSON, parse with JsonSlurper"
+            log.warn "File (${src} appears to be JSON, parse with JsonSlurper -- is this FULLY SUPPORTED NOW?"
             JsonSlurper slurper = new JsonSlurper()
             schemaMap = slurper.parse(src)
             schema = schemaMap
@@ -89,8 +95,15 @@ class ConfigSet {
         return solrConfig
     }
 
-    Map<String, String> populateLangFolder(Pattern langMatch = ~/\/lang\/.+/) {
-        langFolder = items.findAll { String path, def item ->
+
+    /**
+     * run through the 'tree' of zk nodes, and gather those entries for Solr Language settings
+     * @param items
+     * @param langMatch
+     * @return
+     */
+    Map<String, String> populateLangFolder(Map items, Pattern langMatch = ~/\/lang\/.+/) {
+        Map langFolder = items.findAll { String path, def item ->
             path.contains('lang')
             path ==~ langMatch
 
@@ -98,12 +111,33 @@ class ConfigSet {
         return langFolder
     }
 
-    def parseConfigOverlay(String coPath = '/configoverlay.json') {
+
+    /**
+     * parse the json (assumption!) in the configOverlay string
+     * @note no actual use yet (2022-June)
+     * @param items
+     * @param coPath
+     * @return map of parsed json
+     */
+
+    /**
+     * parse the json (assumption!) in the configOverlay string
+     * @note no actual use yet (2022-June)
+     * @param items
+     * @param coPath
+     * @return map of parsed json
+     */
+    def parseConfigOverlay(Map items, String coPath = '/configoverlay.json') {
         String co = items[coPath]
-        JsonSlurper slurper = new JsonSlurper()
-        configOverlay = slurper.parseText(co)
-        log.debug "parsed configOverlay string: [$co] to object: $configOverlay"
-        return configOverlay
+        Map configOvr
+        if (co) {
+            JsonSlurper slurper = new JsonSlurper()
+            configOvr = slurper.parseText(co)
+            log.debug "\t\tparsed configOverlay string: [$co] to object: $configOvr"
+        } else {
+            log.debug "\t\t[${configsetName}] No config overlay (coPath: $coPath) found in Items keys: ${items.keySet()}"
+        }
+        return configOvr
     }
 
     /**
@@ -112,7 +146,7 @@ class ConfigSet {
      * @param synPath
      * @return string of content, unparsed
      */
-    def parseSynonyms(String synPath = '/synonyms.txt') {
+    def parseSynonyms(Map items, String synPath = '/synonyms.txt') {
         String syns = items[synPath]
         // todo consider:
         // List<String> synlines = syns.split('\n')
@@ -125,11 +159,15 @@ class ConfigSet {
      * todo - more processing valuable here??
      * @param path
      */
-    def parseProtwords(String path = '/protwords.txt') {
+    def parseProtwords(Map items, String path = '/protwords.txt') {
         String pw = items[path]
     }
 
-    String toString(){
+    String parseStopwords(Map<String, String> items) {
+        items['/stopwords.txt']
+    }
+
+    String toString() {
         String s = "Configset ($configsetName): Schema:(${managedSchema.toString()}) SolrConfig:(${solrConfig.toString()}) ... "
     }
 }
