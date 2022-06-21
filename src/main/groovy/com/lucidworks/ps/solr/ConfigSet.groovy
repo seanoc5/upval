@@ -37,7 +37,7 @@ class ConfigSet {
             log.debug "Parse schema"
             def schema = items['/managed-schema']
             if (schema) {
-                managedSchema = new ManagedSchema(schema)
+                managedSchema = new ManagedSchema(schema, this.configsetName)
                 log.debug "Parsed new ManagedSchema, return code: $managedSchema"
             } else {
                 log.warn "No schema file found in configset!!?"
@@ -46,7 +46,7 @@ class ConfigSet {
             log.debug "Parse solrconfig"
 
             log.debug "Parse lang folder"
-           langFolder = populateLangFolder(items)
+            langFolder = populateLangFolder(items)
 
             log.debug "Parse config overlay"
             configOverlay = parseConfigOverlay(items)
@@ -58,7 +58,7 @@ class ConfigSet {
             synonyms = parseSynonyms(items)
 
             log.debug "Parse protwords"
-            protwords= parseProtwords(items)
+            protwords = parseProtwords(items)
 
             log.debug "done parsing configset: $this"
         } else {
@@ -119,12 +119,25 @@ class ConfigSet {
      * @param coPath
      * @return map of parsed json
      */
+
+    /**
+     * parse the json (assumption!) in the configOverlay string
+     * @note no actual use yet (2022-June)
+     * @param items
+     * @param coPath
+     * @return map of parsed json
+     */
     def parseConfigOverlay(Map items, String coPath = '/configoverlay.json') {
         String co = items[coPath]
-        JsonSlurper slurper = new JsonSlurper()
-        configOverlay = slurper.parseText(co)
-        log.debug "parsed configOverlay string: [$co] to object: $configOverlay"
-        return configOverlay
+        Map configOvr
+        if (co) {
+            JsonSlurper slurper = new JsonSlurper()
+            configOvr = slurper.parseText(co)
+            log.debug "\t\tparsed configOverlay string: [$co] to object: $configOvr"
+        } else {
+            log.debug "\t\t[${configsetName}] No config overlay (coPath: $coPath) found in Items keys: ${items.keySet()}"
+        }
+        return configOvr
     }
 
     /**
@@ -154,7 +167,7 @@ class ConfigSet {
         items['/stopwords.txt']
     }
 
-    String toString(){
-          String s = "Configset ($configsetName): Schema:(${managedSchema.toString()}) SolrConfig:(${solrConfig.toString()}) ... "
-      }
+    String toString() {
+        String s = "Configset ($configsetName): Schema:(${managedSchema.toString()}) SolrConfig:(${solrConfig.toString()}) ... "
+    }
 }
