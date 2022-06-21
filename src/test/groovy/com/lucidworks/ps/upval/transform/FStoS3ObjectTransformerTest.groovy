@@ -1,10 +1,10 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.upval.transform
 
-import com.lucidworks.ps.mapping.ObjectTransformerJayway
+import com.lucidworks.ps.transform.ObjectTransformerJayway
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class ObjectTransformerTest extends Specification {
+class FStoS3ObjectTransformerTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
@@ -22,12 +22,6 @@ class ObjectTransformerTest extends Specification {
     }
 
     def "Transform Set Values"(){
-        /*
-        "/type": "lucidworks.ldap",
-         "/connector": "lucidworks.ldap",
-         "/created": "${new Date()}",
-         "/modified": "${new Date()}",
-         */
         given:
         ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
@@ -36,8 +30,8 @@ class ObjectTransformerTest extends Specification {
 
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.ldap'
-        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.ldap'
+        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.fs'
+        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.fs'
         transformer.getValueByJsonPath('$.created', destMap).contains('2022')
 
     }
@@ -54,81 +48,63 @@ class ObjectTransformerTest extends Specification {
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
-    def "lamda experiment"(){
-        given:
-        def lambdaNorma = {Object it -> return it.class.name}
-        String myLambdaStr = '{Object it -> return "foo:...${it}"}'
-
-        when:
-        def simpleEval = Eval.me("2+2")
-        def lambdaEval = Eval.me(myLambdaStr)
-        def resultEval = lambdaEval('Foo')
-
-        then:
-        simpleEval == 4
-        lambdaEval.class.name == 'Script1$_run_closure1'
-        resultEval == 'foo:...Foo'
-    }
-
-//    def "transform with function from config json"(){
-//        given:
-//        Map myMap = [a:[one:'1a', two:'2b']]
-//
-//        when:
-//        def myEntry =
-//    }
-
-/*
-    def "GetByMapPath"() {
-    }
-
-    def "SetByMapPath"() {
-    }*/
-
     public static String src = '''
 {
-    "id" : "my_abc_acl",
-    "created" : "2020-04-17T06:20:05.291Z",
-    "modified" : "2020-04-17T06:20:05.291Z",
-    "connector" : "lucid.ldap-acls",
-    "type" : "ldap-acls",
-    "pipeline" : "_system",
-    "properties" : {
-        "refreshOlderThan" : -1,
-        "startLinks" : [ "ldap://my.company.com:389" ],
-    }
-}    
+  "id": "sample-s3-id",
+  "created": "2021-04-21T19:04:31.111Z",
+  "modified": "2021-09-18T00:03:54.998Z",
+  "connector": "lucidworks.fs",
+  "type": "lucidworks.fs",
+  "description": "Sample F4 Filesystem based connector to import JSON filesdata",
+  "pipeline": "sample-pipeline",
+  "parserId": "sample-parser",
+  "properties": {
+    "includeDirectories": false,
+    "collection": "MyCollection",
+    "addFileMetadata": false,
+    "initialFilePaths": [
+      "/tmp/hsdupload/"
+    ]
+  },
+  "coreProperties": {}
+}
 '''
 
     public static String dest = '''
-{
-   
-    "id": "replaceme-destination",
-    "type": "overrideme.ldap",
-    "properties": {
-        "security": {},
-        "searchProperties": {
-            "apiQueryRowLimit": 1000,
-            "userSearchProp": {
-                "crawlForUsers": true,
-                "userFilter": "(&(objectclass=user)(sAMAccountName=*))"
-            },
-            "followReferrals": false,
-            "groupSearchProp": {
-                "groupFilter": "(&(objectclass=group))",
-                "crawlForGroups": true
-            },
-            "useGlobalCatalog": false
-        },
-        "collection": "${dataSource.id}-access-control-hierarchy"
-    },
-    "connector": "lucidworks.ldap"
-}
+ {
+   "id" : "#replace#",
+   "diagnosticLogging" : true,
+   "parserId" : "#replace#",
+   "created" : "",
+   "coreProperties" : { },
+   "description" : "S3 version of FS migration",
+   "modified" : "",
+   "type" : "#replace#",
+   "properties" : {
+     "proxyConfig" : {
+       "proxyEndpoint" : ""
+     },
+     "application" : {
+       "bucketName" : "f5-data-sample-bucket",
+       "objectKeys" : [ "s3-sample-key/" ],
+       "region" : "us-west-1"
+     },
+     "authenticationConfig" : {
+       "awsBasicAuthConfig" : {
+         "secretKey" : "xXx-Redacted-xXx",
+         "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
+       }
+     },
+     "collection" : "MyCollection"
+   },
+   "pipeline" : "",
+   "connector" : "lucidworks.s3"
+ }
 '''
 
     public static String configsJsonPath = '''
 {
-    "transformerClass": "SimlpeTransform",
+    "transformerClass": "FileSystemS3",
     "set": {
         "$.type": "lucidworks.ldap",
         "$.connector": "lucidworks.ldap",

@@ -1,4 +1,4 @@
-package com.lucidworks.ps.promotion
+package com.lucidworks.ps.promote
 
 
 import groovy.json.JsonSlurper

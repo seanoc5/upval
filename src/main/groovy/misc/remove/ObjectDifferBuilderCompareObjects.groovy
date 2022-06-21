@@ -1,6 +1,6 @@
-package misc.experiment
+package misc.remove
 
-import com.lucidworks.ps.mapping.SimpleTransform
+import com.lucidworks.ps.transform.SimpleTransform
 import de.danielbechler.diff.ObjectDifferBuilder
 import de.danielbechler.diff.node.DiffNode
 import de.danielbechler.diff.node.Visit

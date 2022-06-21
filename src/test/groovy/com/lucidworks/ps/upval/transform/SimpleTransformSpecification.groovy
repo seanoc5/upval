@@ -1,10 +1,10 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.upval.transform
 
-import com.lucidworks.ps.mapping.ObjectTransformerJayway
+import com.lucidworks.ps.transform.SimpleTransform
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class FStoS3ObjectTransformerTest extends Specification {
+class SimpleTransformSpecification extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
@@ -21,32 +21,70 @@ class FStoS3ObjectTransformerTest extends Specification {
         rules = slurper.parseText(configsJsonPath)
     }
 
-    def "Transform Set Values"(){
+    def "Normal Foo transform calling method directly"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+        def transform = new SimpleTransform(srcMap, destMap, rules)
 
         when:
-        transformer.setValues()
+        String result = transform.testDescription('myBar')
 
         then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.fs'
-        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.fs'
-        transformer.getValueByJsonPath('$.created', destMap).contains('2022')
-
+        result.equals("Creating a test description for thing: (myBar)")
     }
 
-    def "Transform"() {
+    def "Dynamic function call of foo with hard coded param"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+        def transform = new SimpleTransform(srcMap, destMap, rules)
+        String func = 'testDescription'
 
         when:
-        transformer.transform()
+        String result = transform."${func}"('myBar')
 
         then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
+        result.equals("Creating a test description for thing: (myBar)")
     }
+
+    def "Dynamic class and function call with hard coded param"() {
+        given:
+        def transformerClass = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
+//        def instance = this.class.classLoader.loadClass( 'SimpleTransform', true)?.newInstance()
+        String func = 'testDescription'
+
+        when:
+        String result = transformerClass."${func}"('myBar')
+
+        then:
+        result.equals("Creating a test description for thing: (myBar)")
+    }
+
+    def "Dynamic class and function from config"() {
+        given:
+        def fu = new SimpleTransform(srcMap, destMap, rules)
+        JsonSlurper slurper = new JsonSlurper()
+        String className = "com.lucidworks.ps.upval.mapping.SimpleTransform"
+
+        def transformerClass = Class.forName(className)
+        String func = 'testDescription'
+
+        when:
+        String param1 = 'MyParam1TestValue'
+        String result = transformerClass."${func}"(param1)
+
+        then:
+        result.equals("Creating a test description for thing: (MyParam1TestValue)")
+    }
+
+//    def "simple javax-json jsonPointer testing"(){
+//        given:
+//        Map json = new JsonSlurper().parseText()
+//                JsonPointerImpl jsonPointer =
+//        JsonPoi
+//        JsonPointer jsonPointer = Json.createPointer("/library");
+//        JsonString jsonString = (JsonString) jsonPointer.getValue(jsonStructure);
+//
+//    }
+
+
 
     public static String src = '''
 {
@@ -123,22 +161,4 @@ class FStoS3ObjectTransformerTest extends Specification {
 '''
 
 
-    public static String configsSlashy = '''
-{
-    "transformerClass": "SimlpeTransform",
-    "set": {
-        "/type": "lucidworks.ldap",
-        "/connector": "lucidworks.ldap",
-        "/created": "${new Date()}",
-        "/modified": "${new Date()}",
-    },
-    "copy": {
-        "/id": "/id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
-        "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
-    }
-}
-'''
 }

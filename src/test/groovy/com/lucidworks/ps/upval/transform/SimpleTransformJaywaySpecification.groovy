@@ -1,12 +1,15 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.upval.transform
 
-import com.lucidworks.ps.mapping.SimpleTransform
+import com.jayway.jsonpath.DocumentContext
+import com.jayway.jsonpath.JsonPath
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class SimpleTransformSpecification extends Specification {
+class SimpleTransformJaywaySpecification extends Specification {
     Map srcMap = null
     Map destMap = null
+    DocumentContext srcContext = null
+    DocumentContext destContext = null
     Map rules = null
 
     /**
@@ -17,72 +20,43 @@ class SimpleTransformSpecification extends Specification {
     def setup(){
         JsonSlurper slurper = new JsonSlurper()
         srcMap = slurper.parseText(src)
+        srcContext = JsonPath.parse(srcMap)         // useful? necessary? for set value
+
         destMap = slurper.parseText(dest)
+        destContext = JsonPath.parse(destMap)         // useful? necessary? for set value
+
         rules = slurper.parseText(configsJsonPath)
     }
 
-    def "Normal Foo transform calling method directly"() {
+
+    def "check jayway read basics"() {
         given:
-        def transform = new SimpleTransform(srcMap, destMap, rules)
+//        String foo = 'test'
+        String srcPath = '$.properties.collection'
 
         when:
-        String result = transform.testDescription('myBar')
+        def collection = JsonPath.read(srcMap, srcPath)
+
 
         then:
-        result.equals("Creating a test description for thing: (myBar)")
+        collection == 'MyCollection'
     }
 
-    def "Dynamic function call of foo with hard coded param"() {
+    def "check jayway write basics"() {
         given:
-        def transform = new SimpleTransform(srcMap, destMap, rules)
-        String func = 'testDescription'
+        String srcPath = '$.properties.collection'
+        String destPath = '$.properties.collection'
 
         when:
-        String result = transform."${func}"('myBar')
+        def collection = JsonPath.read(srcMap, srcPath)
+        def previousDestValue = destContext.read(destPath)
+        destContext.set(destPath, collection)
+        def updatedDestValue = destContext.read(destPath)
 
         then:
-        result.equals("Creating a test description for thing: (myBar)")
+        previousDestValue == ''
+        updatedDestValue == 'MyCollection'
     }
-
-    def "Dynamic class and function call with hard coded param"() {
-        given:
-        def transformerClass = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
-//        def instance = this.class.classLoader.loadClass( 'SimpleTransform', true)?.newInstance()
-        String func = 'testDescription'
-
-        when:
-        String result = transformerClass."${func}"('myBar')
-
-        then:
-        result.equals("Creating a test description for thing: (myBar)")
-    }
-
-    def "Dynamic class and function from config"() {
-        given:
-        def fu = new SimpleTransform(srcMap, destMap, rules)
-        JsonSlurper slurper = new JsonSlurper()
-        String className = "com.lucidworks.ps.upval.mapping.SimpleTransform"
-
-        def transformerClass = Class.forName(className)
-        String func = 'testDescription'
-
-        when:
-        String param1 = 'MyParam1TestValue'
-        String result = transformerClass."${func}"(param1)
-
-        then:
-        result.equals("Creating a test description for thing: (MyParam1TestValue)")
-    }
-
-//    def "simple javax-json jsonPointer testing"(){
-//        given:
-//        Map json = new JsonSlurper().parseText()
-//                JsonPointerImpl jsonPointer =
-//        JsonPoi
-//        JsonPointer jsonPointer = Json.createPointer("/library");
-//        JsonString jsonString = (JsonString) jsonPointer.getValue(jsonStructure);
-//
-//    }
 
 
 
@@ -133,7 +107,7 @@ class SimpleTransformSpecification extends Specification {
          "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
        }
      },
-     "collection" : "MyCollection"
+     "collection" : ""
    },
    "pipeline" : "",
    "connector" : "lucidworks.s3"

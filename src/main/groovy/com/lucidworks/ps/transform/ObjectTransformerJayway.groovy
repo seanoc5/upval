@@ -1,11 +1,17 @@
-package com.lucidworks.ps.mapping
+package com.lucidworks.ps.transform
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
+import java.text.SimpleDateFormat
+
 /**
+ * Class to perform transfomations on JSON slurped
+ * @see groovy.json.JsonSlurper
+ * todo improve class design - consider implementing an interface, or perhaps a base transformer factory to allow abstraction of implementation choice
+ * todo should this handle xml sources as well, or keep that functionality distinct? xml nodes are significantly different that JsonSlurper maps/lists
  * <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer
  *
  */
@@ -103,10 +109,21 @@ class ObjectTransformerJayway {
     public Object evaluateValue(String value) {
         String valueToSet = null
         if (value.contains('$')) {
-            // http://www.groovyconsole.appspot.com/edit/22004?execute
-            log.debug "\t\tprepare to evaluate me...: $value"
-            valueToSet = Eval.me(/"$value"/)
-            log.info "\t\tEvaluated gstring ($value) ==> $valueToSet"
+            try {
+                // 2020-11-05T19:12:54.966Z
+                // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(oldDate)
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss'Z'")
+                Date now = new Date()
+//                String nowStr = sdf.pare(now)
+                String nowStr = sdf.format(now)
+
+                // http://www.groovyconsole.appspot.com/edit/22004?execute
+                log.debug "\t\tprepare to evaluate me...: $value"
+                valueToSet = Eval.me(/"$value"/)
+                log.info "\t\tEvaluated gstring ($value) ==> $valueToSet"
+            } catch (Exception e){
+                log.warn "Error: $e"
+            }
         } else {
             valueToSet = value
         }

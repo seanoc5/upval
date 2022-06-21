@@ -1,4 +1,4 @@
-package com.lucidworks.ps.mapping
+package com.lucidworks.ps.transform
 
 import org.apache.log4j.Logger
 

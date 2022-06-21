@@ -1,6 +1,6 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.upval.transform
 
-import com.lucidworks.ps.mapping.ObjectTransformerJayway
+import com.lucidworks.ps.transform.ObjectTransformerJayway
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
