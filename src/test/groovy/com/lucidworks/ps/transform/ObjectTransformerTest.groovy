@@ -64,6 +64,10 @@ class ObjectTransformerTest extends Specification {
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
+    /**
+     * @deprecated ignore me--testing passing around enclosures
+     * @return
+     */
     def "lamda experiment"(){
         given:
         def lambdaNorma = {Object it -> return it.class.name}
@@ -88,12 +92,7 @@ class ObjectTransformerTest extends Specification {
 //        def myEntry =
 //    }
 
-/*
-    def "GetByMapPath"() {
-    }
 
-    def "SetByMapPath"() {
-    }*/
 
     public static String src = '''
 {

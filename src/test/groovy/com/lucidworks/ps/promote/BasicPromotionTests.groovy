@@ -5,6 +5,7 @@ import groovy.json.JsonSlurper
 import spock.lang.Specification
 /**
  * Less of a test suite, more of seeing how things can work...
+ * @deprecated this is just compare, refactor...
  */
 class BasicPromotionTests extends Specification {
 
