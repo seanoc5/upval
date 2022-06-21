@@ -84,6 +84,7 @@ class Helper {
      * experimenting with flattening a thing (java collection?) and returning path PLUS object metainfo (class name & level)
      * todo change generic in return to string,string...?
      * @deprecated not used anywhere??
+     * @see Helper.flattenPlusObject
      * @param object
      * @param level
      * @return  flattened path(string) plus object name (string)
