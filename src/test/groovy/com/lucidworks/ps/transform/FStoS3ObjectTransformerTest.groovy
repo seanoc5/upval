@@ -1,10 +1,10 @@
-package com.lucidworks.ps.upval.transform
+package com.lucidworks.ps.transform
 
-import com.lucidworks.ps.transform.SimpleTransform
+
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class SimpleTransformSpecification extends Specification {
+class FStoS3ObjectTransformerTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
@@ -21,70 +21,32 @@ class SimpleTransformSpecification extends Specification {
         rules = slurper.parseText(configsJsonPath)
     }
 
-    def "Normal Foo transform calling method directly"() {
+    def "Transform Set Values"(){
         given:
-        def transform = new SimpleTransform(srcMap, destMap, rules)
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
         when:
-        String result = transform.testDescription('myBar')
+        transformer.setValues()
 
         then:
-        result.equals("Creating a test description for thing: (myBar)")
+//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
+        transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.fs'
+        transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.fs'
+        transformer.getValueByJsonPath('$.created', destMap).contains('2022')
+
     }
 
-    def "Dynamic function call of foo with hard coded param"() {
+    def "Transform"() {
         given:
-        def transform = new SimpleTransform(srcMap, destMap, rules)
-        String func = 'testDescription'
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
         when:
-        String result = transform."${func}"('myBar')
+        transformer.transform()
 
         then:
-        result.equals("Creating a test description for thing: (myBar)")
+//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
+        transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
-
-    def "Dynamic class and function call with hard coded param"() {
-        given:
-        def transformerClass = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
-//        def instance = this.class.classLoader.loadClass( 'SimpleTransform', true)?.newInstance()
-        String func = 'testDescription'
-
-        when:
-        String result = transformerClass."${func}"('myBar')
-
-        then:
-        result.equals("Creating a test description for thing: (myBar)")
-    }
-
-    def "Dynamic class and function from config"() {
-        given:
-        def fu = new SimpleTransform(srcMap, destMap, rules)
-        JsonSlurper slurper = new JsonSlurper()
-        String className = "com.lucidworks.ps.upval.mapping.SimpleTransform"
-
-        def transformerClass = Class.forName(className)
-        String func = 'testDescription'
-
-        when:
-        String param1 = 'MyParam1TestValue'
-        String result = transformerClass."${func}"(param1)
-
-        then:
-        result.equals("Creating a test description for thing: (MyParam1TestValue)")
-    }
-
-//    def "simple javax-json jsonPointer testing"(){
-//        given:
-//        Map json = new JsonSlurper().parseText()
-//                JsonPointerImpl jsonPointer =
-//        JsonPoi
-//        JsonPointer jsonPointer = Json.createPointer("/library");
-//        JsonString jsonString = (JsonString) jsonPointer.getValue(jsonStructure);
-//
-//    }
-
-
 
     public static String src = '''
 {
@@ -161,4 +123,22 @@ class SimpleTransformSpecification extends Specification {
 '''
 
 
+    public static String configsSlashy = '''
+{
+    "transformerClass": "SimlpeTransform",
+    "set": {
+        "/type": "lucidworks.ldap",
+        "/connector": "lucidworks.ldap",
+        "/created": "${new Date()}",
+        "/modified": "${new Date()}",
+    },
+    "copy": {
+        "/id": "/id",
+        "/pipeline": "/pipeline",
+        "/parserId": "/parserId",
+        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
+        "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
+    }
+}
+'''
 }
