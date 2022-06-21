@@ -10,7 +10,9 @@ import java.util.regex.Pattern
  * wrapper class to help with solr schema parsing and operations
  */
 class ConfigSet {
+    public static final Pattern SOLR_CONFIG_PATTERN = '/solrconfig.xml'
     Logger log = Logger.getLogger(this.class.name);
+    public static final Pattern LANG_FOLDER_PATTERN = ~/\/lang\/.+/
     String configsetName
     Map<String, String> items
 
@@ -22,6 +24,7 @@ class ConfigSet {
     def stopwords = ''
     def synonyms = ''
     def protwords = ''
+
 
     ConfigSet(String configsetName, Map<String, Object> items) {
         this.configsetName = configsetName
@@ -46,10 +49,10 @@ class ConfigSet {
             log.debug "Parse solrconfig"
 
             log.debug "Parse lang folder"
-            def lf = populateLangFolder()
+            langFolder = populateLangFolder(LANG_FOLDER_PATTERN)
 
             log.debug "Parse config overlay"
-            def co = parseConfigOverlay()
+            configOverlay = parseConfigOverlay()
 
             log.debug "Parse stopwords"
             stopwords = items['/stopwords.txt']         // getting lazy, plus: stopwords are evil, don't use them!!
@@ -84,26 +87,29 @@ class ConfigSet {
     }
 
     SolrConfig parseSolrconfig(Map<String, Object> items) {
-        String scXml = items['/solrconfig.xml']
+        String scXml = items[SOLR_CONFIG_PATTERN]
         SolrConfig solrConfig = scXml ? new SolrConfig(scXml) : null
         return solrConfig
     }
 
-    Map<String, String> populateLangFolder(Pattern langMatch = ~/\/lang\/.+/) {
-        langFolder = items.findAll { String path, def item ->
+    Map<String, String> populateLangFolder(LANG_FOLDER_PATTERN) {
+        df lf = items.findAll { String path, def item ->
             path.contains('lang')
             path ==~ langMatch
 
         }
-        return langFolder
+        return lf
     }
 
     def parseConfigOverlay(String coPath = '/configoverlay.json') {
         String co = items[coPath]
-        JsonSlurper slurper = new JsonSlurper()
-        configOverlay = slurper.parseText(co)
-        log.debug "parsed configOverlay string: [$co] to object: $configOverlay"
-        return configOverlay
+        Map coMap = null
+        if(co) {
+            JsonSlurper slurper = new JsonSlurper()
+            coMap = slurper.parseText(co)
+            log.debug "parsed configOverlay string: [$co] to object: $configOverlay"
+        }
+        return coMap
     }
 
     /**
