@@ -11,26 +11,50 @@ import spock.lang.Specification
 
 class ManagedSchemaTest extends Specification {
 
-    def "parse schema fragment"() {
+    def "parse schema fragment with luke in constructor"() {
         given:
         def schemaSource = getClass().getResource('/schema-min.xml')
         def lukeSource = getClass().getResource('/luke-min.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource)
-        def lukeMap = schema.parseLukeOutput(lukeSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.toString(), lukeSource)
         def usedFields = schema.findUsedFieldsLuke()
-        def unUsedFields = schema.findUnusedFields()
+        def unUsedFields = schema.findUnusedLukeFields()
 
 
         then:
         schema.fieldTypes.size() == 2
-        schema.definedFields.size() == 2
+        schema.schemaFields.size() == 2
+        schema.knownfields.size() == 5
         schema.lukeFields.size() == 4
+        usedFields.keySet().toList() == ['title', '_version_', 'body']
         unUsedFields.size() == 1
-        unUsedFields.keySet()[0]=='fubar'
+        unUsedFields.keySet()[0]=='exampleNoDocs'
+        unUsedFields['exampleNoDocs'].type == 'text_general'
+        unUsedFields['exampleNoDocs'].docs == 0
+        unUsedFields['exampleNoDocs'].schema == 'ITS-UM------------'
 
 
+    }
+    def "parse schema fragment adding luke after constructor"() {
+        given:
+        def schemaSource = getClass().getResource('/schema-min.xml')
+        def lukeSource = getClass().getResource('/luke-min.json')
+
+        when:
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.file)
+        def lukeMap = schema.parseLukeOutput(lukeSource)
+        def usedFields = schema.findUsedFieldsLuke()
+        def unUsedFields = schema.findUnusedLukeFields()
+
+
+        then:
+        schema.fieldTypes.size() == 2
+        schema.schemaFields.size() == 2
+        schema.lukeFields.size() == 4
+        usedFields.keySet().toList() == ['title', '_version_', 'body']
+        unUsedFields.size() == 1
+        unUsedFields.keySet()[0]=='exampleNoDocs'
     }
 
     def "ParseSchema"() {
@@ -38,11 +62,11 @@ class ManagedSchemaTest extends Specification {
         def schemaSource = getClass().getResource('/f4.basic.managed-schema.xml')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.file)
 
         then:
         schema.fieldTypes.size() == 64
-        schema.definedFields.size() == 7
+        schema.schemaFields.size() == 7
 
     }
 
@@ -52,12 +76,12 @@ class ManagedSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.toString(), lukeSource)
 //        def lukeMap = schema.parseLukeOutput(lukeSource)
 
         then:
         schema.fieldTypes.size() == 64
-        schema.definedFields.size() == 7
+        schema.schemaFields.size() == 7
         schema.lukeFields.size() == 9
 
     }
@@ -68,17 +92,17 @@ class ManagedSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource)
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.file)
         def lukeMap = schema.parseLukeOutput(lukeSource)
         def usedFields = schema.findUsedFieldsLuke()
-        def unUsedFields = schema.findUnusedFields()
+        def unUsedFields = schema.findUnusedLukeFields()
 
         then:
         schema.fieldTypes.size() == 64
-        schema.definedFields.size() == 7
-        schema.lukeFields.size() == 7
-        usedFields.keySet().size() == 5
-        usedFields.keySet().toList() == [ '_text_', '_version_', 'body', 'id', 'title']
+        schema.schemaFields.size() == 7
+        schema.lukeFields.size() == 9
+        usedFields.keySet().size() == 7
+        usedFields.keySet().toList() == [ '_text_', '_version_', 'body', 'id', 'title', 'tag_ss', 'title_t']
         unUsedFields.keySet().toList() == [ 'body_str', 'title_str']
 
     }
@@ -89,8 +113,8 @@ class ManagedSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
-        def dynamicFields = schema.dynamicFieldDefinitions
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.toString(), lukeSource)
+        def dynamicFields = schema.schemaDynamicFieldDefinitions
         def unusedDynamic = schema.findUnusedDynamicfields()
 
         then:
@@ -105,8 +129,8 @@ class ManagedSchemaTest extends Specification {
         def lukeSource = getClass().getResource('/f4.luke-output-basic.json')
 
         when:
-        ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
-        def dynamicFields = schema.dynamicFieldDefinitions
+        ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.toString(), lukeSource)
+        def dynamicFields = schema.schemaDynamicFieldDefinitions
         def unusedDynamic = schema.findUnusedDynamicfields()
 
 
