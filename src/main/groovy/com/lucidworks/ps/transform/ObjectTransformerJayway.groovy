@@ -112,10 +112,7 @@ class ObjectTransformerJayway {
             try {
                 // 2020-11-05T19:12:54.966Z
                 // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(oldDate)
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss'Z'")
-                Date now = new Date()
-//                String nowStr = sdf.pare(now)
-                String nowStr = sdf.format(now)
+//                String nowStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:sss'Z'").format(new Date())
 
                 // http://www.groovyconsole.appspot.com/edit/22004?execute
                 log.debug "\t\tprepare to evaluate me...: $value"
@@ -130,4 +127,7 @@ class ObjectTransformerJayway {
         return valueToSet
     }
 
+    String currentTimeStamp(Date date = new Date()){
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(date)
+    }
 }

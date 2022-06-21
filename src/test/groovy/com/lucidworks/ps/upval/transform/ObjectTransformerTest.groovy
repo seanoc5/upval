@@ -142,7 +142,7 @@ class ObjectTransformerTest extends Specification {
     "set": {
         "$.type": "lucidworks.ldap",
         "$.connector": "lucidworks.ldap",
-        "$.created": "${new Date()}",
+        "$.created": "${currentTimeStamp()}",
         "$.modified": "${new Date()}",
         "$.properties.security":"$[testmap:true]"
     },
