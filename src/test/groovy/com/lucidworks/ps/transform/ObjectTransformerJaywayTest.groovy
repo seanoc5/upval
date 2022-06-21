@@ -4,7 +4,7 @@ package com.lucidworks.ps.transform
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class ObjectTransformerTest extends Specification {
+class ObjectTransformerJaywayTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
