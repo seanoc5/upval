@@ -1,10 +1,11 @@
-package com.lucidworks.ps.promotion
+package com.lucidworks.ps.promote
 
 
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 /**
  * Less of a test suite, more of seeing how things can work...
+ * @deprecated this is just compare, refactor...
  */
 class BasicPromotionTests extends Specification {
 

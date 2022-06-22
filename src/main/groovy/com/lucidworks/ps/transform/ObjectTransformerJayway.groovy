@@ -1,13 +1,20 @@
-package com.lucidworks.ps.mapping
+package com.lucidworks.ps.transform
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
+import java.text.SimpleDateFormat
+
 /**
  * Use <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer to apply rules to a JsonSlurper.parse* object (i.e. map of maps/lists)
  * todo -- handle an initial list rather than the assumed map (with possible lists as children)
+ * Class to perform transfomations on JSON slurped
+ * @see groovy.json.JsonSlurper
+ * todo improve class design - consider implementing an interface, or perhaps a base transformer factory to allow abstraction of implementation choice
+ * todo should this handle xml sources as well, or keep that functionality distinct? xml nodes are significantly different that JsonSlurper maps/lists
+ * <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer
  *
  */
 class ObjectTransformerJayway {
@@ -20,13 +27,6 @@ class ObjectTransformerJayway {
 
     Map rules
 
-    /**
-     * take a JsonSlurped object, and apply a map of rules
-     *
-     * @param srcMap
-     * @param rules
-     */
-    ObjectTransformerJayway(Map srcMap, Map rules) {
 
     }
 
@@ -152,14 +152,25 @@ class ObjectTransformerJayway {
     static public Object evaluateValue(String value) {
         String valueToSet = null
         if (value.contains('$')) {
-            // http://www.groovyconsole.appspot.com/edit/22004?execute
-            log.debug "\t\tprepare to evaluate me...: $value"
-            valueToSet = Eval.me(/"$value"/)
-            log.info "\t\tEvaluated gstring ($value) ==> $valueToSet"
+            try {
+                // 2020-11-05T19:12:54.966Z
+                // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(oldDate)
+//                String nowStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:sss'Z'").format(new Date())
+
+                // http://www.groovyconsole.appspot.com/edit/22004?execute
+                log.debug "\t\tprepare to evaluate me...: $value"
+                valueToSet = Eval.me(/"$value"/)
+                log.info "\t\tEvaluated gstring ($value) ==> $valueToSet"
+            } catch (Exception e){
+                log.warn "Error: $e"
+            }
         } else {
             valueToSet = value
         }
         return valueToSet
     }
 
+    String currentTimeStamp(Date date = new Date()){
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(date)
+    }
 }

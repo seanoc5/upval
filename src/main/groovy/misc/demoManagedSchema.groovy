@@ -9,7 +9,7 @@ import groovy.xml.XmlUtil
  * @created :   6/13/22, Monday
  * @description:
  */
-
+// todo move this to a test...
 import org.apache.log4j.Logger
 
 final Logger log = Logger.getLogger(this.class.name);
@@ -18,8 +18,8 @@ log.info "Starting ${this.class.name}..."
 def schemaSource = getClass().getResource('/examples/f4.basic.managed-schema.xml')
 def lukeSource = getClass().getResource('/examples/f4.luke-output-basic.json')
 
-ManagedSchema schema = new ManagedSchema(schemaSource, lukeSource)
-def dynamicFields = schema.dynamicFieldDefinitions
+ManagedSchema schema = new ManagedSchema(schemaSource, schemaSource.toString(), lukeSource)
+def dynamicFields = schema.schemaDynamicFieldDefinitions
 def unusedDynamic = schema.findUnusedDynamicfields()
 def results = schema.removeUnusedDynamicFields(unusedDynamic)
 

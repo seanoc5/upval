@@ -50,11 +50,13 @@ class BaseComparator {
         log.info msg
     }
 
-    CompareObjectResults compare(String label = null) {
-        if(label){
-            // todo -- fixme, muddled constructor and compare() call, pick either constructor does compare, or compare() called explicitly with label.... this is a short-term hack...
-            this.compareLabel = label
-        }
+    /**
+     * compare the left and right objects, create a CompareObjectResults object to hold result information, populate that object
+     * <br/>
+     * todo -- refactor CompareObjectResults object and call here... should/could be static call? benefit of maintaining state in this object??
+     * @return CompareObjectResults object containing information about the comparison results
+     */
+    CompareObjectResults compare() {
         CompareObjectResults objectsResults = new CompareObjectResults(this.compareLabel, left, right)
         leftFlatMap = Helper.flattenPlusObject(left, 1)
         leftKeyPaths = leftFlatMap.keySet()

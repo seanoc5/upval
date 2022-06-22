@@ -15,22 +15,25 @@ class ManagedSchema {
     Logger log = Logger.getLogger(this.class.name);
     /** source of content, if string, these will be equal, if file, or url, that will be different */
     def source
+    /** informal label of this schema (typically collection name? maybe with Fusion app name? */
+    String label
     String content
     Map schemaMap = [:]
     Node xmlSchema
     List<Node> fieldTypes
-    List<Node> dynamicFieldDefinitions
-    List<Node> definedFields
+    List<Node> schemaDynamicFieldDefinitions
+    List<Node> schemaFields
     Map<String, Map> lukeMap
     Map<String, Map> lukeFields
-    Map usedFields = [:].withDefault { [:] }          // "withDefault so we can easily merge both schema-defined and luke-base details
+    Map knownfields = [:].withDefault { [:] }
+    // "withDefault so we can easily merge both schema-defined and luke-base details
 
     /**
      * simple constructor with just the managed schema source (file, url, string,...?)
      * @param src
      */
-    ManagedSchema(def src) {
-        log.info "Simple constructor WITHOUT luke param (missing luke means less helpful analysis on what is used and not used)"
+    ManagedSchema(def src, String label = 'unknown') {
+        log.debug "Simple constructor WITHOUT luke param (missing luke means less helpful analysis on what is used and not used)"
         source = src
         parseSchema(src)
     }
@@ -41,8 +44,8 @@ class ManagedSchema {
      * @param src
      * @param lukeOutput
      */
-    ManagedSchema(def src, def lukeOutput) {
-        log.info "Src(${src.getClass().simpleName}) AND luke output (${lukeOutput.getClass().simpleName})"
+    ManagedSchema(def src, String label = 'unknown', def lukeOutput) {
+        log.debug "Src(${src.getClass().simpleName}) AND luke output (${lukeOutput.getClass().simpleName})"
         if(src instanceof  String){
             if(src[0..20].contains(XML_START_TAG)){
                 source = "XML Source string"
@@ -73,8 +76,13 @@ class ManagedSchema {
             log.debug "Source (${src} appears to be xml, parse with XMLParser (not xml slurper)"
             XmlParser parser = new XmlParser()
             xmlSchema = parser.parseText(content)
-            definedFields = collectSchemaFields()
-            dynamicFieldDefinitions = collectDynamicFieldsDefinitions()
+            schemaFields = collectSchemaFields()
+            Map schemaFields = schemaFields.collectEntries {
+                String name =it.attribute('name')
+                [name: [schemaNode: it]]
+            }
+            knownfields = knownfields + schemaMap       // avoid using a reference, want a copy of the definedFields...
+            schemaDynamicFieldDefinitions = collectDynamicFieldsDefinitions()
             fieldTypes = collectSchemaFieldTypes()
         } else if (lines[0].contains('{')) {
             log.warn "File (${src} appears to be JSON, parse with JsonSlurper (untested code: Json source...!!!)"
@@ -100,55 +108,62 @@ class ManagedSchema {
 
     /**
      * parse luke output and include parsed field information
-     * this can help verify what (dynamic) fields are in the index, but not used (0 docs)
+     * this can help verify what (dynamic) fields are in the index, but not used (e.g. < n docs, like doc=0?)
      * @param lukeSource json export/file from solr admin luke request
      * @return the parsed list of fields from luke
      */
     def parseLukeOutput(def lukeSource) {
+        log.debug "Parsing output of 'luke' request handler(JSON only!) : $lukeSource"
         JsonSlurper slurper = new JsonSlurper()
         lukeMap = slurper.parse(lukeSource)
         lukeFields = lukeMap.fields
-        lukeFields.each { String fieldName, fieldDetails ->
-            def map = usedFields[fieldName]
+        lukeFields.each { String fieldName, lukefieldDetails ->
+            def map = knownfields[fieldName] ?: [:]
             if (map) {
-                log.debug "Combine existing: $map (schema) with luke details $fieldDetails "
+                log.debug "Combine existing: $map (schema) with luke details $lukefieldDetails "
             } else {
                 log.debug "Dynamic only? $fieldName"
             }
-            map += fieldDetails         // combine previous schema info (if exists) with luke info
-            map.lukeDetails = fieldDetails
-            map.name = fieldName           // redundant, but could help with flipping the map with something like usedFields.
-
-
+            knownfields[fieldName] = map + lukefieldDetails         // combine previous schema info (if exists) with luke info
         }
+        return lukeMap      // return just boolean success? void?
     }
 
 
     /**
      * use luke output to see what fields are actually in use
+     * @param mindDocs minimum number of docs to be considered a 'used' field
      * @param overrideAsUsed -- pattern to keep matching fields as 'used' regardless of luke information
      * @return
      */
-    def findUsedFieldsLuke(Pattern overrideAsUsed = OVERRIDE_FIELDNAMES) {
+    def findUsedFieldsLuke(int mindDocs = 1, Pattern overrideAsUsed = OVERRIDE_FIELDNAMES) {
         if (!lukeFields) {
             log.warn "No luke map/fields found!! Currently doesn't make sense to compare without luke, bailing..."
             return null
         }
         Map<String, Map<String, Object>> fieldNames = [:].withDefault { [:] }
         lukeFields.each { String fieldName, def lukeFieldInfo ->
-            if (lukeFieldInfo.docs > 0) {
+            if (lukeFieldInfo.docs >= mindDocs) {
+                log.debug "field ${lukeFieldInfo} had ${lukeFieldInfo.docs} which is >= min docs: $mindDocs"
                 fieldNames[fieldName].luke = lukeFieldInfo
             } else if (fieldName ==~ overrideAsUsed) {
-                log.info "adding special field: $fieldName even though luke says there are no docs..."
+                log.debug "adding special field: $fieldName even though luke says there are no docs..."
                 fieldNames[fieldName].luke = lukeFieldInfo
             } else {
-                log.info "\t\tLuke says field: $fieldName has no documents, consider it defined but not used"
+                log.debug "\t\tLuke says field: $fieldName has no documents, consider it defined but not used"
             }
         }
         return fieldNames
     }
 
-    def findUnusedFields(Pattern overrideAsUsed = OVERRIDE_FIELDNAMES) {
+
+    /**
+     *  return all docs (from luke output) the either have a minimum # of docs, or match some pattern signifying: consider 'used' by name match
+     * @param minDocs some number (0+) test to consider a field "used" (helps find edge case fields that are technically used, but should be removed
+     * @param overrideAsUsed
+     * @return list of fields that can/should be considered unused (and potentially removed in other code??)
+     */
+    def findUnusedLukeFields(int minDocs = 0, Pattern overrideAsUsed = OVERRIDE_FIELDNAMES) {
         if (!lukeFields) {
             log.warn "No luke map/fields found!! Currently doesn't make sense to compare without luke, bailing..."
             return null
@@ -156,7 +171,7 @@ class ManagedSchema {
 
         Map<String, Map<String, Object>> usedFields = findUsedFieldsLuke()
         def unused = lukeFields.findAll { String fieldName, def lukeFieldInfo ->
-            if (lukeFieldInfo.docs > 0) {
+            if (lukeFieldInfo.docs > minDocs) {
                 return false
             } else if (fieldName ==~ overrideAsUsed) {
                 return false
@@ -182,7 +197,7 @@ class ManagedSchema {
             if (nodeName == 'field') {
                 String fieldName = node.attribute('name')
                 String type = node.attribute('type')
-                usedFields[fieldName] = [name: fieldName, type: type, schemaNode: node]
+                knownfields[fieldName] = [name: fieldName, type: type, schemaNode: node]
                 return true
             } else {
                 return false
@@ -196,7 +211,7 @@ class ManagedSchema {
      * @return
      */
     List<Node> collectDynamicFieldsDefinitions() {
-        dynamicFieldDefinitions = xmlSchema.'**'.findAll { Node node ->
+        schemaDynamicFieldDefinitions = xmlSchema.'**'.findAll { Node node ->
             node.name() == 'dynamicField'
         }
     }
@@ -211,7 +226,7 @@ class ManagedSchema {
             return null
         }
 
-        def dynamicFieldNames = dynamicFieldDefinitions.collect { Node n ->
+        def dynamicFieldNames = schemaDynamicFieldDefinitions.collect { Node n ->
             n.attributes()['name']
         }
         def lukeDynamicBases = lukeFields.findAll { String key, Object val ->
@@ -225,40 +240,40 @@ class ManagedSchema {
     }
 
     def removeUnusedDynamicFields(List<String> unusedDynamicFieldNames) {
-        Map results = [removed:0, problems:0]
+        Map results = [removed: 0, problems: 0]
         unusedDynamicFieldNames.each { String name ->
             Node n = xmlSchema.'**'.find { it.name() == 'dynamicField' && it.attribute('name') == name }
             if (n) {
                 log.debug "found: $n, go to parent, and remove the child"
                 def success = n.parent().remove(n)
-                if(success){
+                if (success) {
                     results.removed++
                 } else {
-                    results.problems ++
+                    results.problems++
                 }
             } else {
                 log.warn "Could not find (unused dynamic field def) XML node: $name"
-                results.problems ++
+                results.problems++
             }
         }
         return results
     }
 
     def removeUnusedFieldsTypes(List<String> unusedFieldTypes) {
-        Map results = [removed:0, problems:0]
+        Map results = [removed: 0, problems: 0]
         unusedFieldTypes.each { String name ->
             Node n = xmlSchema.'**'.find { it.name() == 'fieldType' && it.attribute('name') == name }
             if (n) {
                 log.debug "found: $n, go to parent, and remove the child"
                 def success = n.parent().remove(n)
-                if(success){
+                if (success) {
                     results.removed++
                 } else {
-                    results.problems ++
+                    results.problems++
                 }
             } else {
                 log.warn "Could not find (unused fieldType): $name"
-                results.problems ++
+                results.problems++
             }
         }
         return results
@@ -270,8 +285,8 @@ class ManagedSchema {
      * Assumed 'used' if: luke shows field with > 0 docs, or explicitly defined in schema
      */
     def findUnusedFieldTypes() {
-        List<String> fieldTypes = collectSchemaFieldTypes().collect { it.attribute('name')}
-        Set<String> usedFieldTypes = usedFields.collect {String name, Map details ->
+        List<String> fieldTypes = collectSchemaFieldTypes().collect { it.attribute('name') }
+        Set<String> usedFieldTypes = knownfields.collect { String name, Map details ->
             details.type
         }.toSet()
         List<String> unusedFieldTypes = fieldTypes - usedFieldTypes

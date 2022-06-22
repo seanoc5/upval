@@ -1,10 +1,10 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.transform
 
 import com.lucidworks.ps.mapping.ObjectTransformerJayway
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
-class ObjectTransformerTest extends Specification {
+class ObjectTransformerJaywayTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
@@ -20,6 +20,16 @@ class ObjectTransformerTest extends Specification {
         destMap = slurper.parseText(dest)
         rules = slurper.parseText(configsJsonPathSlashyFormat)
     }
+
+/*
+    def "should transform a source to expected output" () {
+        given
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+
+        when:
+
+    }
+*/
 
     def "Transform Set Values"(){
         /*
@@ -54,6 +64,10 @@ class ObjectTransformerTest extends Specification {
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
+    /**
+     * @deprecated ignore me--testing passing around enclosures
+     * @return
+     */
     def "lamda experiment"(){
         given:
         def lambdaNorma = {Object it -> return it.class.name}
@@ -119,7 +133,7 @@ class ObjectTransformerTest extends Specification {
     "set": {
         "$.type": "lucidworks.ldap",
         "$.connector": "lucidworks.ldap",
-        "$.created": "${new Date()}",
+        "$.created": "${now}",
         "$.modified": "${new Date()}",
         "$.properties.security":"$[testmap:true]"
     },

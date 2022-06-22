@@ -36,10 +36,10 @@ class BaseComparatorTest extends Specification {
     def "Compare simple maps"() {
         given:
         String label = 'Compare unit test'
-        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP,)
+        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, label)
 
         when:
-        CompareObjectResults results = comparator.compare('GenericObjectMap')
+        CompareObjectResults results = comparator.compare()
 
         then:
         results.leftOnlyKeys == null
@@ -55,7 +55,7 @@ class BaseComparatorTest extends Specification {
         results.differences[1].description == 'Values are DIFFERENT: left:(top3-middle1) and right:(top3-middle1 plus change)'
     }
 
-    def "Compare ignoring values for top3.middle2"() {
+    def "compare simple maps while ignoring value differences top2.* and to3.middle1"() {
         given:
         String label = 'Compare unit test'
         Pattern ignoreValues = ~/(top2.*|top3.middle1)/
@@ -63,20 +63,20 @@ class BaseComparatorTest extends Specification {
 
         when:
         CompareObjectResults results = comparator.compare()
+        def differences = results.differences
+        def similarities = results.similarities
         def similarButDifferent = results.similarities.findAll{it.differenceType==ComparisonResult.SIMILAR}
 
         then:
         results.leftOnlyKeys == null
-
         results.rightOnlyKeys.size() == 2
-
         results.sharedKeys.size() == 9
 
-        results.differences.size() == 1
-        results.differences[0].differenceType == ComparisonResult.DIFF_RIGHT_ONLY
-        results.differences[0].description == '[top2.[3], top3.middle3.bottom2]'
+        differences.size() == 1
+        differences[0].differenceType == ComparisonResult.DIFF_RIGHT_ONLY
+        differences[0].description == '[top2.[3], top3.middle3.bottom2]'
 
-        results.similarities.size() == 9
+        similarities.size() == 9
         similarButDifferent.size()==2
 
     }

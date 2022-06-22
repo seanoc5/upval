@@ -1,4 +1,4 @@
-package com.lucidworks.ps.upval.mapping
+package com.lucidworks.ps.transform
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
