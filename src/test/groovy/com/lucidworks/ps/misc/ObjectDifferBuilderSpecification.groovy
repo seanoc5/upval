@@ -6,7 +6,12 @@ import de.danielbechler.diff.node.Visit
 import de.danielbechler.diff.selector.ElementSelector
 import spock.lang.Specification
 
-class ObjectComparisonSpecification extends Specification {
+/**
+ * Exploring ObjectDifferBuilder approach
+ * @deprecated
+ * @see com.lucidworks.ps.mapping.ObjectTransformerJayway
+ */
+class ObjectDifferBuilderSpecification extends Specification {
 
 
     def "compareTestJsonStrings"() {

@@ -18,6 +18,19 @@ class HelperSpecification extends Specification {
             ]
     ]
 
+    def "should add missing elements"() {
+        given:
+        Map srcMap = [a: [one: 1, two: 2], b: [1, 2]]
+        String missingPath = '/a/three/myMissingLeaf'
+        def valToSet = 'fubar'
+
+        when:
+        def foo = Helper.getOrCreateJsonObjectNode(srcMap, missingPath, '/', valToSet)
+
+        then:
+        srcMap.a.three.myMissingLeaf == valToSet
+    }
+
 
     def "simple flatten functionality"() {
         given:

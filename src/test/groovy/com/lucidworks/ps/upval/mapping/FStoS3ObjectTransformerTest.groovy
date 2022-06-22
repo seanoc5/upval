@@ -4,6 +4,11 @@ import com.lucidworks.ps.mapping.ObjectTransformerJayway
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
+/**
+ * outdated transform test using older jsonpath format
+ * @deprecated
+ * todo change to use current path with slashes...?
+ */
 class FStoS3ObjectTransformerTest extends Specification {
     Map srcMap = null
     Map destMap = null
@@ -21,7 +26,7 @@ class FStoS3ObjectTransformerTest extends Specification {
         rules = slurper.parseText(configsJsonPath)
     }
 
-    def "Transform Set Values"(){
+    def "should Transform Set Values from explicit map"(){
         given:
         ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
@@ -119,6 +124,8 @@ class FStoS3ObjectTransformerTest extends Specification {
         "$.properties.searchProperties.userSearchProp.userFilter": "$.properties.f.ldap_user_filter",
         "$.properties$.searchProperties$.groupSearchProp$.userFilter": "$.properties.f.ldap_group_filter"
     }
+    "remove": {
+    
 }
 '''
 

@@ -14,6 +14,42 @@ import java.util.regex.Pattern
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
+    static def getOrCreateJsonObjectNode(Map src, String path, String separator = '/', def valToSet = ''){
+        log.info "Process path: [$path] in src:$src "
+        List<String> segments = path.split(separator)
+        segments.remove(0)
+        int numSegments = segments.size()
+        def element = src
+        segments.eachWithIndex { String seg, int depth ->
+            if(seg.isNumber()) {
+                log.info "\t\t$depth - $seg) more code here for arrays/lists... "
+            } else {
+                log.debug "\t\t$depth - $seg) check if it exists... "
+                def child = element[seg]
+                if(!child){
+                    if(depth==(numSegments-1)) {
+                        log.info "\t\t$depth) create final leaf node $seg with valToSet: $valToSet"
+                        child = valToSet
+                    } else {
+                        log.info "\t\t$depth) create node $seg with empty map..."
+                        child = [:]
+                    }
+                    element[seg] = child
+                    log.info "create missing segment: $seg -> $element --full source: $src"
+                } else {
+                    log.info "\t\tFound segment ($seg) -> $element"
+                }
+                element = child
+            }
+        }
+        log.info "Result: $src"
+        return src
+    }
+
+    def getMapWithdefaultInject(Map map, String path){
+
+    }
+
     static List flattenXmlPath(Node node, int level = 0, String separator = '/') {
         String name = separator + node.name()
         def attributes = node.attributes()
@@ -80,65 +116,6 @@ class Helper {
         return pathList
     }
 
-    /**
-     * experimenting with flattening a thing (java collection?) and returning path PLUS object metainfo (class name & level)
-     * todo change generic in return to string,string...?
-     * @deprecated not used anywhere??
-     * @see Helper.flattenPlusObject
-     * @param object
-     * @param level
-     * @return  flattened path(string) plus object name (string)
-     */
-    static Map<String, Object> flattenPlusMeta(def object, int level = 0) {
-        Map<String, Object> entries = [:]
-        log.debug "$level) flattenPlus meta-info: $object..."
-        if (object instanceof Map) {
-            def keyset = object.keySet()
-            Map map = (Map) object
-            keyset.each { String key ->
-                def value = map[key]
-                log.debug "\t" * level + "$level)Key: $key"
-                if (value instanceof Map || value instanceof List) {
-                    level++
-                    Map<String, Object> children = flattenPlusMeta(value, level)
-                    children.each { String child, Object childObject ->
-                        String path = key + "." + child
-                        Map m = [level: level, objectType: childObject.getClass().name]
-                        entries[path] = m
-                    }
-                    log.debug "\t" * level + "submap keys: ${children}"
-                } else {
-                    entries[key] = [level: level, objectType: object.getClass().name]
-                    log.debug "\t" * level + "\t\tLeaf node: $key"
-                }
-                log.debug "next..."
-            }
-            log.debug "$level) after collect entries"
-
-        } else if (object instanceof List) {
-            log.debug "\t" * level + "$level) List! $object"
-            List list = (List) object
-            list.eachWithIndex { def val, int counter ->
-                if (val instanceof Map || val instanceof List) {
-                    level++
-                    Map<String, Object> children = flattenPlusMeta(val, level)
-                    children.each { String child ->
-                        String path = "[${counter}].${child}"
-                        entries[path] = [level: level, objectType: object.getClass().name]
-                    }
-                    log.debug "\t" * level + "submap keys: ${children}"
-                } else {
-                    log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
-                    String path = counter
-                    entries[path] = [level: level, objectType: object.getClass().name]
-                }
-            }
-            log.debug "done with list"
-        } else {
-            log.warn "$level) other?? $object"
-        }
-        return entries
-    }
 
     /**
      * Flatten object, get path plus object (reference?)

@@ -93,7 +93,7 @@ class ConfigSet {
     }
 
     Map<String, String> populateLangFolder(LANG_FOLDER_PATTERN) {
-        df lf = items.findAll { String path, def item ->
+        def lf = items.findAll { String path, def item ->
             path.contains('lang')
             path ==~ langMatch
 

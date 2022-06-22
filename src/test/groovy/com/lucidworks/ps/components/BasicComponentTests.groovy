@@ -6,6 +6,7 @@ import spock.lang.Specification
 
 /**
  * Less of a test suite, more of seeing how things can work...
+ * exploring <a href='https://spockframework.org/spock/docs/1.0/interaction_based_testing.html'>mock</a> (and perhaps stubs?)
  */
 class BasicComponentTests extends Specification {
 

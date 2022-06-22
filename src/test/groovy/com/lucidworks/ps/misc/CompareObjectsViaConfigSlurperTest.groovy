@@ -5,6 +5,7 @@ import com.lucidworks.ps.compare.CompareObjectResults
 import spock.lang.Specification
 /**
  * Less of a test suite, more of seeing how things can work...
+ * @deprecated possibly revisit config slurper later...
  */
 class CompareObjectsViaConfigSlurperTest extends Specification {
 

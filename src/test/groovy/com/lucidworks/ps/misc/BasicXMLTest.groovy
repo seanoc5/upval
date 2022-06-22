@@ -36,8 +36,10 @@ class BasicXMLTest extends Specification {
 </response>
 '''
 
-    /** hackish function to show one way to walk the tree, left here for reference, but didn't like it enough to use for real
-     *
+    /**
+     * hackish function to show one way to walk the tree, left here for reference, but didn't like it enough to use for real
+     *@deprecated
+     * @see Helper for other options
      * @param node
      * @return
      */
@@ -71,7 +73,11 @@ class BasicXMLTest extends Specification {
     }
 
 
-    def "Flatten all"() {
+    /**
+     * demo a (poor?) way to walk nodes
+     * @deprecated
+     */
+    def "should Flatten all nodes with a hackish approach"() {
         given:
         def xml = new XmlSlurper().parseText(xmlString)
         when:
@@ -89,7 +95,7 @@ class BasicXMLTest extends Specification {
     }
 
 
-    def "Flatten leaf nodes"() {
+    def "should Flatten leaf nodes of xml string to expected node count"() {
         given:
         def xml = new XmlSlurper().parseText(xmlString)
 
@@ -101,7 +107,7 @@ class BasicXMLTest extends Specification {
     }
 
 
-    def "Flatten demo schema files"() {
+    def "should Flatten demo schema files with expected left-right count differences"() {
         given:
         XmlParser parser = new XmlParser()
         def leftResource = getClass().getResourceAsStream('/f3.sample_tech.managed-schema.xml')
@@ -116,7 +122,7 @@ class BasicXMLTest extends Specification {
         then:
         flatLeft.size() == 444
         flatRight.size() == 438
-        flatLeft == flatRight
+
     }
 
 }

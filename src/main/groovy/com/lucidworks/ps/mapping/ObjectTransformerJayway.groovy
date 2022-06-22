@@ -6,11 +6,12 @@ import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
 /**
- * <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer
+ * Use <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer to apply rules to a JsonSlurper.parse* object (i.e. map of maps/lists)
+ * todo -- handle an initial list rather than the assumed map (with possible lists as children)
  *
  */
 class ObjectTransformerJayway {
-    Logger log = Logger.getLogger(this.class.name);
+    static Logger log = Logger.getLogger(this.class.name);
     Map sourceMap
     DocumentContext srcContext
 
@@ -19,13 +20,26 @@ class ObjectTransformerJayway {
 
     Map rules
 
+    /**
+     * take a JsonSlurped object, and apply a map of rules
+     *
+     * @param srcMap
+     * @param rules
+     */
+    ObjectTransformerJayway(Map srcMap, Map rules) {
 
+    }
+
+    /**
+     * @deprecated
+     * todo -- working on moving to functional approach (static calls)
+     */
     ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
-        log.info "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
+        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
         sourceMap = srcMap
-        srcContext = JsonPath.parse(sourceMap)
-
         destinationMap = destMap
+
+        srcContext = JsonPath.parse(sourceMap)
         destContext = JsonPath.parse(destinationMap)
 
         this.rules = rules
@@ -34,14 +48,26 @@ class ObjectTransformerJayway {
     /**
      * process the configuration rules, currently `set` and `copy`
      * @return
+     * todo -- remove me, moving to functional-friendly approach (static calls)
+     * @deprecated
      */
     Map<String, List<Map<String, Object>>> transform() {
         Map resultsMap = [:]
-        List<Map<String,Object>> myset = setValues()
+        List<Map<String, Object>> myset = setValues()
         resultsMap['set'] = myset
-        List<Map<String,Object>> myCopy = copyValues()
+        List<Map<String, Object>> myCopy = copyValues()
         resultsMap['copy'] = myCopy
         return destinationMap
+    }
+
+    static Map<String, List<Map<String, Object>>> transform(Map srcMap, Map rules, Map destinationTemplate = [:]) {
+        Map resultsMap = destinationTemplate
+
+        List<Map<String, Object>> myset = setValues(srcMap, rules, destinationTemplate)
+        resultsMap = resultsMap + myset
+        List<Map<String, Object>> myCopy = copyValues(srcMap, rules, destinationTemplate)
+        resultsMap = resultsMap + myCopy
+        return resultsMap
     }
 
 
@@ -49,28 +75,36 @@ class ObjectTransformerJayway {
      * run through 'set' rules and set destination values based on these rules (with the `$` to signal groovy evaluation of the rule value
      * @return list of rule results
      */
-    List<Map<String, Object>> setValues() {
+    static List<Map<String, Object>> setValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         List<Map<String, Object>> changes = []
         def setRules = rules['set']
+        DocumentContext srcContext = JsonPath.parse(srcMap)
+        DocumentContext destContext = JsonPath.parse(destinationTemplate)
+
         setRules.each { String destPath, String value ->
+            String valToSet = evaluateValue(value)
+
             try {
-                String valToSet = evaluateValue(value)
                 String origDestValue = destContext.read(destPath)
-                DocumentContext dc = destContext.set(destPath, valToSet)
-                String newDestValue = destContext.read(destPath)
-                Map change = [srcValue: value, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
-                log.info "\t\tSet '$destPath' in destinationMap to  rule value: '$value'  -- returned doc context:$dc"
-                changes << change
+                log.info "\t\toverriding orignal dest value ($origDestValue) with set value ($valToSet)"
             } catch (PathNotFoundException pnfe) {
                 log.warn "Path wasn't found: $pnfe"
                 log.debug "test"
             }
+
+            DocumentContext dc = destContext.set(destPath, valToSet)
+            String newDestValue = destContext.read(destPath)
+            Map change = [srcValue: value, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
+            log.info "\t\tSet '$destPath' in destinationMap to  rule value: '$value'  -- returned doc context:$dc"
+            changes << change
         }
         return changes
     }
 
-    List<Map<String, Object>> copyValues() {
+    static List<Map<String, Object>> copyValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         List<Map<String, Object>> changes = []
+        DocumentContext srcContext = JsonPath.parse(srcMap)
+        DocumentContext destContext = JsonPath.parse(destinationTemplate)
 
         def copyRules = rules['copy']
         copyRules.each { String destPath, String srcPath ->
@@ -80,7 +114,7 @@ class ObjectTransformerJayway {
                 DocumentContext dcUpdated = destContext.set(destPath, srcValue)
                 String newDestValue = destContext.read(destPath)
                 Map change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
-                if(srcValue!=newDestValue){
+                if (srcValue != newDestValue) {
                     log.info "Change: $change"
                 }
                 changes << change
@@ -93,6 +127,21 @@ class ObjectTransformerJayway {
         return changes
     }
 
+    static List<Map<String, Object>> removeItems(Map srcMap, Map rules) {
+        List removeRules = rules['remove']
+        removeRules.each { String removePath ->
+            def incomingValue = srcMap[removePath]
+            if (incomingValue) {
+                log.info "\t\tRemove path ($removePath)..."
+                srcMap.remove(removePath)
+            } else {
+                log.info "\t\t no incomingValue to remove for path ($removePath), nothing to do..."
+            }
+        }
+
+    }
+
+
     /**
      * helper function to do 'live' evaluations from config set
      *
@@ -100,7 +149,7 @@ class ObjectTransformerJayway {
      * @param value
      * @return
      */
-    public Object evaluateValue(String value) {
+    static public Object evaluateValue(String value) {
         String valueToSet = null
         if (value.contains('$')) {
             // http://www.groovyconsole.appspot.com/edit/22004?execute

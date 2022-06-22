@@ -18,7 +18,7 @@ class ObjectTransformerTest extends Specification {
         JsonSlurper slurper = new JsonSlurper()
         srcMap = slurper.parseText(src)
         destMap = slurper.parseText(dest)
-        rules = slurper.parseText(configsJsonPath)
+        rules = slurper.parseText(configsJsonPathSlashyFormat)
     }
 
     def "Transform Set Values"(){
@@ -70,20 +70,7 @@ class ObjectTransformerTest extends Specification {
         resultEval == 'foo:...Foo'
     }
 
-//    def "transform with function from config json"(){
-//        given:
-//        Map myMap = [a:[one:'1a', two:'2b']]
-//
-//        when:
-//        def myEntry =
-//    }
 
-/*
-    def "GetByMapPath"() {
-    }
-
-    def "SetByMapPath"() {
-    }*/
 
     public static String src = '''
 {
@@ -126,7 +113,7 @@ class ObjectTransformerTest extends Specification {
 }
 '''
 
-    public static String configsJsonPath = '''
+    public static String configsJsonPathDollarDotFormat = '''
 {
     "transformerClass": "SimlpeTransform",
     "set": {
@@ -142,6 +129,25 @@ class ObjectTransformerTest extends Specification {
         "$.parserId": "$.parserId",
         "$.properties.searchProperties.userSearchProp.userFilter": "$.properties.f.ldap_user_filter",
         "$.properties$.searchProperties$.groupSearchProp$.userFilter": "$.properties.f.ldap_group_filter"
+    }
+}
+'''
+    public static String configsJsonPathSlashyFormat = '''
+{
+    "transformerClass": "SimlpeTransform",
+    "set": {
+        "/type": "lucidworks.ldap",
+        "/connector": "lucidworks.ldap",
+        "/created": "${new Date()}",
+        "/modified": "${new Date()}",
+        "/properties/security":"$[testmap:true]"
+    },
+    "copy": {
+        "/id": "/id",
+        "/pipeline": "/pipeline",
+        "/parserId": "/parserId",
+        "/properties.searchProperties/userSearchProp/userFilter": "/properties/f/ldap_user_filter",
+        "/properties/searchProperties/groupSearchProp/userFilter": "/properties.f.ldap_group_filter"
     }
 }
 '''
