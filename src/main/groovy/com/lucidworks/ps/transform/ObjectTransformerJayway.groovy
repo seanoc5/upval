@@ -27,9 +27,6 @@ class ObjectTransformerJayway {
 
     Map rules
 
-
-    }
-
     /**
      * @deprecated
      * todo -- working on moving to functional approach (static calls)

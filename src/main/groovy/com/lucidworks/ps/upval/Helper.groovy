@@ -14,42 +14,108 @@ import java.util.regex.Pattern
 class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
-    static def getOrCreateJsonObjectNode(Map src, String path, String separator = '/', def valToSet = ''){
-        log.info "Process path: [$path] in src:$src "
+    /**
+     *
+     * @param Map srcMap - the map (object?) to travers baesd on path param
+     * @param path - the string defining the path through the jsonslurped object (maps/collections/leafNodes with primative values)
+     * @param separator - string separator to split path on, defaults to slash '/'
+     * @param valToSet
+     * @return
+     */
+    static def getObjectNode(Map srcMap, String path, String separator = '/') {
+        log.info "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
         segments.remove(0)
         int numSegments = segments.size()
-        def element = src
-        segments.eachWithIndex { String seg, int depth ->
-            if(seg.isNumber()) {
+        def element = srcMap
+        // loop through path segments, stop when reaching the last element, or a (parent) segment is null
+        for (int depth = 0; depth < numSegments && element;  depth++) {
+            String seg = segments[depth]
+            if (seg.isNumber()) {
                 log.info "\t\t$depth - $seg) more code here for arrays/lists... "
             } else {
                 log.debug "\t\t$depth - $seg) check if it exists... "
                 def child = element[seg]
-                if(!child){
-                    if(depth==(numSegments-1)) {
-                        log.info "\t\t$depth) create final leaf node $seg with valToSet: $valToSet"
-                        child = valToSet
+                if (!child) {
+
+                    if (depth == (numSegments - 1)) {
+                        log.info "Found last/goal segment in path ($path): goal segment: "
                     } else {
                         log.info "\t\t$depth) create node $seg with empty map..."
                         child = [:]
                     }
                     element[seg] = child
-                    log.info "create missing segment: $seg -> $element --full source: $src"
+                    log.info "create missing segment: $seg -> $element --full source: $srcMap"
                 } else {
                     log.info "\t\tFound segment ($seg) -> $element"
                 }
                 element = child
             }
         }
-        log.info "Result: $src"
-        return src
+        log.info "Result: $srcMap"
+        return srcMap
     }
 
+    /**
+     *
+     * @param Map srcMap - the map (object?) to travers baesd on path param
+     * @param path - the string defining the path through the jsonslurped object (maps/collections/leafNodes with primative values)
+     * @param separator - string separator to split path on, defaults to slash '/'
+     * @param valToSet
+     * @return updated Map
+     *
+     * todo consider returning a new (cloned?) map, rather than the original...? refactor...
+     */
+    static def setJsonObjectNode(Map srcMap, String path, String separator = '/', def valToSet = '') {
+        log.info "Process path: [$path] in src:$srcMap "
+        List<String> segments = path.split(separator)
+        segments.remove(0)
+        int numSegments = segments.size()
+        def element = srcMap
+        segments.eachWithIndex { String seg, int depth ->
+            if (seg.isNumber()) {
+                log.info "\t\t$depth - $seg) more code here for arrays/lists... "
+            } else {
+                log.debug "\t\t$depth - $seg) check if it exists... "
+                def child = element[seg]
+                if (!child) {     // todo add code to handle lists/collections as well as Maps...
+                    log.info "\t\t$depth) create node $seg with empty map..."
+                    child = [:]
+                    element[seg] = child
+                    log.info "create missing segment: $seg -> $element --full source: $srcMap"
+                } else {
+                    log.info "\t\tFound existing segment ($seg) -> $element"
+                }
+                if (depth == (numSegments - 1)) {
+                    log.info "\t\t$depth) create final leaf node $seg with valToSet: $valToSet"
+                    child = valToSet
+                } else if (depth < numSegments - 1) {
+                    log.debug "$depth) Continue with next segment..."
+                    element = child
+                }
+            }
+        }
+        log.info "Result: $srcMap"
+        return srcMap
+    }
+
+/*
+// placeholder for trying new approaches to getting (or setting?) a value with missing parent entries
     def getMapWithdefaultInject(Map map, String path){
 
     }
+*/
 
+
+    /**
+     * Helper function to get a flattened list of node paths in XMLParser Node object
+     * @param node XMLParser node result of a parse call
+     * @param level tracking variable to help define node depth (needed? valuable?)
+     * @param separator string to use to build a concatonated string path
+     * @return List of string paths
+     *
+     * todo are there intermediate things we care about that are not leaf nodes?
+     */
     static List flattenXmlPath(Node node, int level = 0, String separator = '/') {
         String name = separator + node.name()
         def attributes = node.attributes()
@@ -73,6 +139,16 @@ class Helper {
         return pathList
     }
 
+
+    /**
+     * similar to flattenXmlPath, but specify a Map of thingNames (datasource, indexpipeline,...?) and regex patterns to include attribs in path (to help disambiguate
+     *
+     * @param node result of parsing source xml
+     * @param level helper var
+     * @param separator string to use in building path
+     * @param attribsForPath Map of patterns to include attribtes in resulting paths to disambiguate (helpful in comparing left to right XML objects
+     * @return
+     */
     static List<Map<String, Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator, Map<String, Pattern> attribsForPath) {
         String nodeName = node.name()
         def attributes = node.attributes()
@@ -82,7 +158,7 @@ class Helper {
             log.debug "found matching pattern for node name: $nodeName: $pattern"
         } else {
             pattern = attribsForPath['']
-            if(pattern) {
+            if (pattern) {
                 log.debug "no matching pattern for node name,: $nodeName, found default (''): $pattern"
             } else {
                 log.debug "no matching pattern for node name,: $nodeName, nor was there a default..."
@@ -93,7 +169,7 @@ class Helper {
         }
         def nameAttribs = attributes.subMap(nameKeys)
         String name
-        if(nameAttribs) {
+        if (nameAttribs) {
             name = separator + nodeName + "$nameAttribs"
         } else {
             name = separator + node.name()
@@ -136,7 +212,7 @@ class Helper {
                     Map<String, Object> children = flattenPlusObject(value, level)
                     children.each { String child, Object childObject ->
                         String path = key + "." + child
-                        if(childObject instanceof Map || childObject instanceof List){
+                        if (childObject instanceof Map || childObject instanceof List) {
                             log.debug "skip this (${childObject.getClass().simpleName}"
                             entries[path] = null
                         } else {
@@ -164,7 +240,7 @@ class Helper {
                         entries[path] = childVal
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
-                } else if(val instanceof List){
+                } else if (val instanceof List) {
                     String path = "[${counter}].${childName}"
                     log.info "What do we do here? $path [$childVal] -- Skip??"
                     entries[path] = childVal
@@ -183,6 +259,12 @@ class Helper {
     }
 
 
+    /**
+     * simple method to 'walk' Json Slurped object, and get element paths
+     * @param object Json Slurped object (maps/lists)
+     * @param level helper var to track depth in recursive calls
+     * @return list of paths <String>s
+     */
     static List<String> flatten(def object, int level = 0) {
         List<String> entries = []
         log.debug "$level) flatten object: $object..."
@@ -230,6 +312,11 @@ class Helper {
         return entries
     }
 
+    /**
+     * util function to get an (output) folder (for exporting), create if necessary
+     * @param dirPath
+     * @return
+     */
     static File getOrMakeDirectory(String dirPath) {
         File folder = new File(dirPath)
         if (folder.exists()) {
@@ -257,7 +344,7 @@ class Helper {
      * @param dateFormat --
      * @return a "sort friendly" datestamp with hour & minute to allow multiple snapshots per day (or per hour)...
      */
-    static String getVersionName(Date date=new Date(), DateFormat dateFormat = new SimpleDateFormat('yyyy-MM-dd.hh.mm')) {
+    static String getVersionName(Date date = new Date(), DateFormat dateFormat = new SimpleDateFormat('yyyy-MM-dd.hh.mm')) {
         String s = dateFormat.format(date)
     }
 }

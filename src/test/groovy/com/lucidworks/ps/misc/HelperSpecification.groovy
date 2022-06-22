@@ -25,9 +25,11 @@ class HelperSpecification extends Specification {
         def valToSet = 'fubar'
 
         when:
-        def foo = Helper.getOrCreateJsonObjectNode(srcMap, missingPath, '/', valToSet)
+        def foo = Helper.getObjectNode(srcMap, missingPath, '/')
+        def bar = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToSet)
 
         then:
+        foo == null
         srcMap.a.three.myMissingLeaf == valToSet
     }
 
