@@ -3,6 +3,7 @@ package com.lucidworks.ps.upval
 
 import org.apache.log4j.Logger
 
+//import java.security.InvalidParameterException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
@@ -15,45 +16,66 @@ class Helper {
     static Logger log = Logger.getLogger(this.class.name);
 
     /**
-     *
+     * Get the value of the item with the given JsonSlurped object (typically this would be a simple value, so no easy way to get a discrete object to update in place
+     * Probably do a get to check for a value (optional?), followed by a setJsonObjectNode for any update process (promotion/migration...)
      * @param Map srcMap - the map (object?) to travers baesd on path param
      * @param path - the string defining the path through the jsonslurped object (maps/collections/leafNodes with primative values)
      * @param separator - string separator to split path on, defaults to slash '/'
      * @param valToSet
-     * @return
+     * @return the (primitive?) value of the 'thing' in the JsonObject path (can't assume it is an object that we can update in place, need to call setJsonObjectNode if you want to update)
      */
-    static def getObjectNode(Map srcMap, String path, String separator = '/') {
+    static def getObjectNodeValue(Map srcMap, String path, String separator = '/') {
         log.info "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
         segments.remove(0)
         int numSegments = segments.size()
         def element = srcMap
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
-        for (int depth = 0; depth < numSegments && element;  depth++) {
+        for (int depth = 0; depth < numSegments && element; depth++) {
             String seg = segments[depth]
-            if (seg.isNumber()) {
-                log.info "\t\t$depth - $seg) more code here for arrays/lists... "
+            def child = getElement(seg, element)
+            log.debug "\t\t$depth - $seg) check if it exists... "
+            if (!child) {
+                log.info "\t\tdepth) encountered MISSING segment: $seg -> return null, exit for loop..."
             } else {
-                log.debug "\t\t$depth - $seg) check if it exists... "
-                def child = element[seg]
-                if (!child) {
-
-                    if (depth == (numSegments - 1)) {
-                        log.info "Found last/goal segment in path ($path): goal segment: "
-                    } else {
-                        log.info "\t\t$depth) create node $seg with empty map..."
-                        child = [:]
-                    }
-                    element[seg] = child
-                    log.info "create missing segment: $seg -> $element --full source: $srcMap"
-                } else {
-                    log.info "\t\tFound segment ($seg) -> $element"
-                }
-                element = child
+                log.info "\t\t$depth) Found segment ($seg) -> $element"
             }
+            element = child
+
         }
-        log.info "Result: $srcMap"
-        return srcMap
+        log.info "return Path ($path) element (value): $element "
+        return element
+    }
+
+    /**
+     * testing some abstraction for getting an element without knowing colletion or map (duck typing...?)
+     * @param key
+     * @param map
+     * @return
+     */
+    static def getElement(String key, Map map) {
+        map[key]
+    }
+
+    static def getElement(def segment, Collection collection) throws IllegalArgumentException {
+        Integer index = null
+        def element
+        if (segment instanceof String) {
+            index = Integer.parseInt(segment)
+        } else if (segment instanceof Integer) {
+            index = (Integer) index
+        } else {
+            String msg = "Segment param ($segment) type (${segment.getClass().simpleName}) not understood (expected int-type var)"
+            throw new IllegalArgumentException(msg)
+        }
+        if (index < collection.size()) {
+            element = collection[index]
+        } else {
+            log.warn "\t\tAsked for segment($segment) element with index > max index (${collection.size() - 1}) collection has (${collection.size()}) elements (0-based), nothing to get, return null"
+            element = null
+        }
+
+        element
     }
 
     /**
@@ -67,36 +89,78 @@ class Helper {
      * todo consider returning a new (cloned?) map, rather than the original...? refactor...
      */
     static def setJsonObjectNode(Map srcMap, String path, String separator = '/', def valToSet = '') {
-        log.info "Process path: [$path] in src:$srcMap "
+        log.debug "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
         segments.remove(0)
         int numSegments = segments.size()
         def element = srcMap
         segments.eachWithIndex { String seg, int depth ->
-            if (seg.isNumber()) {
-                log.info "\t\t$depth - $seg) more code here for arrays/lists... "
-            } else {
-                log.debug "\t\t$depth - $seg) check if it exists... "
-                def child = element[seg]
-                if (!child) {     // todo add code to handle lists/collections as well as Maps...
-                    log.info "\t\t$depth) create node $seg with empty map..."
-                    child = [:]
+            Integer index = null
+            if (seg.isInteger()) {
+                index = Integer.parseInt(seg)
+                log.info "converted int-like string ($seg) to Integer: $index"
+            }
+            log.debug "\t\t$depth - $seg) check if it exists... "
+            def child = getElement(seg, element)
+            if (!child) {
+                if (index) {
+                    log.warn "$depth) Creating a new COLLETION! does this make sense? create collection with $seg size, if > 1 then there wil be empty item...??! Path: $path "
+                    child = new ArrayList(index + 1)
+                    if (isLeafTarget(depth, numSegments)) {
+                        child[index] = valToSet
+                    } else {
+                        String nextSegment = segments[depth + 1]
+                        if (nextSegment.isInteger()) {
+                            log.warn "creating child list with empty values...!!!"
+                            child[index] = new ArrayList(Integer.parseInt(nextSegment) + 1)
+                        } else {
+                            child = [:]
+                        }
+                    }
+                    element[index] = child      // todo -- stopped here for overnight break, revisit and fix bugs and any incomplete code in this entire function
+
+                } else {
+                    log.info "\t\t$depth) (Map element) create node $seg with empty map..."
+                    if (isLeafTarget(depth, numSegments)) {
+                        log.debug "Hit target segment, no need to create child map..."
+                    } else {
+                        String nextSegment = segments[depth + 1]
+
+                        child = [:]
+                        log.info "\t\t$depth) Hit (missing) target segment ($seg), create child map ..."
+                        log.warn "todo -- $depth) Hit (missing) target segment ($seg), add code to handle collection rather than map..."
+                    }
                     element[seg] = child
                     log.info "create missing segment: $seg -> $element --full source: $srcMap"
-                } else {
-                    log.info "\t\tFound existing segment ($seg) -> $element"
                 }
-                if (depth == (numSegments - 1)) {
-                    log.info "\t\t$depth) create final leaf node $seg with valToSet: $valToSet"
-                    child = valToSet
-                } else if (depth < numSegments - 1) {
-                    log.debug "$depth) Continue with next segment..."
-                    element = child
-                }
+            } else {
+                log.debug "\t\tFound existing segment ($seg) -> $element"
+                log.warn "More code here..."
+//                if(
             }
+
+            // are we at the leaf node to set?
+            if (isLeafTarget(depth, numSegments)) {
+                if (child instanceof Map || child instanceof Collection) {
+                    log.warn "Setting val($valToSet) on a map or collection!!? ${child.getClass().getSimpleName()} -- $child"
+                }
+                element[seg] = valToSet
+                log.debug "\t\t$depth) returning 'parent' segment ($seg) that contains updated value \"$valToSet\" for path($path)"
+//                    element = child
+                log.info "\t\t$depth) set final leaf node $seg (valToSet: $valToSet) on element: $element"
+            } else if (depth < numSegments - 1) {
+                log.debug "$depth) Continue with next segment..."
+                element = child
+            }
+
         }
-        log.info "Result: $srcMap"
-        return srcMap
+
+        log.info " Updated element ( $path ):  $element  -- srcMap: ${srcMap}"
+        return element
+    }
+
+    public static boolean isLeafTarget(int depth, int numSegments) {
+        depth == (numSegments - 1)
     }
 
 /*
@@ -107,15 +171,15 @@ class Helper {
 */
 
 
-    /**
-     * Helper function to get a flattened list of node paths in XMLParser Node object
-     * @param node XMLParser node result of a parse call
-     * @param level tracking variable to help define node depth (needed? valuable?)
-     * @param separator string to use to build a concatonated string path
-     * @return List of string paths
-     *
-     * todo are there intermediate things we care about that are not leaf nodes?
-     */
+/**
+ * Helper function to get a flattened list of node paths in XMLParser Node object
+ * @param node XMLParser node result of a parse call
+ * @param level tracking variable to help define node depth (needed? valuable?)
+ * @param separator string to use to build a concatonated string path
+ * @return List of string paths
+ *
+ * todo are there intermediate things we care about that are not leaf nodes?
+ */
     static List flattenXmlPath(Node node, int level = 0, String separator = '/') {
         String name = separator + node.name()
         def attributes = node.attributes()
@@ -140,15 +204,15 @@ class Helper {
     }
 
 
-    /**
-     * similar to flattenXmlPath, but specify a Map of thingNames (datasource, indexpipeline,...?) and regex patterns to include attribs in path (to help disambiguate
-     *
-     * @param node result of parsing source xml
-     * @param level helper var
-     * @param separator string to use in building path
-     * @param attribsForPath Map of patterns to include attribtes in resulting paths to disambiguate (helpful in comparing left to right XML objects
-     * @return
-     */
+/**
+ * similar to flattenXmlPath, but specify a Map of thingNames (datasource, indexpipeline,...?) and regex patterns to include attribs in path (to help disambiguate
+ *
+ * @param node result of parsing source xml
+ * @param level helper var
+ * @param separator string to use in building path
+ * @param attribsForPath Map of patterns to include attribtes in resulting paths to disambiguate (helpful in comparing left to right XML objects
+ * @return
+ */
     static List<Map<String, Object>> flattenXmlPathWithAttributes(Node node, int level = 0, String separator, Map<String, Pattern> attribsForPath) {
         String nodeName = node.name()
         def attributes = node.attributes()
@@ -193,12 +257,12 @@ class Helper {
     }
 
 
-    /**
-     * Flatten object, get path plus object (reference?)
-     * @param nested object (list and/or map) to flatten
-     * @param level helper to track depth (is this helpful?)
-     * @return Map with flattened path(string) as key, and the given object as value
-     */
+/**
+ * Flatten object, get path plus object (reference?)
+ * @param nested object (list and/or map) to flatten
+ * @param level helper to track depth (is this helpful?)
+ * @return Map with flattened path(string) as key, and the given object as value
+ */
     static Map<String, Object> flattenPlusObject(def object, int level = 0) {
         Map<String, Object> entries = [:]
         log.debug "$level) flattenPlusObject: $object..."
@@ -259,12 +323,12 @@ class Helper {
     }
 
 
-    /**
-     * simple method to 'walk' Json Slurped object, and get element paths
-     * @param object Json Slurped object (maps/lists)
-     * @param level helper var to track depth in recursive calls
-     * @return list of paths <String>s
-     */
+/**
+ * simple method to 'walk' Json Slurped object, and get element paths
+ * @param object Json Slurped object (maps/lists)
+ * @param level helper var to track depth in recursive calls
+ * @return list of paths <String>s
+ */
     static List<String> flatten(def object, int level = 0) {
         List<String> entries = []
         log.debug "$level) flatten object: $object..."
@@ -312,11 +376,11 @@ class Helper {
         return entries
     }
 
-    /**
-     * util function to get an (output) folder (for exporting), create if necessary
-     * @param dirPath
-     * @return
-     */
+/**
+ * util function to get an (output) folder (for exporting), create if necessary
+ * @param dirPath
+ * @return
+ */
     static File getOrMakeDirectory(String dirPath) {
         File folder = new File(dirPath)
         if (folder.exists()) {
@@ -338,14 +402,15 @@ class Helper {
         folder
     }
 
-    /**
-     * placeholder for getting a psuedo source-control folder name for exports (and potentially imports / restore)
-     * @param date
-     * @param dateFormat --
-     * @return a "sort friendly" datestamp with hour & minute to allow multiple snapshots per day (or per hour)...
-     */
+/**
+ * placeholder for getting a psuedo source-control folder name for exports (and potentially imports / restore)
+ * @param date
+ * @param dateFormat --
+ * @return a "sort friendly" datestamp with hour & minute to allow multiple snapshots per day (or per hour)...
+ */
     static String getVersionName(Date date = new Date(), DateFormat dateFormat = new SimpleDateFormat('yyyy-MM-dd.hh.mm')) {
         String s = dateFormat.format(date)
     }
+
 }
 
