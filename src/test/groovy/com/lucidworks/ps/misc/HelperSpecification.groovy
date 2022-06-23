@@ -18,25 +18,56 @@ class HelperSpecification extends Specification {
             ]
     ]
 
-    def "should add missing elements"() {
+    def "should add missing map elements"() {
         given:
         Map srcMap = [a: [one: 1, two: 2], b: [1, 2]]
+        String existingPath = '/a/two'
         String missingPath = '/a/three/myMissingLeaf'
-        def valToSet = 'fubar'
+        def valToUpdate = 'my UPDATE Value'
+        def valToCreate = 'my NEW value'
 
         when:
-        def foo = Helper.getObjectNode(srcMap, missingPath, '/')
-        def bar = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToSet)
+        def missingElement = Helper.getObjectNodeValue(srcMap, missingPath, '/')
+        def existingElement = Helper.getObjectNodeValue(srcMap, existingPath, '/')
+        def originalExistingElementValue = existingElement.toString()
+        def updatedElement = Helper.setJsonObjectNode(srcMap, existingPath, '/', valToUpdate)
+        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
 
         then:
-        foo == null
-        srcMap.a.three.myMissingLeaf == valToSet
+        missingElement == null
+        originalExistingElementValue == '2'
+        updatedElement['two'] == valToUpdate
+        addedElement['myMissingLeaf'] == valToCreate
+        srcMap.a.two == valToUpdate
+        srcMap.a.three.myMissingLeaf == valToCreate
+    }
+
+    def "should add missing list elements"() {
+        given:
+        Map srcMap = [b: ['first', 'second']]
+        String existingPath = '/b/1'
+        String missingPath = '/b/2'
+        def valToUpdate = 'my UPDATE Value'
+        def valToCreate = 'my NEW value'
+
+        when:
+        def missingElement = Helper.getObjectNodeValue(srcMap, missingPath, '/')
+        def existingElement = Helper.getObjectNodeValue(srcMap, existingPath, '/')
+        def originalExistingElementValue = existingElement.toString()
+        def updatedElement = Helper.setJsonObjectNode(srcMap, existingPath, '/', valToUpdate)
+        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
+
+        then:
+        missingElement == null
+        originalExistingElementValue == 'secoond'
+        updatedElement['two'] == valToUpdate
+        addedElement['myMissingLeaf'] == valToCreate
+        srcMap.a.two == valToUpdate
+        srcMap.a.three.myMissingLeaf == valToCreate
     }
 
 
     def "simple flatten functionality"() {
-        given:
-
         when:
         def flatties = Helper.flatten(map, 1)
 
@@ -48,8 +79,6 @@ class HelperSpecification extends Specification {
     }
 
     def "flattenPlusObject"() {
-        given:
-
         when:
         Map<String, Object> flatties = Helper.flattenPlusObject(map, 1)
         Set<String> paths = flatties.keySet()
