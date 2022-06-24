@@ -1,9 +1,8 @@
-import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import com.lucidworks.ps.transform.ObjectTransformerJayway
+import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
-
 /**
  * early-going code exploring how to map-transform a 'thing',
  * chose ldap-acls because it has significant (but fairly easy) structural changes from f4->f5
@@ -35,8 +34,8 @@ if (objectsJsonFile.exists()) {
     f4LdapAclsDataSources.each { Map f4SrcLdapMap ->
         Map f5LdapAclsTemplateMap = jsonSlurper.parse(f5LdapAclsTemplateFile)
 
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(f4SrcLdapMap, f5LdapAclsTemplateMap, rulesMap)
-        def f5TransformedMap = transformer.transform()
+//        ObjectTransformerJayway transformer = new ObjectTransformerJayway()
+        def f5TransformedMap = ObjectTransformerJayway.transform(f4SrcLdapMap, f5LdapAclsTemplateMap, rulesMap)
         JsonBuilder jsonBuilder = new JsonBuilder(f5TransformedMap)
 
         String f5Json = jsonBuilder.toPrettyString()

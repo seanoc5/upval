@@ -11,8 +11,16 @@ OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 File appZipFile = new File(options.source)
 if (!appZipFile?.canRead()) {
     throw new IllegalArgumentException("Could not find valid source file: ${options.source} (should be an app export zip file)")
-}
-Application app = new Application(appZipFile)
+} else {
+    List<String> thingsToExport = "configsets collections dataSources indexPipelines queryPipelines parsers".split(' ')
+//    List<String> thingsToExport = FusionApplicationComparator.DEFAULTTHINGSTOCOMPARE
+    Application app = new Application(appZipFile)
+    thingsToExport.each { String typeName ->
+        log.info "Export Things of type: $typeName"
+        def exportable = app.getThings(typeName)
+        log.info "\t\tThings to export: ${exportable.size()}"
+    }
 
+}
 
 log.info "done...?"

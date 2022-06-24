@@ -26,10 +26,10 @@ class LdapAclsTransformTest extends Specification {
 
     def "Transform Set Values"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+//        ObjectTransformerJayway transformer = new ObjectTransformerJayway()
 
         when:
-        def foo = transformer.transform()
+        def foo = ObjectTransformerJayway.transform(srcMap, destMap, rules)
 
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'

@@ -57,19 +57,46 @@ class ObjectTransformerJayway {
         return destinationMap
     }
 
+    /**
+     * Static (functional-friendly?) method to apply transform rules
+     * @param srcMap map of elements (can contain list children, yes?) to transform, with optional destination template (for default 'new' values)
+     * @param rules map of rule types (copy,set,remove,...?) and patterns to match
+     * <br><b>Note:</b>
+     * <ul> <li>'copy' rules will match flattened-path elements (regex pattern) and copy the value there to the same path in the destination map</li>
+     * <li>'set' rules will set (creating elements and parents as necessary) the given value in the dest map</li>
+     * <li>'remove' rules will remove elements in the dest map (generated from bulk copy command, or present but not needed in dest template
+     * </li>
+     * @param destinationTemplate an optional destination template of values with default values
+     * @return transformed map, which will be suitable for JsonOutput or other Fusion-friendly output efforts
+     *
+     * Note: current assumption is that the rules will be processed in the order of: copy -> set -> remove to allow for bulk copying, overriden by explicit sets, and remove commands have final authority
+     */
     static Map<String, List<Map<String, Object>>> transform(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         Map resultsMap = destinationTemplate
 
-        List<Map<String, Object>> myset = setValues(srcMap, rules, destinationTemplate)
-        resultsMap = resultsMap + myset
+        // ---------- COPY -------------
         List<Map<String, Object>> myCopy = copyValues(srcMap, rules, destinationTemplate)
         resultsMap = resultsMap + myCopy
+
+        // ---------- SET -------------
+        List<Map<String, Object>> myset = setValues(srcMap, rules, destinationTemplate)
+        resultsMap = resultsMap + myset
+
+        // ---------- REMOVE -------------
+        if(rules.remove){
+            log.warn "Untested code/functionality at the moment... write tests, fix broken stuff... remove rules: ${rules.remove}"
+        }
+        List<Map<String, Object>> myRemove = removeItems(srcMap, rules, destinationTemplate)
+
+
         return resultsMap
+
     }
 
 
     /**
-     * run through 'set' rules and set destination values based on these rules (with the `$` to signal groovy evaluation of the rule value
+     * run through 'set' rules and set destination values based on these rules
+     * <br>(with the `$` to signal groovy evaluation of the rule value)
      * @return list of rule results
      */
     static List<Map<String, Object>> setValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
@@ -89,7 +116,9 @@ class ObjectTransformerJayway {
                 log.debug "test"
             }
 
+            // make the change here...
             DocumentContext dc = destContext.set(destPath, valToSet)
+            // confirm the updated value here (optional??)
             String newDestValue = destContext.read(destPath)
             Map change = [srcValue: value, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
             log.info "\t\tSet '$destPath' in destinationMap to  rule value: '$value'  -- returned doc context:$dc"
@@ -98,6 +127,13 @@ class ObjectTransformerJayway {
         return changes
     }
 
+    /**
+     * Copy values from source to destination with an optional destinationTemplate holding defaults
+     * @param srcMap
+     * @param rules
+     * @param destinationTemplate
+     * @return change list (destinationTemplate is created/updated as we go...?
+     */
     static List<Map<String, Object>> copyValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         List<Map<String, Object>> changes = []
         DocumentContext srcContext = JsonPath.parse(srcMap)
@@ -110,6 +146,7 @@ class ObjectTransformerJayway {
                 String origDestValue = destContext.read(destPath)
                 DocumentContext dcUpdated = destContext.set(destPath, srcValue)
                 String newDestValue = destContext.read(destPath)
+                log.warn "Untested? do we need to update destinationTemplate...?"
                 Map change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
                 if (srcValue != newDestValue) {
                     log.info "Change: $change"
@@ -124,18 +161,27 @@ class ObjectTransformerJayway {
         return changes
     }
 
-    static List<Map<String, Object>> removeItems(Map srcMap, Map rules) {
+    /**
+     * remove items from the destination map (after copy & set rules)
+     * @param dest map of fusion things after transformation
+     * @param rules full set of rules to work with, this method will pick the relevant 'remove' items
+     * @return modified dest object (map currently)
+     *
+     * Note; this is as-yet untested, todo - write some tests
+     *  todo - consider a 'top' level collection rather than assume it is always a map
+     */
+    static List<Map<String, Object>> removeItems(Map dest, Map rules) {
         List removeRules = rules['remove']
         removeRules.each { String removePath ->
-            def incomingValue = srcMap[removePath]
+            def incomingValue = dest[removePath]
             if (incomingValue) {
-                log.info "\t\tRemove path ($removePath)..."
-                srcMap.remove(removePath)
+                log.info "\t\tRemove path ($removePath) with existing value ($incomingValue)..."
+                dest.remove(removePath)
             } else {
                 log.info "\t\t no incomingValue to remove for path ($removePath), nothing to do..."
             }
         }
-
+        return dest
     }
 
 

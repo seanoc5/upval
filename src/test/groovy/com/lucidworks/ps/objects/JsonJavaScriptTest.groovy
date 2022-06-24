@@ -19,8 +19,6 @@ class JsonJavaScriptTest extends Specification {
 \tconsole.log(a);
 }'''
     String singleLineSource = 'function myFunc() {\\n\\tvar a = \\"foo\\";\\n\\tconsole.log(a);\\n}'
-
-
     JsonJavaScript js = new JsonJavaScript(formatedSource)
 
     def "escaped source should be multiline and unescaped should not"(){

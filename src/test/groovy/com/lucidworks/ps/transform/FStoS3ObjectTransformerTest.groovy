@@ -43,10 +43,10 @@ class FStoS3ObjectTransformerTest extends Specification {
 
     def "Transform"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway()
 
         when:
-        transformer.transform()
+        def foo = ObjectTransformerJayway.transform(srcMap, destMap, rules)
 
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
