@@ -3,6 +3,9 @@ import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
+/**
+ * test script to proof-out the process of exporting "all the things" from an fusion app (assuming app export zip as source)
+ */
 Logger log = Logger.getLogger(this.class.name)
 
 log.info "start script ${this.class.name}..."
