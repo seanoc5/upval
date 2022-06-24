@@ -10,7 +10,7 @@ import java.util.regex.Pattern
  * wrapper class to help with solr schema parsing and operations
  */
 class ConfigSet {
-    public static final Pattern SOLR_CONFIG_PATTERN = '/solrconfig.xml'
+    public static final Pattern SOLR_CONFIG_PATTERN = ~/\/solrconfig.xml/
     Logger log = Logger.getLogger(this.class.name);
     public static final Pattern LANG_FOLDER_PATTERN = ~/\/lang\/.+/
     String configsetName
@@ -25,11 +25,12 @@ class ConfigSet {
     def synonyms = ''
     def protwords = ''
 
+//    ConfigSet(def configsetName, def items) {
     ConfigSet(String configsetName, Map<String, Object> items) {
         this.configsetName = configsetName
         this.items = items
         def foo = populateParsedItems()
-        log.info "Constructor(name, items)-> ${this.toString()}"
+        log.debug "Constructor(name, items)-> ${this.toString()}"
     }
 
 
@@ -48,12 +49,12 @@ class ConfigSet {
             log.debug "Parse solrconfig"
 
             log.debug "Parse lang folder"
-            langFolder = populateLangFolder(items)
-            langFolder = populateLangFolder(LANG_FOLDER_PATTERN)
+//            langFolder = populateLangFolder(items)
+            langFolder = populateLangFolder(items, ConfigSet.LANG_FOLDER_PATTERN)
 
             log.debug "Parse config overlay"
-            configOverlay = parseConfigOverlay(items)
-            configOverlay = parseConfigOverlay()
+            configOverlay = parseConfigOverlay(items, '/configoverlay.json')
+//            configOverlay = parseConfigOverlay()
 
             log.debug "Parse stopwords"
             stopwords = parseStopwords(items)         // getting lazy, plus: stopwords are evil, don't use them!!
@@ -106,7 +107,7 @@ class ConfigSet {
      * @param langMatch
      * @return
      */
-    Map<String, String> populateLangFolder(Map items, LANG_FOLDER_PATTERN) {
+    Map<String, String> populateLangFolder(Map items, Pattern langMatch ) {
         Map langFolder = items.findAll { String path, def item ->
             path.contains('lang')
             path ==~ langMatch

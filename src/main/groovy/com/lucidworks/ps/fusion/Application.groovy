@@ -33,7 +33,7 @@ class Application {
     List<Map> objectGroups
     List<Map> links
     List<Map> sparkJobs
-    Map<String, Object> configsetMap = [:]
+//    Map<String, Object> configsetMap = [:]
     ConfigSetCollection configsets
 
     /**
@@ -41,16 +41,15 @@ class Application {
      * @param args
      */
     static void main(String[] args) {
-        File src = new File('/home/sean/Downloads/coppel_dev.zip')
+        File src = new File('/home/sean/work/lucidworks/Intel/CircuitSearch.F5.zip')
         Application app = new Application(src)
-        app.getThingsToCompare()
+//        app.getThingsToCompare()
         app.log.info(app)
     }
 
     Application(File appOrJson) {
         log.info "Parsing source file: ${appOrJson.absolutePath} (app export, or json...)"
         parsedMap = parseSourceFile(appOrJson)
-
 
         Map<String, Object> parsedObjects = parsedMap.objects
 

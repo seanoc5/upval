@@ -23,7 +23,7 @@ class PipelineJsAnalyzer {
     static Map<String, List> collectJsStages(List allStages) {
         Map<String, List> jsCodeStages = [:].withDefault { [] }
         Map<String, List> stageTypes = allStages.groupBy { it.type }
-        log.info "Query pipeline stage types:\n" + stageTypes.collect { String key, def val -> "${val.size()} :: $key" }.join('\n')
+        log.info "Query pipeline stage types:\n" + stageTypes.collect { String key, def val -> "\t\t${val.size()} :: $key" }.join('\n')
 
         // todo -- are there other types that we might be missing?
         // def jsTypes = ['javascript-query', 'managed-js-query']
@@ -35,7 +35,7 @@ class PipelineJsAnalyzer {
                     String s = "// ----------------$label ($type) --------------\n$script\n\n"
                     if (script) {
                         if (label) {
-                            log.info "Added script body '$label' ($type) to collection for analysis (good) "
+                            log.debug "Added script body '$label' ($type) to collection for analysis (good) "
                         } else {
                             log.warn "No label ($label) for script with size: ${script.size()}"
                         }

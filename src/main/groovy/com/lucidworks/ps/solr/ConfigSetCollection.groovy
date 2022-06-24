@@ -13,6 +13,7 @@ class ConfigSetCollection {
     Logger log = Logger.getLogger(this.class.name);
     String deploymentName          // can be empty if getting from solr direcltly (i.e. all apps all configsets...?)
     Map<String, List<ConfigSet>> configsetMap = [:]
+    def foo = 'bar'
     public static final Pattern DEFAULT_KEY_PATTERN = ~/.*configsets\/([^\/]+)(\/.*)/
     // first group is the configset name (collection-name), second group is the path to use in the configset
 
@@ -38,7 +39,7 @@ class ConfigSetCollection {
 
     ConfigSetCollection(Map configsetCollection, String deploymentName) {
         Integer collectionSize = parseConfigsetCollection(configsetCollection, deploymentName)
-        log.info "Fusion configsetCollection (${configsetCollection.size()}) constructor, with (${collectionSize} config sets)..."
+        log.debug "Fusion configsetCollection (with ${configsetCollection.size()} source items) constructor, with (${collectionSize} grouped config sets)..."
     }
 
 
@@ -60,9 +61,13 @@ class ConfigSetCollection {
             this.deploymentName = deploymentName
         }
         Map groupedEntries = groupConfigsetEntries(configsetEntries, keyPattern)
-        groupedEntries.each { String configsetName, def entries ->
-            ConfigSet configset = new ConfigSet(configsetName, entries)
-            configsetMap[configsetName] = configset
+        groupedEntries.each { String configsetName, Map<String,Object> entries ->
+            try {
+                def configset = new ConfigSet(configsetName, entries)
+                configsetMap[configsetName] = configset
+            } catch (Exception e){
+                log.warn "Error: $e"
+            }
         }
 
         // is there a better return value? true/false?  void?

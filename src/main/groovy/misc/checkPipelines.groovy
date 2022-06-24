@@ -1,24 +1,30 @@
 package misc
 
-import com.lucidworks.ps.clients.FusionClient
+import com.lucidworks.ps.fusion.Application
 import com.lucidworks.ps.js.PipelineJsAnalyzer
-import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
-import com.lucidworks.ps.upval.FusionClientArgParser
+import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
 Logger log = Logger.getLogger(this.class.name)
 
-OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
+OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 
 log.info "start script ${this.class.name}..."
-FusionClient fusionClient = new FusionClient(options)
+//FusionClient fusionClient = new FusionClient(options)
+File srcFile = new File(options.source)
+if(srcFile && srcFile.canRead()){
+    log.info "Source file: ${srcFile.absoluteFile}"
+}
 
-File srcJson = fusionClient.objectsJsonFile
-Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
-Map sourceFusionOjectsMap = parsedMap.objects
+Application application = new Application(srcFile)
+Map fusionParsedMap = application.parsedMap
 
-List<Map<String, Object>> indexPipelines = sourceFusionOjectsMap.indexPipelines
+//todo add Application method: getJavascriptThings()?
+Map<String, Object> objects = fusionParsedMap.objects
+List<Map<String, Object>> foo = objects.indexPipelines
+def indexPipelines = application.indexPipelines
+
 def stages = indexPipelines.collect { it.stages }.flatten()
 def jsStages = PipelineJsAnalyzer.collectJsStages(stages)
 
@@ -55,4 +61,4 @@ jsIndexTypes.each { String stageType ->
 }
 
 
-List querystages = sourceFusionOjectsMap.queryPipelines.collect { it.stages }.flatten()
+List querystages = fusionParsedMap.queryPipelines.collect { it.stages }.flatten()
