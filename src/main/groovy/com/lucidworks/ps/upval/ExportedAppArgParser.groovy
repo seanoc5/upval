@@ -9,11 +9,11 @@ import groovy.cli.picocli.OptionAccessor
 class ExportedAppArgParser {
 
     public static OptionAccessor parse(String toolName, String[] args) {
-        CliBuilder cli = new CliBuilder(usage: "${toolName}.groovy -fhttp://myFusion5addr:6764 -uadmin -psecret123 -s~/data/MyApp.objects.json -m ~/Fusion/migration/F4/mappingFolder", width: 160)
+        CliBuilder cli = new CliBuilder(usage: "${toolName}.groovy -s/Users/sean/data/MyApp.objects.json", width: 160)
         cli.with {
             h longOpt: 'help', 'Show usage information'
             e longOpt: 'exportDir', args: 1, required: false, argName: 'dir', 'Export directory'
-            s longOpt: 'source', args: 1, required: false, argName: 'sourceFile', 'Source (objects.json or appexport.zip) to read application objects from (old app to be migrated)'
+            s longOpt: 'source', args: 1, required: true, argName: 'sourceFile', 'Source (objects.json or appexport.zip) to read application objects from (old app to be migrated)'
         }
 
 

@@ -6,7 +6,6 @@ import org.apache.log4j.Logger
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-
 /**
  * Fusion Application helper class
  * Mix of composite objects (@see ConfigSetCollection) and regular lists/maps
@@ -14,6 +13,9 @@ import java.util.zip.ZipFile
  */
 class Application {
     Logger log = Logger.getLogger(this.class.name);
+     public static final List<String> DEFAULT_APP_OBJECTS = "configsets collections dataSources indexPipelines queryPipelines" +
+             " parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
+
     String appName = 'unknown'
     String appID = 'unknown'
 
@@ -46,6 +48,7 @@ class Application {
 //        app.getThingsToCompare()
         app.log.info(app)
     }
+
 
     Application(File appOrJson) {
         log.info "Parsing source file: ${appOrJson.absolutePath} (app export, or json...)"
@@ -159,6 +162,12 @@ class Application {
         }
 
     }
+
+/*
+    def exportObjects(Map){
+
+    }
+*/
 }
 
 
