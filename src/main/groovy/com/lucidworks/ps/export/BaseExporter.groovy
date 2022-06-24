@@ -13,7 +13,7 @@ class BaseExporter {
      * @see com.lucidworks.ps.transform.ObjectTransformerJayway for similar (same?) functionality
      * @param exportMappingRules
      */
-    BaseExporter(Map exportMappingRules) {
+    BaseExporter(def thingToExport, Map exportMappingRules) {
         this.exportMappingRules = exportMappingRules
     }
 }

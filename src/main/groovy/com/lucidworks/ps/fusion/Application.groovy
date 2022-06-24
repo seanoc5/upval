@@ -13,8 +13,7 @@ import java.util.zip.ZipFile
  */
 class Application {
     Logger log = Logger.getLogger(this.class.name);
-     public static final List<String> DEFAULT_APP_OBJECTS = "configsets collections dataSources indexPipelines queryPipelines" +
-             " parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
+     public static final List<String> DEFAULT_APP_OBJECTS = "configsets collections dataSources indexPipelines queryPipelines parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
 
     String appName = 'unknown'
     String appID = 'unknown'

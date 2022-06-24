@@ -16,7 +16,7 @@ class ObjectTransformerGeneralTest extends Specification {
 
         then:
         aOne == 1
-        b0 == first
+        b0 == 'first'
     }
 
     def "should get elements with "() {
@@ -32,7 +32,7 @@ class ObjectTransformerGeneralTest extends Specification {
 
         when:
 //        transformer.transform(srcMap, destMap, rules)
-        def foo = ObjectTransformerJayway.transform(srcMap, destMap, rules)
+        def foo = ObjectTransformerJayway.transform(srcMap, rules, destMap)
 
 
         then:

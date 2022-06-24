@@ -4,6 +4,9 @@ package com.lucidworks.ps.transform
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
+/**
+ * @deprecated
+ */
 class SimpleTransformSpecification extends Specification {
     Map srcMap = null
     Map destMap = null
@@ -46,7 +49,7 @@ class SimpleTransformSpecification extends Specification {
 
     def "Dynamic class and function call with hard coded param"() {
         given:
-        def transformerClass = Class.forName("com.lucidworks.ps.upval.mapping.SimpleTransform");
+        def transformerClass = Class.forName("com.lucidworks.ps.transform.SimpleTransform");
 //        def instance = this.class.classLoader.loadClass( 'SimpleTransform', true)?.newInstance()
         String func = 'testDescription'
 
@@ -61,7 +64,7 @@ class SimpleTransformSpecification extends Specification {
         given:
         def fu = new SimpleTransform(srcMap, destMap, rules)
         JsonSlurper slurper = new JsonSlurper()
-        String className = "com.lucidworks.ps.upval.mapping.SimpleTransform"
+        String className = "com.lucidworks.ps.transform.SimpleTransform"
 
         def transformerClass = Class.forName(className)
         String func = 'testDescription'

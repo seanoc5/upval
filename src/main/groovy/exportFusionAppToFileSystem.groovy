@@ -21,7 +21,13 @@ if (!appZipFile?.canRead()) {
     thingsToExport.each { String typeName ->
         log.info "Export Things of type: $typeName"
         def exportable = app.getThings(typeName)
-        log.info "\t\tThings to export: ${exportable.size()}"
+        if(exportable instanceof Collection) {
+            log.info "\t\t$typeName) Collection to export: ${exportable.size()}"
+        } else if (exportable instanceof Map){
+            log.info "\t\t$typeName) Map to export: ${exportable.keySet().size()}"
+        } else {
+            log.warn "$typeName) UNKNOWN type: $typeName: $exportable"
+        }
     }
 
 }

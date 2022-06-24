@@ -129,8 +129,8 @@ class ObjectTransformerJayway {
 
     /**
      * Copy values from source to destination with an optional destinationTemplate holding defaults
-     * @param srcMap
-     * @param rules
+     * @param srcMap source values to copy from
+     * @param rules to dictate what to copy (from source to destinationTemplate (same path -- s)
      * @param destinationTemplate
      * @return change list (destinationTemplate is created/updated as we go...?
      */
@@ -140,23 +140,11 @@ class ObjectTransformerJayway {
         DocumentContext destContext = JsonPath.parse(destinationTemplate)
 
         def copyRules = rules['copy']
-        copyRules.each { String destPath, String srcPath ->
-            try {
-                String srcValue = srcContext.read(srcPath)
-                String origDestValue = destContext.read(destPath)
-                DocumentContext dcUpdated = destContext.set(destPath, srcValue)
-                String newDestValue = destContext.read(destPath)
-                log.warn "Untested? do we need to update destinationTemplate...?"
-                Map change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
-                if (srcValue != newDestValue) {
-                    log.info "Change: $change"
-                }
-                changes << change
-            } catch (PathNotFoundException pnfe) {
-                log.warn "Path (src:$srcPath -> dest:$destPath) wasn't found: $pnfe"
-                log.debug "this is bad..."
-            }
+        log.info "\t\tCopy rules: $copyRules"
 
+        copyRules.each { def rule ->        // String destPath, String srcPath ->
+            log.info "\t\tRule: $rule"
+            changes << performCopyRule(rule)
         }
         return changes
     }
@@ -215,5 +203,25 @@ class ObjectTransformerJayway {
 
     String currentTimeStamp(Date date = new Date()){
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(date)
+    }
+
+
+    def performCopyRule(def copyRule, def src, def dest) {
+        try {
+            String srcValue = srcContext.read(srcPath)
+            String origDestValue = destContext.read(destPath)
+            DocumentContext dcUpdated = destContext.set(destPath, srcValue)
+            String newDestValue = destContext.read(destPath)
+            log.warn "Untested? do we need to update destinationTemplate...?"
+            Map change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
+            if (srcValue != newDestValue) {
+                log.info "Change: $change"
+            }
+            changes << change
+        } catch (PathNotFoundException pnfe) {
+            log.warn "Path (src:$srcPath -> dest:$destPath) wasn't found: $pnfe"
+            log.debug "this is bad..."
+        }
+
     }
 }
