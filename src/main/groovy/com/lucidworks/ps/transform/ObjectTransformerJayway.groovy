@@ -181,24 +181,7 @@ class ObjectTransformerJayway {
      * @return
      */
     static public Object evaluateValue(String value) {
-        String valueToSet = null
-        if (value.contains('$')) {
-            try {
-                // 2020-11-05T19:12:54.966Z
-                // new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(oldDate)
-//                String nowStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:sss'Z'").format(new Date())
-
-                // http://www.groovyconsole.appspot.com/edit/22004?execute
-                log.debug "\t\tprepare to evaluate me...: $value"
-                valueToSet = Eval.me(/"$value"/)
-                log.info "\t\tEvaluated gstring ($value) ==> $valueToSet"
-            } catch (Exception e){
-                log.warn "Error: $e"
-            }
-        } else {
-            valueToSet = value
-        }
-        return valueToSet
+        null
     }
 
     String currentTimeStamp(Date date = new Date()){

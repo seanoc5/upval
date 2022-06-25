@@ -15,14 +15,14 @@ import java.util.regex.Pattern
 /**
  * thinking through revised approach.
  */
-class BasicFlatpathTransformTest extends Specification {
+class   BasicFlatpathTransformTest extends Specification {
     Map srcMap = [a: [one: 1, two: 2], b: [3, 4]]
 
     def "check basic Map setting"() {
         when:
         String valToSet = 'new value here'
         srcMap.a.one = valToSet
-        srcMap.a.one = valToSet
+        def two = srcMap."a.two"
 
         then:
         srcMap.a.one == valToSet
