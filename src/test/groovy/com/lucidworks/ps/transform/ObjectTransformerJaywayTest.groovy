@@ -44,7 +44,10 @@ class ObjectTransformerJaywayTest extends Specification {
 
     }
 
-    def "Transform"() {
+    /**
+     * @deprecated move to static/functional approach
+     */
+    def "Transform old non-static"() {
         given:
         ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
 
@@ -54,6 +57,16 @@ class ObjectTransformerJaywayTest extends Specification {
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
+    }
+
+    def "should ransform with static calls"() {
+
+        when:
+        def foo = ObjectTransformerJayway.transform(srcMap, rules, destMap)
+
+        then:
+//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
+        foo.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
     /**
@@ -141,6 +154,13 @@ class ObjectTransformerJaywayTest extends Specification {
     public static String configsJsonPathSlashyFormat = '''
 {
     "transformerClass": "SimlpeTransform",
+    "copy": {
+        "/id": "/id",
+        "/pipeline": "/pipeline",
+        "/parserId": "/parserId",
+        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f/ldap_user_filter",
+        "/properties/searchProperties/groupSearchProp/userFilter": "/properties.f.ldap_group_filter"
+    },
     "set": {
         "/type": "lucidworks.ldap",
         "/connector": "lucidworks.ldap",
@@ -148,12 +168,8 @@ class ObjectTransformerJaywayTest extends Specification {
         "/modified": "${new Date()}",
         "/properties/security":"$[testmap:true]"
     },
-    "copy": {
-        "/id": "/id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/properties.searchProperties/userSearchProp/userFilter": "/properties/f/ldap_user_filter",
-        "/properties/searchProperties/groupSearchProp/userFilter": "/properties.f.ldap_group_filter"
+    "remove": {
+    
     }
 }
 '''

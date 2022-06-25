@@ -80,7 +80,7 @@ class HelperSpecification extends Specification {
 
     def "flattenPlusObject"() {
         when:
-        Map<String, Object> flatties = Helper.flattenPlusObject(map, 1)
+        Map<String, Object> flatties = Helper.flattenWithLeafObject(map, 1, '/', '/')
         Set<String> paths = flatties.keySet()
 
         then:

@@ -58,10 +58,10 @@ class BaseComparator {
      */
     CompareObjectResults compare() {
         CompareObjectResults objectsResults = new CompareObjectResults(this.compareLabel, left, right)
-        leftFlatMap = Helper.flattenPlusObject(left, 1)
+        leftFlatMap = Helper.flattenWithLeafObject(left, 1, '/', '/')
         leftKeyPaths = leftFlatMap.keySet()
 
-        rightFlatMap = Helper.flattenPlusObject(right, 1)
+        rightFlatMap = Helper.flattenWithLeafObject(right, 1, '/', '/')
         rightKeyPaths = rightFlatMap.keySet()
 
         leftOnlyKeys = leftKeyPaths - rightKeyPaths

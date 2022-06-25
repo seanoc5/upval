@@ -36,9 +36,9 @@ class Helper {
             def child = getElement(seg, element)
             log.debug "\t\t$depth - $seg) check if it exists... "
             if (!child) {
-                log.info "\t\tdepth) encountered MISSING segment: $seg -> return null, exit for loop..."
+                log.info "\t\t${depth}) encountered MISSING segment: $seg -> return null, exit for loop..."
             } else {
-                log.info "\t\t$depth) Found segment ($seg) -> $element"
+                log.debug "\t\t$depth) Found segment ($seg) -> $element"
             }
             element = child
 
@@ -79,12 +79,15 @@ class Helper {
     }
 
     /**
-     *
      * @param Map srcMap - the map (object?) to travers baesd on path param
      * @param path - the string defining the path through the jsonslurped object (maps/collections/leafNodes with primative values)
      * @param separator - string separator to split path on, defaults to slash '/'
      * @param valToSet
      * @return updated Map
+     *
+     * steps:
+     *
+     * todo - refactor me!! convoluted code
      *
      * todo consider returning a new (cloned?) map, rather than the original...? refactor...
      */
@@ -103,6 +106,7 @@ class Helper {
             log.debug "\t\t$depth - $seg) check if it exists... "
             def child = getElement(seg, element)
             if (!child) {
+                log.info "\t\tMISSING element segment ($seg) in path: $path..."
                 if (index) {
                     log.warn "$depth) Creating a new COLLETION! does this make sense? create collection with $seg size, if > 1 then there wil be empty item...??! Path: $path "
                     child = new ArrayList(index + 1)
@@ -117,7 +121,8 @@ class Helper {
                             child = [:]
                         }
                     }
-                    element[index] = child      // todo -- stopped here for overnight break, revisit and fix bugs and any incomplete code in this entire function
+                    element[index] = child
+                    // todo -- stopped here for overnight break, revisit and fix bugs and any incomplete code in this entire function
 
                 } else {
                     log.info "\t\t$depth) (Map element) create node $seg with empty map..."
@@ -134,9 +139,17 @@ class Helper {
                     log.info "create missing segment: $seg -> $element --full source: $srcMap"
                 }
             } else {
-                log.debug "\t\tFound existing segment ($seg) -> $element"
-                log.warn "More code here..."
-//                if(
+                log.info "\t\tFound existing segment ($seg) -> $element"
+                if (isLeafTarget(depth, numSegments)) {
+                    if (index) {
+                        log.info "set list element ($index) value here..."
+                        element[index] = valToSet
+                    } else {
+                        log.info "set Map element ($seg) value here..."
+                        element[seg] = valToSet
+                    }
+                }
+                log.info "?? more code here??...."
             }
 
             // are we at the leaf node to set?
@@ -159,7 +172,7 @@ class Helper {
         return element
     }
 
-    public static boolean isLeafTarget(int depth, int numSegments) {
+    static boolean isLeafTarget(int depth, int numSegments) {
         depth == (numSegments - 1)
     }
 
@@ -257,25 +270,25 @@ class Helper {
     }
 
 
-/**
- * Flatten object, get path plus object (reference?)
- * @param nested object (list and/or map) to flatten
- * @param level helper to track depth (is this helpful?)
- * @return Map with flattened path(string) as key, and the given object as value
- */
-    static Map<String, Object> flattenPlusObject(def object, int level = 0) {
+    /**
+     * Flatten object, get path with object (reference?)
+     * @param nested object (list and/or map) to flatten
+     * @param level helper to track depth (is this helpful?)
+     * @return Map with flattened path(string) as key, and the given object as value
+     */
+    static Map<String, Object> flattenWithLeafObject(def object, int level = 0, String prefix = '/', String separator = '/') {
         Map<String, Object> entries = [:]
         log.debug "$level) flattenPlusObject: $object..."
         if (object instanceof Map) {
 //            def keyset = object.keySet()
-            Map map = (Map) object
-            map.each { String key, Object value ->
+            Map currentDepthMap = (Map) object
+            currentDepthMap.each { String key, Object value ->
                 log.debug "\t" * level + "$level)Key: $key"
                 if (value instanceof Map || value instanceof List) {
                     level++
-                    Map<String, Object> children = flattenPlusObject(value, level)
+                    Map<String, Object> children = flattenWithLeafObject(value, level, '/', '/')
                     children.each { String child, Object childObject ->
-                        String path = key + "." + child
+                        String path = separator + key +  child
                         if (childObject instanceof Map || childObject instanceof List) {
                             log.debug "skip this (${childObject.getClass().simpleName}"
                             entries[path] = null
@@ -285,7 +298,8 @@ class Helper {
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
-                    entries[key] = value
+                    log.info "\t\t$level) setting Map key($key) to value($value)"
+                    entries[separator + key] = value
                     log.debug "\t" * level + "\t\tLeaf node: $key"
                 }
             }
@@ -293,25 +307,26 @@ class Helper {
 
         } else if (object instanceof List) {
             log.debug "\t" * level + "$level) List! $object"
-            List list = (List) object
-            list.eachWithIndex { def val, int counter ->
+            List currentDepthList = (List) object
+            currentDepthList.eachWithIndex { def val, int counter ->
                 if (val instanceof Map) {
                     level++
-                    def children = flattenPlusObject(val, level)
+                    def children = flattenWithLeafObject(val, level, prefix, separator)
                     children.each { String childName, Object childVal ->
-                        String path = "[${counter}].${childName}"
+                        String path = "${counter}${separator}${childName}"
+//                        String path = "[${counter}].${childName}"
                         log.info "What do we do here? $path [$childVal] -- Skip??"
                         entries[path] = childVal
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else if (val instanceof List) {
-                    String path = "[${counter}].${childName}"
-                    log.info "What do we do here? $path [$childVal] -- Skip??"
+                    String path = "${counter}${separator}${childName}"
+                    log.warn "What do we do here? $path [$childVal] -- Skip??"
                     entries[path] = childVal
 
                 } else {
-                    log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
-                    String path = "[${counter}]"
+                    log.info "\t" * level + "$level:$counter) LIST value not a collection, leafNode? $val"
+                    String path = "/${counter}"
                     entries[path] = val
                 }
             }
@@ -411,7 +426,6 @@ class Helper {
     static String getVersionName(Date date = new Date(), DateFormat dateFormat = new SimpleDateFormat('yyyy-MM-dd.hh.mm')) {
         String s = dateFormat.format(date)
     }
-
 
 
 }
