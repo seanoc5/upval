@@ -9,20 +9,23 @@ package com.lucidworks.ps.transform
 
 /**
  * wrapper class to provide structure/guidance to rules for transformation
+ * <li>copy: copy values from source to dest (regex patterns?)
+ * <li>set: rule to set the destination value regardless of source/copy
+ * <li>remove: rules to remove anything in destination that might have been copied, set, or in the original template
+ * <p>
  * todo -- flesh out code here
  */
 class Rules {
-    /** rules to copy values from sourceobject (flattened path) to destination opbject (if no destination path, use sourcepath)
+    /** rules to copy values from sourceobject (flattened path) to destination object (if no destination path, use sourcepath)
      * a copy rule can be a single String or Pattern, which instructs copying from sourceMap to destmap with the same path
-     * a copy rule with two entries will copy from Map items matching first entry, to destMap items matching second entry
      * */
-    List copy
+    Map copy
     /** rules to set values in destination map (with static or `eval`-ed value) */
-    List set
+    Map set
     /** rules to remove values after copy/set are performed */
     List remove
 
-    Rules(List copy, List set, List remove) {
+    Rules(Map copy, Map set, List remove) {
         this.copy = copy
         this.set = set
         this.remove = remove

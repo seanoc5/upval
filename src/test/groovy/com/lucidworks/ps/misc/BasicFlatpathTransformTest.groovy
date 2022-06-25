@@ -22,6 +22,8 @@ class   BasicFlatpathTransformTest extends Specification {
         when:
         String valToSet = 'new value here'
         srcMap.a.one = valToSet
+
+        // does not work  (or I don't know how...)
         def two = srcMap."a.two"
 
         then:

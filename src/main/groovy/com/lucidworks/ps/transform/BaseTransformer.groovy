@@ -8,50 +8,56 @@ import org.apache.log4j.Logger
  */
 class BaseTransformer {
     Logger log = Logger.getLogger(this.class.name);
-    def source
-    def destination
+    /** JsonSlurped object (maps/lists) to read from */
+    def sourceObject
+    /** Maps/lists object that is the goal of the transformation */
+    def destinationObject
+    /** Rules object that provides structure to a collection of transform rules */
     Rules rules
 
-    BaseTransformer(def source, Rules rules, def destination) {
-        this.source = source
-        this.destination = destination
+    BaseTransformer(def source, Rules rules, def destination, String pathSeparator='/') {
+        this.sourceObject = source
+        this.destinationObject = destination
         this.rules = rules
     }
-/**
-     * main action to perform series of transformations
-     */
-    def transform(){
-        def copyResult = performCopyRules(rules)
+
+    /**
+ * main action to perform series of transformations
+ */
+    def transform() {
         log.info "COPY results: $copyResult"
+        def copyResult = performCopyRules(rules)
 
-        def setResult = performSetRules(rules)
         log.info "SET results: $copyResult"
+        def setResult = performSetRules(rules)
 
-        def removeResult = performRemoveRules(rules)
         log.info "REMOVE results: $copyResult"
+        def removeResult = performRemoveRules(rules)
 
     }
 
-    def getSourceValue(def path){
+    def getSourceValue(def path) {
+        log.warn "more code here"
+        def result = evalObjectPathExpression(sourceObject, path)
+    }
+
+    def getDestinationValue(def path) {
+        log.warn "more code here"
+        def result = evalObjectPathExpression(destinationObject, path)
+    }
+
+    def getNode(def path) {
         log.warn "more code here"
     }
 
-    def getDestinationValue(def path){
+    def getNodeParent(def path) {
         log.warn "more code here"
     }
 
-    def getNode(def path){
-        log.warn "more code here"
-    }
-
-    def getNodeParent(def path){
-        log.warn "more code here"
-    }
-
-    def setSourceValue(def path, def valueToSet){
+    def setSourceValue(def path, def valueToSet) {
         log.warn "more code here"
         String exp = "${path}=${valueToSet}"
-        def rslt = evalObjectPathExpression(source, exp)
+        def rslt = evalObjectPathExpression(sourceObject, exp)
     }
 
     /**
@@ -64,7 +70,13 @@ class BaseTransformer {
      * @see groovy.json.JsonSlurper
      */
     def evalObjectPathExpression(Object slurpedJsonObject, String expr) {
-        return Eval.me('ROOT', slurpedJsonObject, expr)
+        def result
+        try {
+            result = Eval.me('ROOT', slurpedJsonObject, expr)
+        } catch (MissingPropertyException mpe){
+            log.warn "Missing element in expression: ($expr), returning null..."
+        }
+        return result
     }
 
     /**
