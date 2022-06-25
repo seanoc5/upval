@@ -2,6 +2,7 @@ package misc.experiment
 
 import org.apache.log4j.Logger
 
+@groovy.transform.Field
 Logger log = Logger.getLogger(this.class.name)
 log.info "Start script ${this.class.simpleName}"
 
@@ -34,8 +35,22 @@ log.info "Done...?"
 
 
 
-def evalObjectPathExpression(Object o, String expr) {
-    return Eval.me('ROOT', o, expr)
+def evalObjectPathExpression(Object o, String expr, String root = 'ROOT') {
+    String pathExpression = expr
+    if(expr.startsWith('/')){
+        log.info "Converting slashy expression ($expr) to gpath-like expression for groovy Eval.me -- starts with 'root[${root}].'"
+        List<String> parts = expr.split('/')
+        if(parts[0] == ''){
+            log.info "set start of path expression to root: $root..."
+            parts[0] = root
+        }
+        pathExpression = parts.join('.')
+    } else{
+        log.debug "Passed in propert Eval.me expression (does not start with slash '/', no change needed: '$expr'..."
+    }
+
+    def result = Eval.me('ROOT', o, pathExpression)
+    return result
 }
 
 

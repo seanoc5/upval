@@ -298,9 +298,9 @@ class Helper {
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
-                    log.info "\t\t$level) setting Map key($key) to value($value)"
                     entries[separator + key] = value
-                    log.debug "\t" * level + "\t\tLeaf node: $key"
+                    log.debug "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
+//                    log.debug "\t" * level + "\t\tLeaf node: $key"
                 }
             }
             log.debug "$level) after collect entries"
@@ -325,7 +325,7 @@ class Helper {
                     entries[path] = childVal
 
                 } else {
-                    log.info "\t" * level + "$level:$counter) LIST value not a collection, leafNode? $val"
+                    log.debug "\t" * level + "$level:$counter) LIST value not a collection, leafNode? $val"
                     String path = "/${counter}"
                     entries[path] = val
                 }

@@ -5,7 +5,10 @@ import org.apache.log4j.Logger
 
 Logger log = Logger.getLogger(this.class.name)
 // found somewhere like: https://stackoverflow.com/questions/46551949/how-to-get-key-from-arraylist-nested-in-json-using-groovy-and-change-its-value
-
+/**
+ * @deprecated
+ * @see testGpath2
+ */
 String src = '''{
   "source": "source",
   "orderId": null,
