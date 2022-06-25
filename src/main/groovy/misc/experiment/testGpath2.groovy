@@ -24,10 +24,11 @@ def bazz = flattenMap(srcMap)
 
 String getPath = 'ROOT.one.aMap[1]'
 var foo = evalObjectPathExpression(srcMap, getPath)
+assert foo == 2
 
 String setExpression = 'ROOT.one.aMap[1]=88'
 var bar = evalObjectPathExpression(srcMap, setExpression)
-
+assert bar == 88
 
 log.info "Done...?"
 
