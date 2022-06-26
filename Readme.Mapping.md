@@ -61,4 +61,19 @@ https://www.baeldung.com/jackson-compare-two-json-objects
 https://stackoverflow.com/questions/2253750/testing-two-json-objects-for-equality-ignoring-child-order-in-java
 https://www.javacodegeeks.com/2021/05/json-patch-and-json-merge-patch-in-java.html
 https://javaee.github.io/jsonp/getting-started.html
+https://blogs.sap.com/2022/05/26/gpath-for-json-in-cloud-integration/
+
+
+
+/*
+    def "should add a missing node via groovy map.withDefault and inject"(){
+        given:
+        // https://stackoverflow.com/questions/56683855/groovy-map-populate-with-default-element
+        def result = [1,2,3,4].inject([:].withDefault{[]}){ m, i ->
+            m[ i%2==0 ? 'odd' : 'even' ] << i
+            m
+        }
+        // => [even:[1, 3], odd:[2, 4]]
+    }
+*/
 
