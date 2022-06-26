@@ -1,25 +1,32 @@
-package com.lucidworks.ps.objects
+package com.lucidworks.ps.transform
 
 import groovy.json.JsonOutput
 import org.apache.commons.lang.StringEscapeUtils
 import spock.lang.Specification
-
-//import groovy.json.StringEscapeUtils
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
- * @created :   6/23/22, Thursday
- * @description: simple test for javascript coming from Json
+ * @created :   6/26/22, Sunday
+ * @description:
  */
 
-class JsonJavaScriptTest extends Specification {
+/**
+ * test class for basic JsonSlurper object navigation (get nodes), and transformations (set nodes, escape/unescape string values, e.g. embedded javascript)
+ */
+class JsonObjectTest extends Specification {
     String formatedSource = '''function myFunc() {
 \tvar a = "foo";
 \tconsole.log(a);
 }'''
+
     String singleLineSource = 'function myFunc() {\\n\\tvar a = \\"foo\\";\\n\\tconsole.log(a);\\n}'
-    JsonJavaScript js = new JsonJavaScript(formatedSource)
+
+    // ------------------ TESTS -------------------
+//    def "UnEscapeSource"() {
+//    }
+//
+//    def "EscapeSource"() {
+//    }
 
     def "escaped source should be multiline and unescaped should not"(){
         expect:
@@ -27,15 +34,7 @@ class JsonJavaScriptTest extends Specification {
         singleLineSource.split('\n').size() == 1
     }
 
-    def "GetDecodedValue with home-grown JavaScript object"() {
-        when:
-        String decoded = js.unEscapeSource()
-
-        then:
-        decoded==formatedSource
-    }
-
-    def "should get decoded javascript with commons-text"(){
+    def "should get decoded javascript with commons-text directly (sanity check)"(){
         when:
         String unescaped = StringEscapeUtils.unescapeJavaScript(singleLineSource)
         List<String> singleLines = singleLineSource.split('\n')
@@ -46,6 +45,14 @@ class JsonJavaScriptTest extends Specification {
         formatedLines.size() == 4
         unescaped ==formatedSource
 
+    }
+
+    def "GetDecodedValue with JsonObject unescape call"() {
+        when:
+        String decoded = JsonObject.unEscapeSource(singleLineSource)
+
+        then:
+        decoded==formatedSource
     }
 
     def "JsonOutput should properly escape map with unescaped javascipt as a value"() {
@@ -66,6 +73,4 @@ class JsonJavaScriptTest extends Specification {
 
     }
 
-    def "GetLines"() {
-    }
 }
