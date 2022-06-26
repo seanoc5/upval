@@ -26,7 +26,7 @@ class JsonObject {
      * @return
      */
     static def getObjectNodeValue(Map srcMap, String path, String separator = DEFAULT_SEPARATOR) {
-        log.info "Process path: [$path] in src:$srcMap "
+        log.debug "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
         if (!segments[0]) {
             segments.remove(0)
@@ -41,12 +41,12 @@ class JsonObject {
             if (!child) {
                 log.info "\t\t${depth}) encountered MISSING segment: $seg -> return null, exit for loop..."
             } else {
-                log.info "\t\t$depth) Found segment ($seg) -> $element"
+                log.debug "\t\t$depth) Found segment ($seg) -> $element"
             }
             element = child
 
         }
-        log.info "return Path ($path) element (value): $element "
+        log.debug "return Path ($path) element (value): $element "
         return element
     }
 
@@ -65,7 +65,7 @@ class JsonObject {
      * todo -- add syntax (parsing) to indicate "inserting" value into an array
      */
     static def setObjectNodeValue(Map srcMap, String path, def valToSet, String separator = DEFAULT_SEPARATOR, boolean createIfMissing = true) {
-        log.info "Process SET path: [$path] to value ($valToSet) in src:$srcMap -- create if missing: $createIfMissing"
+        log.debug "Process SET path: [$path] to value ($valToSet) in src:$srcMap -- create if missing: $createIfMissing"
         List<String> segments = parsePath(path, separator)
         int numSegments = segments.size()
         def result
@@ -75,29 +75,41 @@ class JsonObject {
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
         for (int depth = 0; depth < numSegments && element; depth++) {
             String currentSegment = segments[depth]
-            log.info "\t\t$depth) process segment: $currentSegment..."
+            log.debug "\t\t$depth) process segment: $currentSegment in element:($element)..."
             Object child = getChildElement(currentSegment, element)
             if (child) {
-                log.debug "$depth) we have a valid child ($child), and we are not at the leaf node (current segment: $currentSegment), keep iterating through path..."
-            } else {
-                log.warn "$depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
-                if (createIfMissing) {
-                    child = createMissingNode(element, currentSegment)
-                    result = child
+                // child exists, if leaf node set the element in parent, otherwise just set the parent element's child value
+                log.debug "\t\t\t\t$depth) we have a valid child ($child), and we are not at the leaf node (current segment: $currentSegment), keep iterating through path..."
+//                element = child
+                log.debug "shifted current element to child ($child) element we found"
+                // if child existed (above) check if we are currently at the leaf node, if so: set the value
+                if (isLeafTarget(depth, numSegments)) {
+                    log.debug "\t\t$depth) found leaf node currentSegment:$currentSegment in path: $path, set to value: $valToSet"
+                    result = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
+                    element = null      // redundant? should fail on for loop condition: depth < numSegments
                 } else {
-                    log.warn "\t\t param: $createIfMissing is false, so we are leaving missing element ($currentSegment) as empty/null.."
+                    log.debug "\t\t$depth) still navigating path, currentSegment:($currentSegment) next segment: (${segments[depth + 1]})"
+                    element = child
+                }
+
+            } else {
+                if (isLeafTarget(depth, numSegments)) {
+                    log.info "\t\t$depth) found (currently missing) leaf node in  currentSegment:$currentSegment in path: $path, set to value: $valToSet"
+                    result = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
+                } else {
+                    log.warn "\t\t$depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
+                    if (createIfMissing) {
+                        child = createMissingNode(element, currentSegment)
+                        result = child
+                    } else {
+                        log.warn "\t\t param: $createIfMissing is false, so we are leaving missing element ($currentSegment) as empty/null.."
+                    }
                 }
             }
 
-            if (isLeafTarget(depth, numSegments)) {
-                log.info "\t\t$depth) found leaf node currentSegment:$currentSegment in path: $path, set to value: $valToSet"
-                result = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
-            } else {
-                log.info "\t\t$depth) still navigating path, currentSegment:($currentSegment) next segment: (${segments[depth+1]})"
-            }           // end if leafnode
-        }               // end for loop
+        }
 
-        log.info "return Path ( $path ) with updated element ($element) set to new value ($valToSet) -- result: $result"
+        log.debug "return Path ( $path ) with updated element ($element) set to new value ($valToSet) -- result: $result"
         return result
     }
 
@@ -111,12 +123,12 @@ class JsonObject {
      * @param element
      * @return the same valToSet param (as a success check), or null if failed???
      */
-    static  String setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
+    static String setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
         def result
-        log.info "$depth) We are at the leafNode (seg: $currentSegment) in path($path) to set the value ($valToSet) in element ($element)..."
+        log.debug "$depth) We are at the leafNode (seg: $currentSegment) in path($path) to set the value ($valToSet) in element ($element)..."
         if (element instanceof List) {
             if (currentSegment.isInteger()) {
-                log.info "Set LIST value ($valToSet) in element($element) with position: $currentSegment"
+                log.debug "Set LIST value ($valToSet) in element($element) with position: $currentSegment"
                 Integer index = Integer.parseInt(currentSegment)
                 List listElement = (List) element
                 if (index > listElement.size() - 1) {
@@ -124,7 +136,7 @@ class JsonObject {
                     log.warn msg
                     throw (new IllegalArgumentException(msg))
                 } else {
-                    log.info "set list element (${index}) to value: $valToSet"
+                    log.debug "set list element (${index}) to value: $valToSet"
                     element[index] = valToSet
                     result = valToSet
                 }
@@ -139,10 +151,14 @@ class JsonObject {
             element[currentSegment] = valToSet
             // todo -- what makes sense for method return? testing approach of returning valToSet (srcMap should be updated in place)
             result = valToSet
+        } else if (element instanceof String || element instanceof Integer) {
+            element[currentSegment] = valToSet
+
         } else {
             String msg = "Unknown element type (${element.getClass().simpleName}), bailing!"
             log.warn msg
-            throw (new IllegalArgumentException(msg))
+//            throw (new IllegalArgumentException(msg))
+            element[currentSegment] = valToSet
         }
         return result
     }
@@ -153,7 +169,7 @@ class JsonObject {
      * @param separator
      * @return List of string segments to navigate (iterate through)
      */
-    static  List<String> parsePath(String path, String separator) {
+    static List<String> parsePath(String path, String separator) {
         List<String> segments = path.split(separator)
         if (!segments[0]) {
             log.debug "Remove empty first segment because path ($path) starts with separator($separator)"
@@ -182,7 +198,7 @@ class JsonObject {
     static def getChildElement(String currentSegment, Object currentElement) {
         def child
         if (currentSegment.isInteger()) {
-            log.info "segment ($currentSegment) looks like an int, converting to integer (assuming no Int-like map keys...): $currentSegment"
+            log.debug "segment ($currentSegment) looks like an int, converting to integer (assuming no Int-like map keys...): $currentSegment"
             child = currentElement[Integer.parseInt(currentSegment)]
         } else {
             child = currentElement[currentSegment]
@@ -201,7 +217,7 @@ class JsonObject {
      */
     static def createMissingNode(Object parentElement, String missingSegment, def newEmptyChild = [:]) {
         if (parentElement instanceof List) {
-            log.info "\t\tadd missing LIST element for segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
+            log.debug "\t\tadd missing LIST element for segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
             Integer index = Integer.parseInt(missingSegment)
             List parentList = (List) parentElement
             if (index > parentList.size()) {

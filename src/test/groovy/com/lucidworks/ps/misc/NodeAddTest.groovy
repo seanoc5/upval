@@ -47,7 +47,7 @@ class NodeAddTest extends Specification {
         aOnePath                       | '/'       | aOneVal
         '/a/two'                       | '/'       | 'two'
         '/b/0/'                        | '/'       | b1Val
-        '/componsiteList/2/submapkey1' | '/'       | 'comp map 1 val'
+        '/componsiteList/2/submapkey1' | '/'       | null
     }
 
     @Unroll
@@ -58,7 +58,7 @@ class NodeAddTest extends Specification {
         when:
         def resultThree = JsonObject.setObjectNodeValue(srcMap, '/a/three', valToSet)
         def resultNewLeaf = JsonObject.setObjectNodeValue(srcMap, '/newTopLeaf', valToSet)
-//        def resultBizz = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
+        def resultBizz = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
 
         then:
         resultNewLeaf == valToSet
@@ -66,8 +66,8 @@ class NodeAddTest extends Specification {
 
         resultThree == valToSet
         srcMap.a.three == valToSet
-//        resultBizz == '{}'
-//        srcMap.a.four == newMapToAdd
+        resultBizz == '{bizz=1, buzz=2}'        // todo can we force returning the actual object rather than the toString() of the object?
+        srcMap.a.four == newMapToAdd
     }
 
     def "basic SET values sanity checks with datatables"() {
