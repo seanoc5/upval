@@ -1,5 +1,7 @@
 package com.lucidworks.ps.transform
 
+import org.apache.commons.text.StringEscapeUtils
+
 import org.apache.log4j.Logger
 
 /**
@@ -163,6 +165,7 @@ class JsonObject {
         return result
     }
 
+
     /**
      * simpple (override-able) method to parse the path (focused on slashy paths, but perhaps usable for dot notation??
      * @param path
@@ -178,6 +181,7 @@ class JsonObject {
         segments
     }
 
+
     /**
      * simpple (override-able) method to check if we are at the 'goal' leaf node of the path, and just need to set the value
      * @param depth
@@ -189,12 +193,12 @@ class JsonObject {
     }
 
 
-/**
- * handle processing for map or list element
- * @param currentSegment the current <String> segment in the path
- * @param currentElement
- * @return JsonSurped 'node' (Map, List, leaf node...)
- */
+    /**
+     * handle processing for map or list element
+     * @param currentSegment the current <String> segment in the path
+     * @param currentElement
+     * @return JsonSurped 'node' (Map, List, leaf node...)
+     */
     static def getChildElement(String currentSegment, Object currentElement) {
         def child
         if (currentSegment.isInteger()) {
@@ -232,6 +236,27 @@ class JsonObject {
             ((Map) parentElement).put(missingSegment, newEmptyChild)
         }
         return newEmptyChild
+    }
+
+
+    /**
+     * simple helper/wrapper to return 'human readable' version of escaped javascript
+     * <br>Note: json does not like newlines in text, so it must be escaped (newlines become '\n', along with other items
+     * @return human readable form ( real newlines and tabs)
+     */
+    static String unEscapeSource(String source) {
+        StringEscapeUtils.unescapeEcmaScript(source)
+    }
+
+    /**
+     * making this static, as we assume this Javascript object will deal with reading escaped source from json format,
+     * this method
+     * @param src
+     * @return escaped string (ready for stuffing into a json output
+     * <br>NOTE:
+     */
+    static String escapeSource(String src){
+        StringEscapeUtils.escapeEcmaScript(src)
     }
 
 }
