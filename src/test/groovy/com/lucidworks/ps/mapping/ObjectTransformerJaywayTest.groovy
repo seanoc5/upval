@@ -1,5 +1,6 @@
 package com.lucidworks.ps.mapping
 
+import com.lucidworks.ps.transform.ObjectTransformerJayway
 import spock.lang.Specification
 
 /**
