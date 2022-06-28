@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
  * perhaps replaced with Comparison??
  * @see ComparisonResult
  */
-public class CompareObjectResults {
+public class CompareJsonObjectResults {
     Logger log = Logger.getLogger(this.class.name);
 
     String compareLabel
@@ -20,7 +20,7 @@ public class CompareObjectResults {
     List<ComparisonResult> differences = []
     List<ComparisonResult> similarities = []
 
-    CompareObjectResults(String compareLabel, left, right) {
+    CompareJsonObjectResults(String compareLabel, left, right) {
         this.compareLabel = compareLabel
         this.left = left
         this.right = right

@@ -1,6 +1,6 @@
 package misc.compare
 
-import com.lucidworks.ps.compare.CompareObjectResults
+import com.lucidworks.ps.compare.CompareJsonObjectResults
 import com.lucidworks.ps.upval.BaseComparatorArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonSlurper
@@ -26,7 +26,7 @@ File rightObjectsJson = new File(options.right)
 Map rightObjects = jsonSlurper.parse(rightObjectsJson)
 log.info "RIGHT  Json:\n\t\t${rightObjects.keySet()})"
 
-CompareObjectResults objectsResults = new CompareObjectResults("ldap-acls", leftObjects, rightObjects)
+CompareJsonObjectResults objectsResults = new CompareJsonObjectResults("ldap-acls", leftObjects, rightObjects)
 log.info "Results: ${objectsResults.toString()}"
 
 
