@@ -1,0 +1,330 @@
+{
+  "objects": {
+    "queryPipelines": [
+      {
+        "id": "system-logs-browser_v1",
+        "stages": [
+          {
+            "type": "set-params",
+            "id": "91n",
+            "params": [
+              {
+                "key": "sort",
+                "value": "timestamp_tdt desc",
+                "policy": "append"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "Sort Timestamp desc",
+            "licensed": true,
+            "secretSourceStageId": "91n"
+          },
+          {
+            "type": "set-params",
+            "id": "70l",
+            "params": [
+              {
+                "key": "pf",
+                "value": "logmessage_txt^10 message_txt^10",
+                "policy": "default"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "phrase field",
+            "licensed": true,
+            "secretSourceStageId": "70l"
+          },
+          {
+            "type": "set-params",
+            "id": "4oe",
+            "params": [
+              {
+                "key": "hl",
+                "value": "on",
+                "policy": "default"
+              },
+              {
+                "key": "hl.fl",
+                "value": "*",
+                "policy": "default"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "HL params",
+            "licensed": true,
+            "secretSourceStageId": "4oe"
+          },
+          {
+            "type": "set-params",
+            "id": "wagj",
+            "params": [
+              {
+                "key": "q.alt",
+                "value": "*:*",
+                "policy": "default"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "Q.alt",
+            "licensed": true,
+            "secretSourceStageId": "wagj"
+          },
+          {
+            "type": "set-params",
+            "id": "67b",
+            "params": [
+              {
+                "key": "fq",
+                "value": "timestamp_tdt:[NOW/MINUTE-15MINUTES TO *]",
+                "policy": "append"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "Filter to recent messages",
+            "licensed": true,
+            "secretSourceStageId": "67b"
+          },
+          {
+            "type": "set-params",
+            "id": "59a",
+            "params": [
+              {
+                "key": "fq",
+                "value": "-mdc_job_s:spark*",
+                "policy": "append"
+              },
+              {
+                "key": "fq",
+                "value": "-cause_file_s:(Ignite* SparkJobTask.java GridClosureProcessor.java ComputeTaskAdapter.java)",
+                "policy": "append"
+              },
+              {
+                "key": "fq",
+                "value": "-cause_class_s:(\"org.apache.ignite*\")",
+                "policy": "append"
+              },
+              {
+                "key": "fq",
+                "value": "-file_s:(\"/opt/fusion/var/log/api/spark-driver-default.log\")",
+                "policy": "append"
+              },
+              {
+                "key": "fq",
+                "value": "-logger_class_s:(spark.client.SparkJobTask spark.job.SparkJobManager scheduler*)",
+                "policy": "append"
+              },
+              {
+                "key": "fq",
+                "value": "-level_s:INFO",
+                "policy": "append"
+              }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "label": "Filter out noise",
+            "licensed": true,
+            "secretSourceStageId": "59a"
+          },
+          {
+            "type": "text-tagger",
+            "id": "e8b8fa10-7215-4b55-8fc1-fc55224ec0d3",
+            "useEmbeddedSolrServer": false,
+            "paramToTag": "q",
+            "spell_corrections_enabled": true,
+            "phrase_boosting_enabled": true,
+            "tail_rewrites_enabled": true,
+            "phraseBoost": 2.0,
+            "phraseSlop": 10,
+            "synonymExpansionBoost": 2.0,
+            "synonym_expansion_enabled": true,
+            "overlaps": "ALL",
+            "params": [],
+            "type": "text-tagger",
+            "skip": true,
+            "licensed": true,
+            "secretSourceStageId": "e8b8fa10-7215-4b55-8fc1-fc55224ec0d3"
+          },
+          {
+            "type": "recommendation",
+            "id": "0dbadf96-3871-48fc-acdd-3f7d47382cd3",
+            "numRecommendations": 10,
+            "numSignals": 100,
+            "aggrType": "click@doc_id,filters,query",
+            "boostId": "id",
+            "boostingMethod": "query-param",
+            "boostingParam": "boost",
+            "queryParams": [
+              {
+                "key": "qf",
+                "value": "query_t"
+              },
+              {
+                "key": "pf",
+                "value": "query_t^50"
+              },
+              {
+                "key": "pf",
+                "value": "query_t~3^20"
+              },
+              {
+                "key": "pf2",
+                "value": "query_t^20"
+              },
+              {
+                "key": "pf2",
+                "value": "query_t~3^10"
+              },
+              {
+                "key": "pf3",
+                "value": "query_t^10"
+              },
+              {
+                "key": "pf3",
+                "value": "query_t~3^5"
+              },
+              {
+                "key": "boost",
+                "value": "map(query({!field f=query_s v=$q}),0,0,1,20)"
+              },
+              {
+                "key": "mm",
+                "value": "50%"
+              },
+              {
+                "key": "defType",
+                "value": "edismax"
+              },
+              {
+                "key": "sort",
+                "value": "score desc, weight_d desc"
+              }
+            ],
+            "rollupField": "doc_id_s",
+            "rollupWeightField": "weight_d",
+            "weightExpression": "math:log(weight_d + 1) + 10 * math:log(score+1)",
+            "rollupWeightStrategy": "max",
+            "type": "recommendation",
+            "skip": true,
+            "licensed": true,
+            "secretSourceStageId": "0dbadf96-3871-48fc-acdd-3f7d47382cd3"
+          },
+          {
+            "type": "search-fields",
+            "id": "36d5a725-9e19-4b3b-8593-041142bf7993",
+            "rows": 10,
+            "start": 0,
+            "queryFields": [],
+            "returnFields": [
+              "*",
+              "score"
+            ],
+            "type": "search-fields",
+            "skip": false,
+            "licensed": true,
+            "secretSourceStageId": "36d5a725-9e19-4b3b-8593-041142bf7993"
+          },
+          {
+            "type": "facet",
+            "id": "890a1e71-6886-48a3-b923-5078706250ac",
+            "fieldFacets": [
+              {
+                "field": "file_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "level_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "mdc_datasourceId_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "mdc_job_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "mdc_jobRunId_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "service_s",
+                "minCount": 1,
+                "missing": false
+              },
+              {
+                "field": "timestamp_tdt",
+                "minCount": 1,
+                "missing": false
+              }
+            ],
+            "type": "facet",
+            "skip": false,
+            "licensed": true,
+            "secretSourceStageId": "890a1e71-6886-48a3-b923-5078706250ac",
+            "properties": {
+              "autoCreated": true
+            }
+          },
+          {
+            "type": "query-rules",
+            "id": "3f3ad0f7-1b82-415f-a946-9e5224ea0ccc",
+            "useEmbeddedSolrServer": false,
+            "useOriginalQueryIfNoRulesMatch": true,
+            "matchPartialFilterQueries": true,
+            "handler": "select",
+            "method": "POST",
+            "ruleLimit": "100",
+            "params": [],
+            "hierarchicalFilter": [],
+            "headers": [],
+            "type": "query-rules",
+            "skip": true,
+            "licensed": true,
+            "secretSourceStageId": "3f3ad0f7-1b82-415f-a946-9e5224ea0ccc"
+          },
+          {
+            "type": "solr-query",
+            "id": "9b3d191e-0f45-4aee-99c7-bf5569586e90",
+            "httpMethod": "POST",
+            "allowFederatedSearch": false,
+            "type": "solr-query",
+            "skip": false,
+            "responseSignalsEnabled": true,
+            "licensed": true,
+            "secretSourceStageId": "9b3d191e-0f45-4aee-99c7-bf5569586e90"
+          },
+          {
+            "type": "query-rules-augment-response",
+            "id": "7a3c685a-aa5e-4d99-bf92-ad9d326fc524",
+            "facetLabelParseDelimiter": "||",
+            "type": "query-rules-augment-response",
+            "skip": true,
+            "licensed": true,
+            "secretSourceStageId": "7a3c685a-aa5e-4d99-bf92-ad9d326fc524"
+          }
+        ],
+        "properties": {
+          "secretSourcePipelineId": "system-logs-browser"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "formatVersion": "1",
+    "exportedBy": "fc5bd3fa-82e7-4954-860b-d7e90a0af0b4",
+    "exportedDate": "2022-06-28T01:52:57.228330Z",
+    "fusionVersion": "4.2.6",
+    "fusionGuid": "36c902a9-613f-4de9-9bdd-6c7edabb9af3"
+  }
+}
