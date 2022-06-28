@@ -17,7 +17,7 @@ class LeftRightCollectionResults {
     List leftOnlyItems = []
     List rightOnlyItems = []
 
-    Map<String, CompareObjectResults> objectsResults = [:]
+    Map<String, CompareJsonObjectResults> objectsResults = [:]
     List<String> leftOnlyPaths = []
     List<String> rightOnlyPaths = []
 

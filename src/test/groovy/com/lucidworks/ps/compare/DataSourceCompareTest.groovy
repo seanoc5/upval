@@ -25,7 +25,7 @@ class DataSourceCompareTest extends Specification {
 
         when:
         BaseComparator comparator = new BaseComparator(label, left, right)
-        CompareObjectResults results = comparator.compare()
+        CompareJsonObjectResults results = comparator.compare()
 
         then:
         comparator.leftOnlyKeys.size()==0
@@ -52,7 +52,7 @@ class DataSourceCompareTest extends Specification {
 
         when:
         BaseComparator comparator = new BaseComparator(label, left, right, ignoreValues)
-        CompareObjectResults results = comparator.compare()
+        CompareJsonObjectResults results = comparator.compare()
         def similarities = results.similarities.findAll {it.differenceType==ComparisonResult.SIMILAR}
 
         then:

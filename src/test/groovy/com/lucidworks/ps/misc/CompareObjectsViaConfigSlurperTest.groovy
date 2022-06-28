@@ -1,7 +1,7 @@
 package com.lucidworks.ps.misc
 
 import com.lucidworks.ps.compare.BaseComparator
-import com.lucidworks.ps.compare.CompareObjectResults
+import com.lucidworks.ps.compare.CompareJsonObjectResults
 import spock.lang.Specification
 /**
  * Less of a test suite, more of seeing how things can work...
@@ -22,7 +22,7 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
         def right = config.rightobject
         String label = "Simple object compare"
         BaseComparator comparator = new BaseComparator(label, left, right)
-        CompareObjectResults results = comparator.compare('SimpleConfigObject')
+        CompareJsonObjectResults results = comparator.compare('SimpleConfigObject')
 
         then:
         results.leftOnlyKeys.size() == 0
@@ -42,7 +42,7 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
         def left = config.leftobject
         def right = config.rightobject
         BaseComparator comparator = new BaseComparator(label, left, right)
-        CompareObjectResults results = comparator.compare('ModerateConfigObject')
+        CompareJsonObjectResults results = comparator.compare('ModerateConfigObject')
 
         then:
         results.leftOnlyKeys.size() == 6
@@ -69,7 +69,7 @@ class CompareObjectsViaConfigSlurperTest extends Specification {
 
         String label = "Advanced object compare"
         BaseComparator comparator = new BaseComparator(label, left, right)
-        CompareObjectResults results = comparator.compare('ModerateConfigObject')
+        CompareJsonObjectResults results = comparator.compare('ModerateConfigObject')
 
         then:
         results.leftOnlyKeys.size() == 6

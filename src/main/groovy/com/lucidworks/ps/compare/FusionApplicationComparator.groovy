@@ -1,9 +1,8 @@
 package com.lucidworks.ps.compare
 
 import com.lucidworks.ps.fusion.Application
-import com.lucidworks.ps.upval.Helper
+import com.lucidworks.ps.transform.JsonObject
 import org.apache.log4j.Logger
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -19,7 +18,7 @@ class FusionApplicationComparator {
     Application rightApp
 
     Map<String, CompareCollectionResults> collectionComparisons = [:]
-    Map<String, CompareObjectResults> objectComparisons = [:]
+    Map<String, CompareJsonObjectResults> objectComparisons = [:]
 
     public static final List<String> DEFAULTTHINGSTOCOMPARE = "configsets collections dataSources indexPipelines queryPipelines parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
 
@@ -63,7 +62,7 @@ class FusionApplicationComparator {
                             def leftObject = leftThings.find { it.id == id }
                             def rightObject = rightThings.find { it.id == id }
 
-                            CompareObjectResults objectsResults = compareObjects(thingType, leftObject, rightObject)
+                            CompareJsonObjectResults objectsResults = compareJsonObjects(thingType, leftObject, rightObject)
                             collectionResults.objectsResults[id] = objectsResults
                             log.debug "Compare results: $objectsResults"
                         }
@@ -114,10 +113,10 @@ class FusionApplicationComparator {
      * @param compareLabel
      * @return
      */
-    CompareObjectResults compareObjects(String compareLabel, def leftObjects, def rightObjects) {
-        CompareObjectResults objectsResults = new CompareObjectResults(compareLabel, leftObjects, rightObjects)
-        List<String> leftKeyPaths = Helper.flatten(leftObjects, 1)
-        List<String> rightKeyPaths = Helper.flatten(rightObjects, 1)
+    CompareJsonObjectResults compareJsonObjects(String compareLabel, def leftObjects, def rightObjects) {
+        CompareJsonObjectResults objectsResults = new CompareJsonObjectResults(compareLabel, leftObjects, rightObjects)
+        List<String> leftKeyPaths = JsonObject.flatten(leftObjects, 1)
+        List<String> rightKeyPaths = JsonObject.flatten(rightObjects, 1)
 
         def leftOnly = leftKeyPaths - rightKeyPaths
         if (leftOnly) {
@@ -185,7 +184,7 @@ class FusionApplicationComparator {
     }
 
     String toString() {
-        def differentObjects = objectComparisons.findAll { String id, CompareObjectResults compareObjectsResults ->
+        def differentObjects = objectComparisons.findAll { String id, CompareJsonObjectResults compareObjectsResults ->
             // todo -- switch to comparison and diffs
 //            compareObjectsResults.isFunctionallyDifferent()
             compareObjectsResults.differences           // does this work? null and empty should be false here, meaning no differences
@@ -196,7 +195,7 @@ class FusionApplicationComparator {
 //        sb.append(collectionComparisons.toString(indentA) + "\n")
 
         String indentB = '\t\t\t\t'
-        differentObjects.each { String id, CompareObjectResults objectResults ->
+        differentObjects.each { String id, CompareJsonObjectResults objectResults ->
             sb.append("${indentB}${id}:${objectResults.toString()}\n")
         }
         return sb.toString()
