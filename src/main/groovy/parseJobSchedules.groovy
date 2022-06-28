@@ -25,7 +25,7 @@ Map sourceFusionOjectsMap = parsedMap.objects
 String appName = sourceFusionOjectsMap.fusionApps[0].id
 Date now = new Date()
 String versionFolderName = Helper.getVersionName(now)
-String fooFolderName = Helper.getVersionName(now, new SimpleDateFormat('yyyy-MM-dd/hh-mm'))
+String fooFolderName = Helper.getVersionName(now, new SimpleDateFormat('yyyy-MM-dd/hh-mm'))     // todo -- pick one or the other format for export folder naming...
 
 def jobsWithTriggers = sourceFusionOjectsMap.jobs.findAll { it.triggers?.size() }
 File exportDir = fusionClient.exportDirectory
