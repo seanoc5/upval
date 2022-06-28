@@ -2,11 +2,14 @@ package com.lucidworks.ps.upval
 
 import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
+import org.apache.log4j.Logger
 
 /**
  * Helper class to standardize argument syntax for FusionClient programs and driver-scripts
+ * <p>TODO: refactor 'source' fusion functionality, make Fusion-j track a single fusion, and use comparators (transformer, or potential 'promotor'???) to handle those 'multi-fusion' cases
  */
 class FusionClientArgParser {
+    static final Logger log = Logger.getLogger(this.class.name);
 
     public static OptionAccessor parse(String toolName, String[] args) {
         CliBuilder cli = new CliBuilder(usage: "${toolName}.groovy -fhttp://myFusion5addr:6764 -uadmin -psecret123 -s~/data/MyApp.objects.json -m ~/Fusion/migration/F4/mappingFolder", width: 160)
@@ -21,21 +24,49 @@ class FusionClientArgParser {
             s longOpt: 'source', args: 1, required: false, argName: 'sourceFile', 'Source (objects.json or appexport.zip) to read application objects from (old app to be migrated)'
             u longOpt: 'user', args: 1, argName: 'user', required: true, 'the fusion user to authenticate with for MAIN/dest fusion'
 
-            w longOpt: 'whichApp', args: 1, required: false, argName: 'srcApp', 'Which SOURCE app to read from (if different from "appName"), eg /opt/lucidworks/fusion/exports/myApp.zip'
-            x longOpt: 'srcFusionUrl', args:1, required: false, argName: 'url', 'the fusion url to read from SOURCE fusion (read only), eg https://my.fusion.com:8764/'
-            y longOpt: 'srcUser', args:1, required: false, argName: 'user', 'the username to authenticate to SOURCE fusion (read only)'
-            z longOpt: 'srcPass', args:1, required: false, argName: 'password', 'the password to authenticate to SOURCE fusion (read only)'
+//            w longOpt: 'whichApp', args: 1, required: false, argName: 'srcApp', 'Which SOURCE app to read from (if different from "appName"), eg /opt/lucidworks/fusion/exports/myApp.zip'
+//            x longOpt: 'srcFusionUrl', args:1, required: false, argName: 'url', 'the fusion url to read from SOURCE fusion (read only), eg https://my.fusion.com:8764/'
+//            y longOpt: 'srcUser', args:1, required: false, argName: 'user', 'the username to authenticate to SOURCE fusion (read only)'
+//            z longOpt: 'srcPass', args:1, required: false, argName: 'password', 'the password to authenticate to SOURCE fusion (read only)'
         }
 
 
         OptionAccessor options = cli.parse(args)
         if (!options) {
+            log.warn "No command line argument parsed, failing out (letting picocli show usage message)... Be sure to give required params!"
 //            cli.usage()
             System.exit(-1)
         }
         if (options.help) {
             cli.usage()
             System.exit(0)
+        }
+        if(options.exportDir){
+            log.info "We have an export dir: ${options.exportDir}, make it if necessary.."
+            String dir = options.exportDir?.trim()
+            if(!dir){
+                dir = './exports'
+                log.warn "empty export dir folder (${options.exportDir}) passed in, defaulting to: $dir for new export folder"
+            }
+            File exportDir = new File(options.exportDir)
+            if(exportDir.exists()){
+                if(exportDir.isDirectory()) {
+                    log.debug "Export dir: ${exportDir.absolutePath} exists and is directory, nothing more needed..."
+                } else {
+                    log.error "Export dir (${exportDir.absolutePath}) exists, but is NOT a directory!! Failing out... (more code here for symlinks or other edge cases???)"
+                    System.exit(0)
+                }
+            } else {
+                log.debug "Export dir:(${exportDir.absolutePath}) does not exist, make it now..."
+                boolean success = exportDir.mkdirs()
+                if(success) {
+                    log.info "Export dir:(${exportDir.absolutePath}) did not exist, but we have created it..."
+                } else {
+                    int statusCode = 0
+                    log.error "Export dir:(${exportDir.absolutePath}) does not exist and we FAILED to create it, exiting with failure (status code: $statusCode ..."
+                    System.exit(statusCode)
+                }
+            }
         }
         options
     }
