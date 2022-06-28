@@ -56,8 +56,8 @@ class BaseComparator {
      * todo -- refactor CompareObjectResults object and call here... should/could be static call? benefit of maintaining state in this object??
      * @return CompareObjectResults object containing information about the comparison results
      */
-    CompareObjectResults compare() {
-        CompareObjectResults objectsResults = new CompareObjectResults(this.compareLabel, left, right)
+    CompareJsonObjectResults compare() {
+        CompareJsonObjectResults objectsResults = new CompareJsonObjectResults(this.compareLabel, left, right)
         leftFlatMap = Helper.flattenWithLeafObject(left, 1, '/', '/')
         leftKeyPaths = leftFlatMap.keySet()
 

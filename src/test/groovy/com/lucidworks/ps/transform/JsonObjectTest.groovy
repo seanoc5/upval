@@ -1,5 +1,6 @@
 package com.lucidworks.ps.transform
 
+
 import groovy.json.JsonOutput
 import org.apache.commons.lang.StringEscapeUtils
 import spock.lang.Shared
@@ -35,20 +36,14 @@ class JsonObjectTest extends Specification {
         ]
     }
 
-    // ------------------ TESTS -------------------
-//    def "UnEscapeSource"() {
-//    }
-//
-//    def "EscapeSource"() {
-//    }
 
-    def "escaped source should be multiline and unescaped should not"(){
+    def "escaped source should be multiline and unescaped should not"() {
         expect:
         formatedSource.split('\n').size() == 4
         singleLineSource.split('\n').size() == 1
     }
 
-    def "should get decoded javascript with commons-text directly (sanity check)"(){
+    def "should get decoded javascript with commons-text directly (sanity check)"() {
         when:
         String unescaped = StringEscapeUtils.unescapeJavaScript(singleLineSource)
         List<String> singleLines = singleLineSource.split('\n')
@@ -57,7 +52,7 @@ class JsonObjectTest extends Specification {
         then:
         singleLines.size() == 1
         formatedLines.size() == 4
-        unescaped ==formatedSource
+        unescaped == formatedSource
 
     }
 
@@ -66,12 +61,12 @@ class JsonObjectTest extends Specification {
         String decoded = JsonObject.unEscapeSource(singleLineSource)
 
         then:
-        decoded==formatedSource
+        decoded == formatedSource
     }
 
     def "JsonOutput should properly escape map with unescaped javascipt as a value"() {
         when:
-        Map m = [foo:'bar', jsonLabel: formatedSource]
+        Map m = [foo: 'bar', jsonLabel: formatedSource]
         String jsonString = JsonOutput.toJson(m)
         String prettyJson = JsonOutput.prettyPrint(jsonString)
         String expectedJsonString = '{"foo":"bar","jsonLabel":"' + singleLineSource + '"}'
@@ -80,10 +75,10 @@ class JsonObjectTest extends Specification {
         List<String> expectedLines = expectedJsonString.split('\n')
 
         then:
-        jsonString==expectedJsonString
-        jsonLines.size()==1
-        jsonLinesPretty.size()==4
-        expectedLines.size()==1
+        jsonString == expectedJsonString
+        jsonLines.size() == 1
+        jsonLinesPretty.size() == 4
+        expectedLines.size() == 1
 
     }
 
@@ -97,31 +92,43 @@ class JsonObjectTest extends Specification {
         result == checkValue
 
         where:
-        path                           | separator | checkValue
-        '/a/one'                       | '/'       | 'one'
-        '/a/two'                       | '/'       | 'two'
-        '/b/0/'                        | '/'       | 'three'
-        '/componsiteList/2/submapkey1' | '/'       | null
+        path                          | separator | checkValue
+        '/a/one'                      | '/'       | 'one'
+        '/a/two'                      | '/'       | 'two'
+        '/b/0/'                       | '/'       | 'three'
+        '/compositeList/2/submapkey1' | '/'       | 'comp map 1 val'
     }
 
     @Unroll
     def "basic SET values sanity checks"() {
         given:
-        Map newMapToAdd = [bizz: 1, buzz: 2]
-        String valToSet = 'my new value here'
+        Map newMapToAdd = [bizz: 1, buzz: 2]            // testing being able to add a new structure, not just a leaf node (primative value)
+        String valToSet = 'my new value here'           // using a variable (string) for setting new values, makes testig easier/more consisten
+        // check if element exists initially, same as: srcMap['a']['three'] -- GPath shorthand
+        // element does not exist initially
+        assert srcMap.a.three == null
+        assert srcMap.b[0] == 'three'
 
         when:
-        def resultThree = JsonObject.setObjectNodeValue(srcMap, '/a/three', valToSet)
+        // set a List element by index:
+        def b0 = JsonObject.setObjectNodeValue(srcMap, '/b/0', valToSet)
+        // add a new element (map entry) to existing parent (sub-map: a)
+        def resultThree = JsonObject.setObjectNodeValue(srcMap, '/a/three', valToSet)       // see upval JsonObject for 'slashy' string GPath/JsonPath alternative
+        // create new 'top' leaf node
         def resultNewLeaf = JsonObject.setObjectNodeValue(srcMap, '/newTopLeaf', valToSet)
-        def resultBizz = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
+        // create a new map (not simple primative value) in a new element (map entry)
+        def resultNewFourSubMap = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
+        // check navigating through maps and lists
+        def resulCompositekey1 = JsonObject.setObjectNodeValue(srcMap, '/compositeList/2/submapkey1', valToSet)
 
         then:
-        resultNewLeaf == valToSet
-        srcMap.newTopLeaf == valToSet
+        b0 == valToSet                      // successfully set list element by index
+        resultNewLeaf == valToSet           // added a new leaf node: to parent element(map) `a`
+        srcMap.newTopLeaf == valToSet       //
 
         resultThree == valToSet
-        srcMap.a.three == valToSet
-        resultBizz == '{bizz=1, buzz=2}'        // todo can we force returning the actual object rather than the toString() of the object?
+        srcMap.a.three == valToSet          // element `a.three` does exist now
+        resultNewFourSubMap == '{bizz=1, buzz=2}'    // todo can we force returning the actual object rather than the toString() of the object?
         srcMap.a.four == newMapToAdd
     }
 
@@ -142,4 +149,143 @@ class JsonObjectTest extends Specification {
     }
 
 
+    Map map = [
+            top1: [
+                    list1   : [1, 2, 3],
+                    middle1a: [bottom1a1: [subbottom1a1a: 'endleaf1'], bottom1a2: 'endleaf2',],
+                    middle1b: [bottom1b1: 'endleaf3'],
+                    middle1c: [[listMap1: 'a'], [listMap2: 'b']]
+            ],
+            top2: [
+                    list1   : [1, 2, 3],
+                    middle2a: [bottom2a1: 'endleaf1', bottom2a2: 'endleaf2'],
+                    middle2b: [bottom2b1: 'endleaf3']
+            ]
+    ]
+
+    def "simple flatten functionality"() {
+        when:
+        def flatties = JsonObject.flatten(map, 1)
+
+        then:
+        // note: this dot notation is @deprecated, left as a reference for an alternative notation...
+        flatties instanceof List
+        flatties.size() == 14
+        flatties[0] == 'top1.list1.[0]'
+        flatties[3] == 'top1.middle1a.bottom1a1.subbottom1a1a'
+    }
+
+    def "flattenPlusObject"() {
+        when:
+        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(map, 1, '/', '/')
+        Set<String> paths = flatties.keySet()
+
+        then:
+        flatties instanceof Map
+        paths.size() == 14
+        paths[0] == '/top1/list1/0'
+        flatties[paths[0]] == 1
+        paths[1] == '/top1/list1/1'
+
+        paths[13] == '/top2/middle2b/bottom2b1'
+        flatties[paths[13]] == 'endleaf3'
+    }
+
+
 }
+
+
+/*
+// copy/pasted code from HelperSpecification
+    Map map = [
+            top1: [
+                    list1   : [1, 2, 3],
+                    middle1a: [bottom1a1: [subbottom1a1a: 'endleaf1'], bottom1a2: 'endleaf2',],
+                    middle1b: [bottom1b1: 'endleaf3'],
+                    middle1c: [[listMap1: 'a'], [listMap2: 'b']]
+            ],
+            top2: [
+                    list1   : [1, 2, 3],
+                    middle2a: [bottom2a1: 'endleaf1', bottom2a2: 'endleaf2'],
+                    middle2b: [bottom2b1: 'endleaf3']
+            ]
+    ]
+
+    def "should add missing map elements"() {
+        given:
+        Map srcMap = [a: [one: 1, two: 2], b: [1, 2]]
+        String existingPath = '/a/two'
+        String missingPath = '/a/three/myMissingLeaf'
+        def valToUpdate = 'my UPDATE Value'
+        def valToCreate = 'my NEW value'
+
+        when:
+        def missingElement = JsonObject.getObjectNodeValue(srcMap, missingPath, '/')
+
+        def existingElement = JsonObject.getObjectNodeValue(srcMap, existingPath, '/')
+        def originalExistingElementValue = existingElement.toString()
+        def updatedElement = JsonObject.setObjectNodeValue(srcMap, existingPath, valToUpdate)
+        def addedElement = JsonObject.setObjectNodeValue(srcMap, existingPath, '/', valToCreate)
+//        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
+
+        then:
+        missingElement == null
+        originalExistingElementValue == '2'
+        updatedElement == valToUpdate
+        addedElement == valToCreate
+        srcMap.a.two == valToUpdate
+        srcMap.a.three.myMissingLeaf == valToCreate
+    }
+
+    def "should add missing list elements"() {
+        given:
+        Map srcMap = [b: ['first', 'second']]
+        String existingPath = '/b/1'
+        String missingPath = '/b/2'
+        def valToUpdate = 'my UPDATE Value'
+        def valToCreate = 'my NEW value'
+
+        when:
+        def missingElement = Helper.getObjectNodeValue(srcMap, missingPath, '/')
+        def existingElement = Helper.getObjectNodeValue(srcMap, existingPath, '/')
+        def originalExistingElementValue = existingElement.toString()
+        def updatedElement = Helper.setJsonObjectNode(srcMap, existingPath, '/', valToUpdate)
+        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
+
+        then:
+        missingElement == null
+        originalExistingElementValue == 'secoond'
+        updatedElement['two'] == valToUpdate
+        addedElement['myMissingLeaf'] == valToCreate
+        srcMap.a.two == valToUpdate
+        srcMap.a.three.myMissingLeaf == valToCreate
+    }
+
+
+    def "simple flatten functionality"() {
+        when:
+        def flatties = Helper.flatten(map, 1)
+
+        then:
+        flatties instanceof List
+        flatties.size() == 14
+        flatties[0] == 'top1.middle1a.bottom1a1.subbottom1a1a'
+        flatties[1] == 'top1.middle1a.bottom1a2'
+    }
+
+    def "flattenPlusObject"() {
+        when:
+        Map<String, Object> flatties = Helper.flattenWithLeafObject(map, 1, '/', '/')
+        Set<String> paths = flatties.keySet()
+
+        then:
+        flatties instanceof Map
+        paths.size() == 14
+        paths[0] == 'top1.list1.0'
+        flatties[paths[0]] == 1
+        paths[1] == 'top1.list1.1'
+
+        paths[13] == 'top2.middle2b.bottom2b1'
+        flatties[paths[13]] == 'endleaf3'
+    }
+ */

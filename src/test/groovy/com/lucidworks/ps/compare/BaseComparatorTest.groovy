@@ -39,7 +39,7 @@ class BaseComparatorTest extends Specification {
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, label)
 
         when:
-        CompareObjectResults results = comparator.compare()
+        CompareJsonObjectResults results = comparator.compare()
 
         then:
         results.leftOnlyKeys == null
@@ -62,7 +62,7 @@ class BaseComparatorTest extends Specification {
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
 
         when:
-        CompareObjectResults results = comparator.compare()
+        CompareJsonObjectResults results = comparator.compare()
         def differences = results.differences
         def similarities = results.similarities
         def similarButDifferent = results.similarities.findAll{it.differenceType==ComparisonResult.SIMILAR}
@@ -87,7 +87,7 @@ class BaseComparatorTest extends Specification {
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
 
         when:
-        CompareObjectResults results = comparator.compare()
+        CompareJsonObjectResults results = comparator.compare()
         def similarButDifferent = results.similarities.findAll{it.differenceType==ComparisonResult.SIMILAR}
 
         then:

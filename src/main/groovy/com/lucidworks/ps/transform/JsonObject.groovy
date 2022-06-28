@@ -14,6 +14,8 @@ import org.apache.log4j.Logger
 /**
  * Wrapper-helper object for navigating and manipulating JsonSlurped objects.
  * <p>These are typically Maps and Lists with leaf-nodes having primative values
+ * <p>Note: this differs from XMLObject; JsonObjects have hierarchy and then values at leaf-nodes, XMLObjects have attributes in the hierarchy, which means a different set of assumptions.
+ * GPath works well for XML parsed objects, because the paths can/should allow access to attributes "along the way" in the hierarchy
  */
 class JsonObject {
     static Logger log = Logger.getLogger(this.class.name);
@@ -259,4 +261,126 @@ class JsonObject {
         StringEscapeUtils.escapeEcmaScript(src)
     }
 
+    /**
+     * Flatten object, get path with object (reference?)
+     * @param nested object (list and/or map) to flatten
+     * @param level helper to track depth (is this helpful?)
+     * @return Map with flattened path(string) as key, and the given object as value
+     */
+    static Map<String, Object> flattenWithLeafObject(def object, int level = 0, String prefix = '/', String separator = '/') {
+        Map<String, Object> entries = [:]
+        log.debug "$level) flattenPlusObject: $object..."
+        if (object instanceof Map) {
+//            def keyset = object.keySet()
+            Map currentDepthMap = (Map) object
+            currentDepthMap.each { String key, Object value ->
+                log.debug "\t" * level + "$level)Key: $key"
+                if (value instanceof Map || value instanceof List) {
+                    level++
+                    Map<String, Object> children = flattenWithLeafObject(value, level, '/', '/')
+                    children.each { String child, Object childObject ->
+                        String path = separator + key +  child
+                        if (childObject instanceof Map || childObject instanceof List) {
+                            log.debug "skip this (${childObject.getClass().simpleName}"
+                            entries[path] = null
+                        } else {
+                            entries[path] = childObject
+                        }
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else {
+                    entries[separator + key] = value
+                    log.debug "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
+//                    log.debug "\t" * level + "\t\tLeaf node: $key"
+                }
+            }
+            log.debug "$level) after collect entries"
+
+        } else if (object instanceof List) {
+            log.debug "\t" * level + "$level) List! $object"
+            List currentDepthList = (List) object
+            currentDepthList.eachWithIndex { def val, int counter ->
+                if (val instanceof Map) {
+                    level++
+                    def children = flattenWithLeafObject(val, level, prefix, separator)
+                    children.each { String childName, Object childVal ->
+                        String path = "${counter}${separator}${childName}"
+//                        String path = "[${counter}].${childName}"
+                        log.info "What do we do here? $path [$childVal] -- Skip??"
+                        entries[path] = childVal
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else if (val instanceof List) {
+                    String path = "${counter}${separator}${childName}"
+                    log.warn "What do we do here? $path [$childVal] -- Skip??"
+                    entries[path] = childVal
+
+                } else {
+                    log.debug "\t" * level + "$level:$counter) LIST value not a collection, leafNode? $val"
+                    String path = "/${counter}"
+                    entries[path] = val
+                }
+            }
+            log.debug "done with list"
+        } else {
+            log.warn "$level) other?? $object"
+        }
+        return entries
+    }
+
+
+    /**
+ * simple method to 'walk' Json Slurped object, and get element paths
+ * @param object Json Slurped object (maps/lists)
+ * @param level helper var to track depth in recursive calls
+ * @return list of paths <String>s
+ */
+    static List<String> flatten(def object, int level = 0) {
+        List<String> entries = []
+        log.debug "$level) flatten object: $object..."
+        if (object instanceof Map) {
+            def keyset = object.keySet()
+            Map map = (Map) object
+            keyset.each { String key ->
+                def value = map[key]
+                log.debug "\t" * level + "$level)Key: $key"
+                if (value instanceof Map || value instanceof List) {
+                    level++
+                    def children = flatten(value, level)
+                    children.each { String child ->
+                        entries << "${key}.${child}".toString()
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else {
+                    entries << "$key"
+                    log.debug "\t" * level + "\t\tLeaf node: $key"
+                }
+                log.debug "next..."
+            }
+            log.debug "$level) after collect entries"
+
+        } else if (object instanceof List) {
+            log.debug "\t" * level + "$level) List! $object"
+            List list = (List) object
+            list.eachWithIndex { def val, int counter ->
+                if (val instanceof Map || val instanceof List) {
+                    level++
+                    def children = flatten(val, level)
+                    children.each { String child ->
+                        entries << "[${counter}].${child}"
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else {
+                    log.debug "\t" * level + "$level:$counter) List value not a collection, leafNode? $val"
+                    entries << "[${counter}]"
+                }
+            }
+            log.debug "done with list"
+        } else {
+            log.warn "$level) other?? $object"
+        }
+        return entries
+    }
+
 }
+

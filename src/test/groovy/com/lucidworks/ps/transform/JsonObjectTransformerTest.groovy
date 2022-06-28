@@ -10,7 +10,7 @@ import spock.lang.Specification
  * @description:
  */
 
-class BaseTransformerTest extends Specification {
+class JsonObjectTransformerTest extends Specification {
     static final String sampleLeafValue = 'simple leaf value in subMap of "one"'
     static final Map srcMap = [
             one    : [
@@ -43,11 +43,11 @@ class BaseTransformerTest extends Specification {
         String missingExpression = 'one.nothingHere'
 
         when:
-        def slashyResult = BaseTransformer.evalObjectPathExpression(srcMap, slashyExpression)
-        def rootResult = BaseTransformer.evalObjectPathExpression(srcMap, rootExpression)
-        def subMapResult = BaseTransformer.evalObjectPathExpression(srcMap, subMapExpression)
-        def subMapFirstResult = BaseTransformer.evalObjectPathExpression(srcMap, subMapExpressionFirst)
-        def missingResult = BaseTransformer.evalObjectPathExpression(srcMap, missingExpression)
+        def slashyResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, slashyExpression)
+        def rootResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, rootExpression)
+        def subMapResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, subMapExpression)
+        def subMapFirstResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, subMapExpressionFirst)
+        def missingResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, missingExpression)
 
         then:
         slashyResult == sampleLeafValue
@@ -61,7 +61,7 @@ class BaseTransformerTest extends Specification {
     def "transformer should be able to get values from destination Map when provided"() {
         given:
         Map destTemplate = srcMap               // use the srcMap as a sample template for the detination
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, destTemplate, '/')
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')
         String slashyTest = SLASHY_PATH_EX
         String dotTest = 'one.oneSubLeaf'       // sampleLeafValue
         String dotTestList = 'two[2]'           // 'three
@@ -86,7 +86,7 @@ class BaseTransformerTest extends Specification {
         String testPath1 = SLASHY_PATH_EX
         String testPath2 = 'one.aMap[1]'
         String testPath3 = 'one.aMap[2]'
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, destTemplate, '/')
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')
 
         when:
         def result2 = transformer.setDestinationValue(testPath2, 'testPath2 updated')
@@ -101,7 +101,7 @@ class BaseTransformerTest extends Specification {
 
     def "GetNode"() {
         given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, [:], '/')
 
         when:
         def nodeList = transformer.getNode('one.aMap')

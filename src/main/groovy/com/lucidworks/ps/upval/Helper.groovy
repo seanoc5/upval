@@ -24,6 +24,7 @@ class Helper {
      * @param valToSet
      * @return the (primitive?) value of the 'thing' in the JsonObject path (can't assume it is an object that we can update in place, need to call setJsonObjectNode if you want to update)
      */
+/*
     static def getObjectNodeValue(Map srcMap, String path, String separator = '/') {
         log.info "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
@@ -46,6 +47,7 @@ class Helper {
         log.info "return Path ($path) element (value): $element "
         return element
     }
+*/
 
     /**
      * testing some abstraction for getting an element without knowing colletion or map (duck typing...?)
@@ -53,10 +55,11 @@ class Helper {
      * @param map
      * @return
      */
-    static def getElement(String key, Map map) {
+/*    static def getElement(String key, Map map) {
         map[key]
-    }
+    }*/
 
+/*
     static def getElement(def segment, Collection collection) throws IllegalArgumentException {
         Integer index = null
         def element
@@ -77,6 +80,7 @@ class Helper {
 
         element
     }
+*/
 
     /**
      * @param Map srcMap - the map (object?) to travers baesd on path param
@@ -91,6 +95,7 @@ class Helper {
      *
      * todo consider returning a new (cloned?) map, rather than the original...? refactor...
      */
+/*
     static def setJsonObjectNode(Map srcMap, String path, String separator = '/', def valToSet = '') {
         log.debug "Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
@@ -171,28 +176,18 @@ class Helper {
         log.info " Updated element ( $path ):  $element  -- srcMap: ${srcMap}"
         return element
     }
-
-    static boolean isLeafTarget(int depth, int numSegments) {
-        depth == (numSegments - 1)
-    }
-
-/*
-// placeholder for trying new approaches to getting (or setting?) a value with missing parent entries
-    def getMapWithdefaultInject(Map map, String path){
-
-    }
 */
 
 
-/**
- * Helper function to get a flattened list of node paths in XMLParser Node object
- * @param node XMLParser node result of a parse call
- * @param level tracking variable to help define node depth (needed? valuable?)
- * @param separator string to use to build a concatonated string path
- * @return List of string paths
- *
- * todo are there intermediate things we care about that are not leaf nodes?
- */
+    /**
+     * Helper function to get a flattened list of node paths in XMLParser Node object
+     * @param node XMLParser node result of a parse call
+     * @param level tracking variable to help define node depth (needed? valuable?)
+     * @param separator string to use to build a concatonated string path
+     * @return List of string paths
+     *
+     * todo are there intermediate things we care about that are not leaf nodes?
+     */
     static List flattenXmlPath(Node node, int level = 0, String separator = '/') {
         String name = separator + node.name()
         def attributes = node.attributes()
@@ -276,6 +271,7 @@ class Helper {
      * @param level helper to track depth (is this helpful?)
      * @return Map with flattened path(string) as key, and the given object as value
      */
+/*
     static Map<String, Object> flattenWithLeafObject(def object, int level = 0, String prefix = '/', String separator = '/') {
         Map<String, Object> entries = [:]
         log.debug "$level) flattenPlusObject: $object..."
@@ -336,6 +332,7 @@ class Helper {
         }
         return entries
     }
+*/
 
 
 /**
@@ -344,6 +341,7 @@ class Helper {
  * @param level helper var to track depth in recursive calls
  * @return list of paths <String>s
  */
+/*
     static List<String> flatten(def object, int level = 0) {
         List<String> entries = []
         log.debug "$level) flatten object: $object..."
@@ -390,12 +388,14 @@ class Helper {
         }
         return entries
     }
+*/
 
-/**
- * util function to get an (output) folder (for exporting), create if necessary
- * @param dirPath
- * @return
- */
+
+    /**
+     * util function to get an (output) folder (for exporting), create if necessary
+     * @param dirPath where the (new) directory/folder should be
+     * @return created directory
+     */
     static File getOrMakeDirectory(String dirPath) {
         File folder = new File(dirPath)
         if (folder.exists()) {
