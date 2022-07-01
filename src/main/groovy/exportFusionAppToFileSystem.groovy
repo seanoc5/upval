@@ -1,4 +1,4 @@
-import com.lucidworks.ps.model.Application
+import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor

@@ -1,6 +1,6 @@
 package com.lucidworks.ps.solr
 
-import com.lucidworks.ps.model.Application
+import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.model.solr.ConfigSet
 import com.lucidworks.ps.model.solr.ConfigSetCollection
 import spock.lang.Specification
