@@ -47,6 +47,7 @@ if (!appZipFile?.canRead()) {
             log.info "\t\t$typeName) Map to export: ${exportable.keySet().size()}"
         } else if (exportable instanceof BaseObject){
             ((BaseObject)exportable).export()
+            log.debug "exported object: $exportable"
         } else {
             log.warn "$typeName) UNKNOWN type: $typeName: $exportable"
         }
