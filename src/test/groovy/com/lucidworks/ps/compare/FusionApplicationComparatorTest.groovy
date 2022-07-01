@@ -1,6 +1,6 @@
 package com.lucidworks.ps.compare
 
-import com.lucidworks.ps.model.Application
+import com.lucidworks.ps.model.fusion.Application
 import spock.lang.Specification
 
 /**

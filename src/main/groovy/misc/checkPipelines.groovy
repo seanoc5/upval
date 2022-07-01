@@ -2,7 +2,7 @@ package misc
 
 //import com.lucidworks.ps.fusion.Application
 import com.lucidworks.ps.js.PipelineJsAnalyzer
-import com.lucidworks.ps.model.Application
+import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
