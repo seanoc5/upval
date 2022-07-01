@@ -1,4 +1,5 @@
 import com.lucidworks.ps.model.Application
+import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
@@ -44,6 +45,8 @@ if (!appZipFile?.canRead()) {
             log.info "\t\t$typeName) Collection to export: ${exportable.size()}"
         } else if (exportable instanceof Map){
             log.info "\t\t$typeName) Map to export: ${exportable.keySet().size()}"
+        } else if (exportable instanceof BaseObject){
+            ((BaseObject)exportable).export()
         } else {
             log.warn "$typeName) UNKNOWN type: $typeName: $exportable"
         }

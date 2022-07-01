@@ -25,7 +25,7 @@ class LdapAclsTransformTest extends Specification {
     }
 
     def "Transform Set Values"() {
-        given:
+//        given:
 //        ObjectTransformerJayway transformer = new ObjectTransformerJayway()
 
         when:

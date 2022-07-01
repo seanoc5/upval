@@ -26,7 +26,7 @@ class ExportedAppArgParser {
             cli.usage()
             System.exit(0)
         } else {
-            println "Source: ${options.source}"
+            log.info "Args parsed to find Source: ${options.source}"
             if (options.exportDir) {
                 def expdir = Helper.getOrMakeDirectory(options.exportDir)
                 log.info "using export folder: ${expdir.absolutePath}"
