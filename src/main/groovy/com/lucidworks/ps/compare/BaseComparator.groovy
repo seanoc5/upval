@@ -1,10 +1,9 @@
 package com.lucidworks.ps.compare
 
-import com.lucidworks.ps.upval.Helper
+
 import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -58,10 +57,10 @@ class BaseComparator {
      */
     CompareJsonObjectResults compare() {
         CompareJsonObjectResults objectsResults = new CompareJsonObjectResults(this.compareLabel, left, right)
-        leftFlatMap = Helper.flattenWithLeafObject(left, 1, '/', '/')
+        leftFlatMap = JsonObject.flattenWithLeafObject(left, 1, '/', '/')
         leftKeyPaths = leftFlatMap.keySet()
 
-        rightFlatMap = Helper.flattenWithLeafObject(right, 1, '/', '/')
+        rightFlatMap = JsonObject.flattenWithLeafObject(right, 1, '/', '/')
         rightKeyPaths = rightFlatMap.keySet()
 
         leftOnlyKeys = leftKeyPaths - rightKeyPaths

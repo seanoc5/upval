@@ -1,4 +1,4 @@
-import com.lucidworks.ps.fusion.Application
+import com.lucidworks.ps.model.Application
 import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
@@ -12,6 +12,25 @@ log.info "start script ${this.class.name}..."
 
 OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 File appZipFile = new File(options.source)
+File exportFolder = options.exportDir ? new File(options.exportDir) : null
+if(exportFolder){
+    if(exportFolder.exists()){
+        if(exportFolder.isDirectory()){
+            log.info "Using export folder: $exportFolder"
+        } else {
+            throw new IllegalArgumentException("Export destinationmust be a folder (not a file/symlink?): ${exportFolder.absolutePath} ")
+        }
+    } else {
+        log.info "export folder (${exportFolder.absolutePath}) does not exist, make it now..."
+        boolean created = exportFolder.mkdirs()
+        if(!created){
+            throw new IllegalArgumentException("Cannot create destination folder: ${exportFolder.absolutePath} ")
+        }
+    }
+} else {
+    log.info "No export folder given..."
+}
+
 if (!appZipFile?.canRead()) {
     throw new IllegalArgumentException("Could not find valid source file: ${options.source} (should be an app export zip file)")
 } else {

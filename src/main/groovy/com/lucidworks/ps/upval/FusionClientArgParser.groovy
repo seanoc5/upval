@@ -42,31 +42,7 @@ class FusionClientArgParser {
             System.exit(0)
         }
         if(options.exportDir){
-            log.info "We have an export dir: ${options.exportDir}, make it if necessary.."
-            String dir = options.exportDir?.trim()
-            if(!dir){
-                dir = './exports'
-                log.warn "empty export dir folder (${options.exportDir}) passed in, defaulting to: $dir for new export folder"
-            }
-            File exportDir = new File(options.exportDir)
-            if(exportDir.exists()){
-                if(exportDir.isDirectory()) {
-                    log.debug "Export dir: ${exportDir.absolutePath} exists and is directory, nothing more needed..."
-                } else {
-                    log.error "Export dir (${exportDir.absolutePath}) exists, but is NOT a directory!! Failing out... (more code here for symlinks or other edge cases???)"
-                    System.exit(0)
-                }
-            } else {
-                log.debug "Export dir:(${exportDir.absolutePath}) does not exist, make it now..."
-                boolean success = exportDir.mkdirs()
-                if(success) {
-                    log.info "Export dir:(${exportDir.absolutePath}) did not exist, but we have created it..."
-                } else {
-                    int statusCode = 0
-                    log.error "Export dir:(${exportDir.absolutePath}) does not exist and we FAILED to create it, exiting with failure (status code: $statusCode ..."
-                    System.exit(statusCode)
-                }
-            }
+            def foo = Helper.getOrMakeDirectory(options.exportDir)
         }
         options
     }

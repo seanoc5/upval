@@ -1,5 +1,6 @@
 package com.lucidworks.ps.misc
 
+import com.lucidworks.ps.transform.XmlObject
 import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
@@ -11,7 +12,7 @@ import spock.lang.Specification
  *
  */
 class BasicXMLTest extends Specification {
-    def xmlString = '''
+    public static String XML_TEST_STRING = '''
 <response version-api="2.0">
     <value>
         <books>
@@ -57,9 +58,9 @@ class BasicXMLTest extends Specification {
     def "divepath all"() {
         given:
 //        NodeChild xml = new XmlSlurper().parseText(xmlString)
-        Node xml = new XmlParser().parseText(xmlString)
+        Node xml = new XmlParser().parseText(XML_TEST_STRING)
         when:
-        def divePaths = Helper.flattenXmlPath(xml, 0, '/')
+        def divePaths = XmlObject.flattenXmlPath(xml, 0, '/')
         divePaths.each {
             println it
         }
@@ -79,7 +80,7 @@ class BasicXMLTest extends Specification {
      */
     def "should Flatten all nodes with a hackish approach"() {
         given:
-        def xml = new XmlSlurper().parseText(xmlString)
+        def xml = new XmlSlurper().parseText(XML_TEST_STRING)
         when:
         def flatNodes = xml.'**'.findAll { it }
         def flatPaths = flatNodes.collect { path(it) }
@@ -97,7 +98,7 @@ class BasicXMLTest extends Specification {
 
     def "should Flatten leaf nodes of xml string to expected node count"() {
         given:
-        def xml = new XmlSlurper().parseText(xmlString)
+        def xml = new XmlSlurper().parseText(XML_TEST_STRING)
 
         when:
         def leaves = xml.'**'.findAll { it.children().size() == 0 }
@@ -116,8 +117,8 @@ class BasicXMLTest extends Specification {
         def rightSchema = parser.parse(rightResource)
 
         when:
-        def flatLeft = Helper.flattenXmlPath(leftSchema)
-        def flatRight = Helper.flattenXmlPath(rightSchema)
+        def flatLeft = XmlObject.flattenXmlPath(leftSchema)
+        def flatRight = XmlObject.flattenXmlPath(rightSchema)
 
         then:
         flatLeft.size() == 444

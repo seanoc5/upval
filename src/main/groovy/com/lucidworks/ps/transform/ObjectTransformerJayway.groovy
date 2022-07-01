@@ -6,41 +6,39 @@ import com.jayway.jsonpath.PathNotFoundException
 import org.apache.log4j.Logger
 
 import java.text.SimpleDateFormat
-
 /**
  * Use <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer to apply rules to a JsonSlurper.parse* object (i.e. map of maps/lists)
  * todo -- handle an initial list rather than the assumed map (with possible lists as children)
  * Class to perform transfomations on JSON slurped
- * @see groovy.json.JsonSlurper
- * todo improve class design - consider implementing an interface, or perhaps a base transformer factory to allow abstraction of implementation choice
+ * @see groovy.json.JsonSlurper* todo improve class design - consider implementing an interface, or perhaps a base transformer factory to allow abstraction of implementation choice
  * todo should this handle xml sources as well, or keep that functionality distinct? xml nodes are significantly different that JsonSlurper maps/lists
  * <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer
  *
  */
 class ObjectTransformerJayway {
     static Logger log = Logger.getLogger(this.class.name);
-    Map sourceMap
-    DocumentContext srcContext
+//    Map sourceMap
+//    DocumentContext srcContext
 
-    Map destinationMap
-    DocumentContext destContext
+//    Map destinationMap
+//    DocumentContext destContext
 
-    Map rules
+//    Map rules
 
     /**
      * @deprecated
      * todo -- working on moving to functional approach (static calls)
      */
-    ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
-        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
-        sourceMap = srcMap
-        destinationMap = destMap
-
-        srcContext = JsonPath.parse(sourceMap)
-        destContext = JsonPath.parse(destinationMap)
-
-        this.rules = rules
-    }
+//    ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
+//        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
+//        sourceMap = srcMap
+//        destinationMap = destMap
+//
+//        srcContext = JsonPath.parse(sourceMap)
+//        destContext = JsonPath.parse(destinationMap)
+//
+//        this.rules = rules
+//    }
 
     /**
      * process the configuration rules, currently `set` and `copy`
@@ -48,14 +46,14 @@ class ObjectTransformerJayway {
      * todo -- remove me, moving to functional-friendly approach (static calls)
      * @deprecated
      */
-    Map<String, List<Map<String, Object>>> transform() {
-        Map resultsMap = [:]
-        List<Map<String, Object>> myset = setValues()
-        resultsMap['set'] = myset
-        List<Map<String, Object>> myCopy = copyValues()
-        resultsMap['copy'] = myCopy
-        return destinationMap
-    }
+//    Map<String, List<Map<String, Object>>> transform() {
+//        Map resultsMap = [:]
+//        List<Map<String, Object>> myset = setValues(sourceMap, rules, destinationMap)
+//        resultsMap['set'] = myset
+//        List<Map<String, Object>> myCopy = copyValues(sourceMap, rules, destinationMap)
+//        resultsMap['copy'] = myCopy
+//        return destinationMap
+//    }
 
     /**
      * Static (functional-friendly?) method to apply transform rules
@@ -83,7 +81,7 @@ class ObjectTransformerJayway {
         resultsMap = resultsMap + myset
 
         // ---------- REMOVE -------------
-        if(rules.remove){
+        if (rules.remove) {
             log.warn "Untested code/functionality at the moment... write tests, fix broken stuff... remove rules: ${rules.remove}"
         }
         List<Map<String, Object>> myRemove = removeItems(srcMap, rules, destinationTemplate)
@@ -142,9 +140,11 @@ class ObjectTransformerJayway {
         def copyRules = rules['copy']
         log.info "\t\tCopy rules: $copyRules"
 
-        copyRules.each { def rule ->        // String destPath, String srcPath ->
+        copyRules.each { Map.Entry rule ->
+            log.info "Rule class: ${rule.getClass().simpleName}"
+            performCopyRule(rule, srcMap, [:], srcContext, destContext)
             log.info "\t\tRule: $rule"
-            changes << performCopyRule(rule)
+//            changes << performCopyRule(rule, srcMap, destinationTemplate)
         }
         return changes
     }
@@ -184,27 +184,28 @@ class ObjectTransformerJayway {
         null
     }
 
-    String currentTimeStamp(Date date = new Date()){
+    String currentTimeStamp(Date date = new Date()) {
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(date)
     }
 
-
-    def performCopyRule(def copyRule, def src, def dest) {
+    static Map performCopyRule(Map.Entry copyRule, def src, def dest, DocumentContext srcContext, DocumentContext destContext) {
+        Map change = [:]
+        String srcPath = copyRule.key
+        String destPath = copyRule.value
         try {
             String srcValue = srcContext.read(srcPath)
             String origDestValue = destContext.read(destPath)
             DocumentContext dcUpdated = destContext.set(destPath, srcValue)
             String newDestValue = destContext.read(destPath)
             log.warn "Untested? do we need to update destinationTemplate...?"
-            Map change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
+            change = [srcPath: srcPath, srcValue: srcValue, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
             if (srcValue != newDestValue) {
                 log.info "Change: $change"
             }
-            changes << change
         } catch (PathNotFoundException pnfe) {
             log.warn "Path (src:$srcPath -> dest:$destPath) wasn't found: $pnfe"
             log.debug "this is bad..."
         }
-
+        return change
     }
 }

@@ -1,10 +1,10 @@
 package com.lucidworks.ps.misc
 
+import com.lucidworks.ps.transform.JsonObject
 import com.lucidworks.ps.upval.Helper
 import spock.lang.Specification
 
 import java.util.regex.Pattern
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -33,7 +33,7 @@ class   BasicFlatpathTransformTest extends Specification {
 
     def "flatten path should be as expected"() {
         when:
-        def flatpaths = Helper.flattenWithLeafObject(srcMap)
+        def flatpaths = JsonObject.flattenWithLeafObject(srcMap)
 
         then:
         flatpaths.size() == 4
@@ -41,7 +41,7 @@ class   BasicFlatpathTransformTest extends Specification {
 
     def "should be able to get elements by path regex pattern"() {
         when:
-        def flatpaths = Helper.flattenWithLeafObject(srcMap)
+        def flatpaths = JsonObject.flattenWithLeafObject(srcMap)
         Pattern pathRegex = ~/\/a.*/
         def aItemPaths = flatpaths.findAll { String path, def val ->
             path ==~ pathRegex
@@ -54,7 +54,7 @@ class   BasicFlatpathTransformTest extends Specification {
 
     def "should be able to get elements values"() {
         when:
-        def flatpaths = Helper.flattenWithLeafObject(srcMap)
+        def flatpaths = JsonObject.flattenWithLeafObject(srcMap)
         Pattern pathRegex = ~/\/b\/.*/
         def aItemFlatPathMap = flatpaths.findAll { String path, def val ->
             path ==~ pathRegex
@@ -72,7 +72,7 @@ class   BasicFlatpathTransformTest extends Specification {
 
     def "should be able to SET elements values"() {
         when:
-        def flatpaths = Helper.flattenWithLeafObject(srcMap)
+        def flatpaths = JsonObject.flattenWithLeafObject(srcMap)
         Map<String, Object> aoneVal = flatpaths['/a/one']
         aoneVal
         // setting an element in a list could be tricky?

@@ -275,7 +275,7 @@ class JsonObjectTest extends Specification {
 
     def "flattenPlusObject"() {
         when:
-        Map<String, Object> flatties = Helper.flattenWithLeafObject(map, 1, '/', '/')
+        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(map, 1, '/', '/')
         Set<String> paths = flatties.keySet()
 
         then:

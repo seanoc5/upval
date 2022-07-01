@@ -1,8 +1,11 @@
 package misc.compare
 
 import com.lucidworks.ps.compare.FusionApplicationComparator
-import com.lucidworks.ps.fusion.Application
+import com.lucidworks.ps.model.Application
 import org.apache.log4j.Logger
+
+//import com.lucidworks.ps.fusion.Application
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com

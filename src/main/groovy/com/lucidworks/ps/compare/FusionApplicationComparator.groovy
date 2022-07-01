@@ -1,8 +1,12 @@
 package com.lucidworks.ps.compare
 
-import com.lucidworks.ps.fusion.Application
+import com.lucidworks.ps.model.Application
 import com.lucidworks.ps.transform.JsonObject
+
+//import com.lucidworks.ps.fusion.Application
+
 import org.apache.log4j.Logger
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com

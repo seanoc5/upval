@@ -1,6 +1,6 @@
 package com.lucidworks.ps.solr
 
-
+import com.lucidworks.ps.model.solr.ManagedSchema
 import spock.lang.Specification
 /**
  * @author :    sean

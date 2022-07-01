@@ -1,6 +1,6 @@
 package misc
 
-import com.lucidworks.ps.solr.ManagedSchema
+import com.lucidworks.ps.model.solr.ManagedSchema
 import groovy.xml.XmlUtil
 
 /**

@@ -20,15 +20,6 @@ class ObjectTransformerJaywayTest extends Specification {
         rules = slurper.parseText(configsJsonPathSlashyFormat)
     }
 
-/*
-    def "should transform a source to expected output" () {
-        given
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
-
-        when:
-
-    }
-*/
 
     def "Transformer should transform src with rules and dest template via static call"(){
 
@@ -44,28 +35,11 @@ class ObjectTransformerJaywayTest extends Specification {
 
     }
 
-    /**
-     * @deprecated move to static/functional approach
-     */
-    def "Transform old non-static"() {
-        given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap, destMap, rules)
-
-        when:
-        transformer.transform()
-
-        then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
-        transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
-    }
-
     def "should ransform with static calls"() {
-
         when:
         def foo = ObjectTransformerJayway.transform(srcMap, rules, destMap)
 
         then:
-//        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
         foo.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
