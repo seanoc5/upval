@@ -43,6 +43,9 @@ if (!appZipFile?.canRead()) {
         def exportable = app.getThings(typeName)
         if(exportable instanceof Collection) {
             log.info "\t\t$typeName) Collection to export: ${exportable.size()}"
+            exportable.each { String label, Object value ->
+
+            }
         } else if (exportable instanceof Map){
             log.info "\t\t$typeName) Map to export: ${exportable.keySet().size()}"
         } else if (exportable instanceof BaseObject){
