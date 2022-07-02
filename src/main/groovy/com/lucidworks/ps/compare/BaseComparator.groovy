@@ -4,6 +4,7 @@ package com.lucidworks.ps.compare
 import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
