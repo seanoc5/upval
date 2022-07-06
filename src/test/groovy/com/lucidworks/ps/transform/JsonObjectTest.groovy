@@ -18,6 +18,7 @@ import spock.lang.Unroll
  * test class for basic JsonSlurper object navigation (get nodes), and transformations (set nodes, escape/unescape string values, e.g. embedded javascript)
  */
 class JsonObjectTest extends Specification {
+
     String formatedSource = '''function myFunc() {
 \tvar a = "foo";
 \tconsole.log(a);
