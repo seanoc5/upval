@@ -13,9 +13,9 @@ class BaseComparatorArgParser {
         CliBuilder cli = new CliBuilder(usage: "${toolName}.groovy -fhttp://myFusion5addr:6764 -uadmin -psecret123 -s~/data/MyApp.objects.json -m ~/Fusion/migration/F4/mappingFolder", width: 160)
         cli.with {
             h longOpt: 'help', 'Show usage information'
-            e longOpt: 'exportDir', args: 1, required: false, argName: 'dir', 'Export directory'
             l longOpt: 'left', args:1, required: true, argName: 'left', "Left Source file (source?)"
             r longOpt: 'right', args:1, required: true, argName: 'right', "Right Source file (destination?)"
+            x longOpt: 'exportDir', args: 1, required: false, argName: 'dir', 'Export directory'
         }
 
 

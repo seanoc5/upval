@@ -1,5 +1,6 @@
 package com.lucidworks.ps.compare
 
+import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.transform.JsonObject
 
@@ -49,7 +50,7 @@ class FusionApplicationComparator {
         log.info "Compare things matching: (${thingsToCompare}) -- Value Diffs to ignore: $valueDiffsToIgnore"
 
         thingsToCompare.each { String thingType ->
-            log.info "Compare things of type: $thingType"
+            log.debug "Compare things of type: $thingType"
             Object leftThings = leftApp.getThings(thingType)
             Object rightThings = rightApp.getThings(thingType)
             LeftRightCollectionResults collectionResults = new LeftRightCollectionResults(thingType, valueDiffsToIgnore)
@@ -62,7 +63,7 @@ class FusionApplicationComparator {
                         this.collectionComparisons[thingType] = collectionResults
 
                         collectionResults.sharedIds.each { String id ->
-                            log.info "\t\tComparing shared object with id: $id"
+                            log.debug "\t\tComparing shared object with id: $id"
                             def leftObject = leftThings.find { it.id == id }
                             def rightObject = rightThings.find { it.id == id }
 
@@ -70,6 +71,9 @@ class FusionApplicationComparator {
                             collectionResults.objectsResults[id] = objectsResults
                             log.debug "Compare results: $objectsResults"
                         }
+                    } else if (leftThings instanceof BaseObject) {
+                        log.warn "Compare BaseObjects: ${leftThings.getClass().simpleName}"
+
                     } else if (leftThings instanceof Map) {
                         log.warn "TODO:: Process map (Left:${leftThings.keySet().size()}) for thing type: $thingType"
                     } else {
@@ -124,15 +128,15 @@ class FusionApplicationComparator {
 
         def leftOnly = leftKeyPaths - rightKeyPaths
         if (leftOnly) {
-            log.info "\t\t$compareLabel) Left only ids: ${leftOnly}"
+            log.debug "\t\t$compareLabel) Left only ids: ${leftOnly}"
         } else {
-            log.info "\t\t$compareLabel) All left ids match right ids"
+            log.debug "\t\t$compareLabel) All left ids match right ids"
         }
         def rightOnly = rightKeyPaths - leftKeyPaths
         if (rightOnly) {
-            log.info "\t\t$compareLabel) Right only ids: ${rightOnly}"
+            log.debug "\t\t$compareLabel) Right only ids: ${rightOnly}"
         } else {
-            log.info "\t\t$compareLabel) All right ids match left ids"
+            log.debug "\t\t$compareLabel) All right ids match left ids"
         }
         objectsResults.leftOnlyKeys = leftOnly
         objectsResults.rightOnlyKeys = rightOnly
@@ -140,7 +144,7 @@ class FusionApplicationComparator {
         List<String> shared = leftKeyPaths.intersect(rightKeyPaths)
         objectsResults.sharedKeys = shared
         shared.each {
-            log.info "\t\t$compareLabel) Compare values: $it (more code here....)"
+            log.debug "\t\t$compareLabel) Compare values: $it (more code here....)"
             def leftChild = leftObjects[it]
             def rightChild = rightObjects[it]
             def valueComparisons = compareValues(leftChild, rightChild, compareLabel)
@@ -169,15 +173,16 @@ class FusionApplicationComparator {
             String rightClassName = right.class.name
 
             if(leftClassName==rightClassName){
-                log.info "Same class names (which is a good start..): $leftClassName"
+                log.info "Same class names (which is a good start..): $leftClassName: leftValue:($left) != right value:($right)"
                 description =  "Values are the Different: left:($left) and right:($right)"
             } else {
                 diffType = 'Different Classes'
                 description = "Left class: [$leftClassName] differs from Right class: [$rightClassName]"
+                log.info this
             }
         }
         ComparisonResult diff = new ComparisonResult(objectType, diffType, description)
-        log.info diff
+        log.debug diff
         return diff
     }
 
