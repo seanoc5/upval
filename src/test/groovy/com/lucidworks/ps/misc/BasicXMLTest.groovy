@@ -1,7 +1,8 @@
 package com.lucidworks.ps.misc
 
 import com.lucidworks.ps.transform.XmlObject
-import com.lucidworks.ps.upval.Helper
+import com.lucidworks.ps.Helper
+//import com.lucidworks.ps.upval.Helper
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult

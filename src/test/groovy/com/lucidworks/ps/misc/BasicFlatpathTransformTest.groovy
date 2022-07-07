@@ -1,7 +1,6 @@
 package com.lucidworks.ps.misc
 
 import com.lucidworks.ps.transform.JsonObject
-import com.lucidworks.ps.upval.Helper
 import spock.lang.Specification
 
 import java.util.regex.Pattern

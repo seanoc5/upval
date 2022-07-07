@@ -1,5 +1,6 @@
 package com.lucidworks.ps.upval
 
+import com.lucidworks.ps.Helper
 import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
