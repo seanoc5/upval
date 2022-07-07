@@ -2,12 +2,13 @@ package com.lucidworks.ps.misc
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
-import com.lucidworks.ps.upval.Helper
+import com.lucidworks.ps.Helper
+//import com.lucidworks.ps.upval.Helper
 import spock.lang.Specification
 
 /**
  * trying to test json pointer functionality (not much luck yet...)
- * @see com.lucidworks.ps.mapping.ObjectTransformerJayway
+ * see com.lucidworks.ps.mapping.ObjectTransformerJayway
  * @deprecated
  * https://www.baeldung.com/json-pointer
  * https://javaee.github.io/jsonp/getting-started.html

@@ -1,8 +1,10 @@
+import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import com.lucidworks.ps.upval.FusionClientArgParser
-import com.lucidworks.ps.upval.Helper
 import groovy.cli.picocli.OptionAccessor
+
+
 import groovy.json.JsonBuilder
 import groovy.transform.Field
 import org.apache.log4j.Logger
