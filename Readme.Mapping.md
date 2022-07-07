@@ -77,3 +77,11 @@ https://blogs.sap.com/2022/05/26/gpath-for-json-in-cloud-integration/
     }
 */
 
+
+## Notes
+### JsonOutput (customization)
+`// http://man.hubwiz.com/docset/Groovy.docset/Contents/Resources/Documents/groovy/json/JsonGenerator.Options.html
+def jsonDefaultOutput = new JsonGenerator.Options()
+        .dateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        .build()
+`
