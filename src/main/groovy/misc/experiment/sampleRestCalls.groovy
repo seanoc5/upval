@@ -9,7 +9,7 @@ package misc.experiment
 
 
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.upval.FusionClientArgParser
+import com.lucidworks.ps.clients.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 

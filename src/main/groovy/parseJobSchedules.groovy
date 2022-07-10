@@ -1,10 +1,8 @@
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
+import com.lucidworks.ps.clients.FusionClientArgParser
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
-import com.lucidworks.ps.upval.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
-
-
 import groovy.json.JsonBuilder
 import groovy.transform.Field
 import org.apache.log4j.Logger
@@ -14,7 +12,7 @@ import java.text.SimpleDateFormat
 //import com.lucidworks.ps.upval.Fusion4ObjectTransformer
 
 @Field
-Logger log = Logger.getLogger(this.class.name);
+Logger log = Logger.getLogger(this.class.name)
 
 log.info "start script ${this.class.name}..."
 OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)

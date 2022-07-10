@@ -1,7 +1,7 @@
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.model.fusion.Application
-import com.lucidworks.ps.upval.ExportedAppArgParser
+import com.lucidworks.ps.clients.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonGenerator
 import groovy.json.JsonOutput
@@ -69,7 +69,7 @@ if (!appZipFile?.canRead()) {
             log.debug "finished exporting collection type: $typeName."
         } else if (exportable instanceof Map) {
             log.info "\t\t$typeName) Map to export: ${exportable.keySet().size()}"
-            exportable.each { String label, Collection collection ->
+            exportable.each { String label, def collection ->
                 String s = jsonCustomOutput.toJson(collection)
                 String outName = "${typeName}.${label}.json"
                 File outfile = new File(exportFolder, outName)
