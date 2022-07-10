@@ -1,6 +1,6 @@
 package misc
 
-import com.lucidworks.ps.upval.FusionClientArgParser
+import com.lucidworks.ps.clients.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonGenerator
 import groovy.json.JsonSlurper

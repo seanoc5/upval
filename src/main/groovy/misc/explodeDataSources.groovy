@@ -2,7 +2,6 @@ package misc
 
 
 import com.lucidworks.ps.model.fusion.Application
-import com.lucidworks.ps.upval.ExportedAppArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
@@ -20,7 +19,7 @@ if(srcFile && srcFile.canRead()){
 }
 
 Application application = new Application(srcFile)
-Map fusionParsedMap = application.parsedMap
+Map fusionParsedMap = application.exportedObjectsSourceMap
 
 Map<String, Object> objects = fusionParsedMap.objects
 def dataSources = objects.dataSources
