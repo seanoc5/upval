@@ -17,6 +17,9 @@ OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 File appZipFile = new File(options.source)
 File exportFolder = options.exportDir ? new File(options.exportDir) : null
 boolean groupedExport = options.grouped
+if(groupedExport){
+    log.info "Group export files by type name..."
+}
 
 // http://man.hubwiz.com/docset/Groovy.docset/Contents/Resources/Documents/groovy/json/JsonGenerator.Options.html
 def jsonCustomOutput = new JsonGenerator.Options()
