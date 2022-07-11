@@ -63,7 +63,7 @@ if (!appZipFile?.canRead()) {
                 log.warn "$typeName) UNKNOWN type: $typeName: $exportable"
             }
         } else {
-            log.warn "Tried getting things of type: $typeName, but found nothing... skipping..."
+            log.info "Tried getting things of type: $typeName, but found nothing... skipping..."
         }
     }
     log.debug "Done iterating types: $thingsToExport"
