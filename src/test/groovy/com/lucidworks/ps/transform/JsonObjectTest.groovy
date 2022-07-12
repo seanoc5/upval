@@ -177,8 +177,9 @@ class JsonObjectTest extends Specification {
         // note: this dot notation is @deprecated, left as a reference for an alternative notation...
         flatties instanceof List
         flatties.size() == 14
-        flatties[0] == 'top1.list1.[0]'
-        flatties[3] == 'top1.middle1a.bottom1a1.subbottom1a1a'
+        // todo -- revisit and fix the path building, missing leading slash...  these two checks will fail until the code is fixed (or removed)
+        flatties[0] == '/top1/list1/0'
+        flatties[3] == '/top1/middle1a/bottom1a1/subbottom1a1a'
     }
 
     def "flatten a map and return path PlusObject"() {
@@ -278,15 +279,16 @@ class JsonObjectTest extends Specification {
 
         then:
         flatties instanceof Map
-        paths.size() == 13
+        paths.size() == 17
 
-        paths[0] == '/id'
-        flatties[paths[0]] == 'test_typeahead_inclusion_list'
+        paths[0] == '/objects/collections/0/id'
+        flatties[paths[0]] == 'test'
 
-        paths[7] == '/properties/collection'
+        paths[4] == '/objects/collections/0/solrParams/name'
+        flatties[paths[4]] == 'test'
 
-        paths[10] == '/properties/foo/0'
-        flatties[paths[10]] == 'a'
+        paths[15] == '/objects/collections/1/type'
+        flatties[paths[15]] == 'JOB_REPORTS'
     }
 
     def "parse and flatten a test objects.json partial file and return path PlusObject"() {
@@ -300,15 +302,14 @@ class JsonObjectTest extends Specification {
 
         then:
         flatties instanceof Map
-        paths.size() == 13
+        paths.size() == 5107
 
-        paths[0] == '/id'
-        flatties[paths[0]] == 'test_typeahead_inclusion_list'
+        paths[0] == '/objects/collections/0/id'
+        flatties[paths[0]] == 'test'
 
-        paths[7] == '/properties/collection'
+        paths[15] == '/objects/collections/1/type'
+        flatties[paths[15]] == 'JOB_REPORTS'
 
-        paths[10] == '/properties/foo/0'
-        flatties[paths[10]] == 'a'
     }
 
 
