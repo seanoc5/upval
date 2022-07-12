@@ -1,7 +1,9 @@
+import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.ExportedAppArgParser
 import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.model.fusion.Application
 import groovy.cli.picocli.OptionAccessor
+import groovy.json.JsonOutput
 import groovy.transform.Field
 import org.apache.log4j.Logger
 /**
@@ -13,15 +15,14 @@ log.info "start Fusion app assessment (for complexity) script: ${this.class.name
 
 OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 File src = new File(options.source)
-
+File exportDir = null
+if(options.exportDir){
+    exportDir = Helper.getOrMakeDirectory( new File(options.exportDir))
+} else {
+    log.info "No export dir given, not saving assessment..."
+}
 Application app = new Application(src)
 
-/*
-Map infoMap = app.toInfoMap()
-infoMap.each { String label, def val ->
-    log.info "${label.padLeft(20)} : $val"
-}
-*/
 
 log.info "----------- Begin Complexity Assessment -----------------"
 Map<String, Object> fullAssessment = [:]
@@ -60,6 +61,12 @@ fullAssessment.each { String thing, Map map ->
     map.items?.each {
         log.debug "\t\tassesment item: $it"
     }
+}
+if(exportDir){
+    File outfile = new File(exportDir, "assessment.json")
+    String json = JsonOutput.toJson(fullAssessment)
+    outfile.text = JsonOutput.prettyPrint(json)
+    log.info "Wrote assessment to file: ${outfile.absoluteFile}"
 }
 
 log.info "Sum complexity: $sumComplexity with "
