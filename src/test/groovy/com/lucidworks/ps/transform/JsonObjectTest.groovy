@@ -2,6 +2,7 @@ package com.lucidworks.ps.transform
 
 
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringEscapeUtils
 import spock.lang.Shared
 import spock.lang.Specification
@@ -164,6 +165,10 @@ class JsonObjectTest extends Specification {
             ]
     ]
 
+    /**
+     * broken and outdated?? moving from flatten to flattenWithLeafObject
+     * @return
+     */
     def "simple flatten functionality"() {
         when:
         def flatties = JsonObject.flatten(map, 1)
@@ -176,7 +181,7 @@ class JsonObjectTest extends Specification {
         flatties[3] == 'top1.middle1a.bottom1a1.subbottom1a1a'
     }
 
-    def "flattenPlusObject"() {
+    def "flatten a map and return path PlusObject"() {
         when:
         Map<String, Object> flatties = JsonObject.flattenWithLeafObject(map, 1, '/', '/')
         Set<String> paths = flatties.keySet()
@@ -190,6 +195,45 @@ class JsonObjectTest extends Specification {
 
         paths[13] == '/top2/middle2b/bottom2b1'
         flatties[paths[13]] == 'endleaf3'
+    }
+
+
+    String testJson = '''
+{
+    "id": "test_typeahead_inclusion_list",
+    "created": "2021-04-26T23:05:53.940Z",
+    "modified": "2021-04-26T23:05:53.940Z",
+    "connector": "lucid.fileupload",
+    "type": "fileupload",
+    "pipeline": "test_typeahead_IPL_v4",
+    "parserId": "_system",
+    "properties": {
+        "collection": "test_typeahead_v4",
+        "fileId": "typeahead/Typeahead_inclusion_list.csv",
+        "mediaType": "text/csv",
+        "foo":["a", "b", "c"]
+    }
+}
+'''
+
+    def "parse and flatten a json String and return path PlusObject"() {
+        when:
+        JsonSlurper slurper = new JsonSlurper()
+        def json = slurper.parseText(testJson)
+        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(json, 1, '/', '/')
+        Set<String> paths = flatties.keySet()
+
+        then:
+        flatties instanceof Map
+        paths.size() == 13
+
+        paths[0] == '/id'
+        flatties[paths[0]] == 'test_typeahead_inclusion_list'
+
+        paths[7] == '/properties/collection'
+
+        paths[10] == '/properties/foo/0'
+        flatties[paths[10]] == 'a'
     }
 
 
