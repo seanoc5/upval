@@ -9,3 +9,4 @@
 *.class
 /logs/
 /src/main/resources/examples/example_application-dev.yml
+/example_application-dev.yml
