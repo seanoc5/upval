@@ -18,9 +18,10 @@ class FusionModelComparatorTest extends Specification {
 
         File rightAppZip = new File(getClass().getResource('/apps/test.f5.partial.modified.zip').toURI())
         Application rightApp = new Application(rightAppZip)
+        List<String> things = ['collections', 'indexPipelines']
 
         when:
-        FusionModelComparator comparator = new FusionModelComparator(leftApp, rightApp, FusionModelComparator.DEFAULTTHINGSTOCOMPARE, '.*(created|modified)')
+        FusionModelComparator comparator = new FusionModelComparator(leftApp, rightApp, things, '.*(created|modified)')
 
         then:
         comparator.collectionComparisons.size() == 10
