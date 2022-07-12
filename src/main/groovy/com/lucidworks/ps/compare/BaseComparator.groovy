@@ -1,10 +1,8 @@
 package com.lucidworks.ps.compare
 
+import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.transform.JsonObject
 import org.apache.log4j.Logger
-
-import java.util.regex.Pattern
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -29,8 +27,8 @@ class BaseComparator {
     Set<String> rightKeyPaths
     def rightOnlyKeys
 
-    Pattern ignoreValueDifferences
-    Pattern matchChildrenOrder
+    def ignoreValueDifferences
+    def matchChildrenOrder
 
 
     /**
@@ -40,9 +38,19 @@ class BaseComparator {
      * @param ignoreValueDifferences - an optional regex pattern for element names to skip comparing values (just interested in structure)
      * @param matchChildrenOrder - an optional regex pattern for element names to MATCH for comparing element order (default is order not relevant, but structure is)
      */
-    BaseComparator(String compareLabel, def left, def right, Pattern ignoreValueDifferences = null, Pattern matchChildrenOrder = null) {
-        this.left = left
-        this.right = right
+    BaseComparator(String compareLabel, def left, def right, def ignoreValueDifferences = null, def matchChildrenOrder = null) {
+        if(left instanceof BaseObject){
+            log.debug "Getting source items from BaseObject (${left.itemType})"
+            this.left = left.srcItems
+        } else {
+            this.left = left
+        }
+        if(right instanceof BaseObject){
+            log.debug "Getting source items from BaseObject (${right.itemType})"
+            this.right = right.srcItems
+        } else {
+            this.right = right
+        }
         this.compareLabel = compareLabel
         this.ignoreValueDifferences = ignoreValueDifferences
         this.matchChildrenOrder = matchChildrenOrder
@@ -69,14 +77,12 @@ class BaseComparator {
         if (leftOnlyKeys) {
             objectsResults.leftOnlyKeys = leftOnlyKeys
             ComparisonResult diff = new ComparisonResult(this.compareLabel, ComparisonResult.DIFF_LEFT_ONLY, leftOnlyKeys.toString())
-//            Comparison diff = new Comparison(label, Comparison.DIFF_LEFT_ONLY, "The LEFT object had these items which the right did not (structural diff): $leftOnlyKeys")
             objectsResults.differences << diff
         }
         objectsResults.rightOnlyKeys = rightOnlyKeys
         if (rightOnlyKeys) {
             objectsResults.rightOnlyKeys = rightOnlyKeys
             ComparisonResult diff = new ComparisonResult(this.compareLabel, ComparisonResult.DIFF_RIGHT_ONLY, rightOnlyKeys.toString())
-//            Comparison diff = new Comparison(label, Comparison.DIFF_RIGHT_ONLY, "The RIGHT object had these items which the left did not (structural diff): $rightOnlyKeys")
             objectsResults.differences << diff
         }
 
@@ -90,7 +96,7 @@ class BaseComparator {
             boolean matchChildOrder = false
 
             if (leftItem instanceof Map) {
-                log.debug "\t\t\t\tSkip comparing values for shared Map item (type: ${leftItem.getClass().simpleName}), sharedPath: $sharedItemPath"
+                log.warn "\t\t\t\tSkip comparing values for shared Map item (type: ${leftItem.getClass().simpleName}), sharedPath: $sharedItemPath"
             } else {
                 ignoreValues = (sharedItemPath ==~ ignoreValueDifferences)
                 if(ignoreValues){
@@ -233,8 +239,9 @@ class BaseComparator {
             List l = (List) object
             desc = "List (${object.getClass().simpleName}) has (${l.size()}) items"
         } else {
-            desc = "Object (${object.getClass().simpleName}) has value: (${object.toString})"
+            desc = "Object (${object.getClass().simpleName}) has value: (${object.toString()})"
         }
+        return desc
     }
 /*
     Comparison compareMapValues(String compareLabel, Map left, Map right, Pattern ignoreValueDifferences) {
