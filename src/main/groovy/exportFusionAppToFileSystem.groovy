@@ -16,9 +16,10 @@ log.info "start script ${this.class.name}..."
 OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
 File appZipFile = new File(options.source)
 File exportFolder = options.exportDir ? new File(options.exportDir) : null
-boolean groupedExport = options.grouped
-if(groupedExport){
-    log.info "Group export files by type name..."
+boolean groupedExport = true
+if(options.flat){
+    groupedExport = false
+    log.info "Option 'flat' was given, overriding default grouped output, no grouping in object type folders based on the 'flat' option given..."
 }
 
 // http://man.hubwiz.com/docset/Groovy.docset/Contents/Resources/Documents/groovy/json/JsonGenerator.Options.html
