@@ -124,14 +124,7 @@ class BaseComparator {
      */
     ComparisonResult compareValues(String compareLabel, def left, def right, boolean ignoreValueDifferences, boolean matchChildOrder) {
         String leftClassName = left.getClass().name
-        if (!leftClassName) {
-            log.warn "Special class (lazy map???) more code here"
-        }
-
         String rightClassName = right.getClass().name
-        if (!rightClassName) {
-            log.warn "Special class (lazy map???) more code here"
-        }
 
         ComparisonResult diff
 
