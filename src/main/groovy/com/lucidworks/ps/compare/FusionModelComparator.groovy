@@ -3,20 +3,17 @@ package com.lucidworks.ps.compare
 import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.transform.JsonObject
-
-//import com.lucidworks.ps.fusion.Application
-
 import org.apache.log4j.Logger
+
 
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
  * @created :   5/23/22, Monday
- * @description: helper class to compare two different Fusion Applications (or parts of)
- * @ deprecated ??
- * todo -- move to using BaseComparator ...?
+ * @description: helper class to compare two different Fusion Applications (or model parts of)
+ * replaces FusionApplicationComparator
  */
-class FusionApplicationComparator {
+class FusionModelComparator {
     Logger log = Logger.getLogger(this.class.name);
 
     Application leftApp
@@ -27,7 +24,7 @@ class FusionApplicationComparator {
 
     public static final List<String> DEFAULTTHINGSTOCOMPARE = "configsets collections dataSources indexPipelines queryPipelines parsers blobs appkitApps features objectGroups links sparkJobs".split(' ')
 
-    FusionApplicationComparator(Application left, Application right, def thingsToCompare = []) {
+    FusionModelComparator(Application left, Application right, def thingsToCompare = [], def ignorePatterns = /.*created.*/) {
         if (!thingsToCompare) {
             thingsToCompare = DEFAULTTHINGSTOCOMPARE
             log.info "Using default list of things to compare: $thingsToCompare"

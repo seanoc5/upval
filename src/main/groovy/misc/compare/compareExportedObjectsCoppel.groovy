@@ -17,11 +17,11 @@ final Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name}..."
 
 
-File devSource = new File('/home/sean/Downloads/coppel_dev.zip')
+File devSource = new File('/Users/sean/Downloads/coppel_dev.zip')
 Application devApp = new Application(devSource)
 log.info "Left App:${devApp}"
 
-File prodSource = new File('/home/sean/Downloads/coppel_prod.zip')
+File prodSource = new File('/Users/sean/Downloads/coppel_prod.zip')
 Application prodApp = new Application(prodSource)
 log.info "Right App:${prodApp}"
 

@@ -21,7 +21,10 @@ class BaseComparatorTest extends Specification {
                     middle2: [4, 5, 6],         // same
                     middle3: [                  // different: missing bottom2
                             bottom1: 'top3-middle3-bottom1'     // same
-                    ]]]
+                    ],
+            ],
+            created:'20220710'                  // simulate a datestamp difference (like we will want to ignore
+    ]
     static final Map RIGHT_MAP = [
             top1: 'first top node',
             top2: [1, 2, 3, 4],
@@ -30,13 +33,17 @@ class BaseComparatorTest extends Specification {
                     middle2: [4, 5, 6],
                     middle3: [
                             bottom1: 'top3-middle3-bottom1',
-                            bottom2: 'new bottom element']]]
+                            bottom2: 'new bottom element'],
+            ],
+            created:'20220711'
+
+    ]
 
 
     def "Compare simple maps"() {
         given:
         String label = 'Compare unit test'
-        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, label)
+        BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP)
 
         when:
         CompareJsonObjectResults results = comparator.compare()
@@ -46,19 +53,19 @@ class BaseComparatorTest extends Specification {
 
         results.rightOnlyKeys.size() == 2
 
-        results.sharedKeys.size() == 9
+        results.sharedKeys.size() ==10
 
-        results.differences.size() == 2
+        results.differences.size() == 3
         results.differences[0].differenceType == ComparisonResult.DIFF_RIGHT_ONLY
-        results.differences[0].description == '[top2.[3], top3.middle3.bottom2]'
+        results.differences[0].description == '[/top2/3, /top3/middle3/bottom2]'    // '[top2.[3], top3.middle3.bottom2]'
         results.differences[1].differenceType == ComparisonResult.DIFF_VALUES
         results.differences[1].description == 'Values are DIFFERENT: left:(top3-middle1) and right:(top3-middle1 plus change)'
     }
 
-    def "compare simple maps while ignoring value differences top2.* and to3.middle1"() {
+    def "compare simple maps while ignoring value differences /top2.* and /top3/middle1"() {
         given:
         String label = 'Compare unit test'
-        Pattern ignoreValues = ~/(top2.*|top3.middle1)/
+        Pattern ignoreValues = ~/(\/top2.*|\/top3\/middle1)/
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
 
         when:
@@ -70,20 +77,24 @@ class BaseComparatorTest extends Specification {
         then:
         results.leftOnlyKeys == null
         results.rightOnlyKeys.size() == 2
-        results.sharedKeys.size() == 9
+        results.sharedKeys.size() == 10
 
-        differences.size() == 1
+        differences.size() == 2
         differences[0].differenceType == ComparisonResult.DIFF_RIGHT_ONLY
-        differences[0].description == '[top2.[3], top3.middle3.bottom2]'
+        differences[0].description ==  '[/top2/3, /top3/middle3/bottom2]' //'[top2.[3], top3.middle3.bottom2]'
+
+        differences[1].differenceType == ComparisonResult.DIFF_VALUES
+        differences[1].description ==  'Values are DIFFERENT: left:(20220710) and right:(20220711)' //'[top2.[3], top3.middle3.bottom2]'
+
 
         similarities.size() == 9
-        similarButDifferent.size()==2
+        similarButDifferent.size()==1
 
     }
-    def "Compare comparing values for top*"() {
+    def "Compare ignoring /created"() {
         given:
         String label = 'Compare unit test'
-        Pattern ignoreValues = ~/top3.middle1/
+        Pattern ignoreValues = ~/\/created.*/
         BaseComparator comparator = new BaseComparator(label, LEFT_MAP, RIGHT_MAP, ignoreValues)
 
         when:
@@ -95,15 +106,15 @@ class BaseComparatorTest extends Specification {
 
         results.rightOnlyKeys.size() == 2
 
-        results.sharedKeys.size() == 9
+        results.sharedKeys.size() == 10
 
-        results.differences.size() == 1
+        results.differences.size() == 2
         results.differences[0].differenceType == ComparisonResult.DIFF_RIGHT_ONLY
-        results.differences[0].description == '[top2.[3], top3.middle3.bottom2]'
+        results.differences[0].description == '[/top2/3, /top3/middle3/bottom2]'
 
         results.similarities.size() == 9
-        similarButDifferent.size()==2
-
+        similarButDifferent.size()==1
+        similarButDifferent[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left str:(20220710) and right str:(20220711)'
     }
 
 }

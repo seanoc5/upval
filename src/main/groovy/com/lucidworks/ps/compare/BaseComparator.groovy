@@ -1,6 +1,6 @@
 package com.lucidworks.ps.compare
 
-
+import com.lucidworks.ps.transform.JsonObject
 import org.apache.log4j.Logger
 
 import java.util.regex.Pattern
@@ -94,7 +94,7 @@ class BaseComparator {
             } else {
                 ignoreValues = (sharedItemPath ==~ ignoreValueDifferences)
                 if(ignoreValues){
-                    log.info "IGNORE value differences for this shared path: $sharedItemPath"
+                    log.info "IGNORE value differences for this shared path: '$sharedItemPath' matches pattern: ${ignoreValueDifferences}"
                 }
                 ComparisonResult diff = compareValues(sharedItemPath, leftItem, rightItem, ignoreValues, matchChildOrder)
                 if (diff.isDifferent()) {
@@ -142,7 +142,7 @@ class BaseComparator {
 //                boolean ignoreValues = (compareLabel ==~ ignoreValueDifferences)
                 // if comparison label matches ignore pattern, then don't compare values
                 if (ignoreValueDifferences) {
-                    log.debug "[$compareLabel] ignoring values because label matches ignore pattern '$ignoreValueDifferences'"
+                    log.info "[$compareLabel] ignoring values because parent method told us to ignore value differences... (object path matches ignore pattern in parent method)"
                 }
                 diff = compareLeafThing(compareLabel, left, right, ignoreValueDifferences)
             }
@@ -172,10 +172,10 @@ class BaseComparator {
 
         if (leftClassName.equals(rightClassName)) {
             if (lstr.equals(rstr)) {
-                description = "(toString()) Values are EQUAL: left:($lstr) == right:($rstr)"
+                description = "(toString()) Values are EQUAL: left:($lstr) == right:($rstr) (object types: ${left.getClass().simpleName})"
                 diffType = ComparisonResult.EQUAL
             } else if (ignoreValueDifferences) {
-                description = "Ignore value differences==true, objects have same class, so are SIMILAR: left class:($leftClassName) and right class:($rightClassName)"
+                description = "Ignore value differences==true, objects have same class, so are SIMILAR: left str:($lstr) and right str:($rstr)"
                 diffType = ComparisonResult.SIMILAR
             } else {
                 description = "Values are DIFFERENT: left:($lstr) and right:($rstr)"
