@@ -237,6 +237,81 @@ class JsonObjectTest extends Specification {
     }
 
 
+    String testCollectionJson = '''
+{
+  "objects" : {
+    "collections" : [ {
+      "id" : "test",
+      "createdAt" : "2020-05-12T00:12:46.499Z",
+      "searchClusterId" : "default",
+      "commitWithin" : 10000,
+      "solrParams" : {
+        "name" : "test",
+        "numShards" : 1,
+        "replicationFactor" : 1
+      },
+      "type" : "DATA",
+      "metadata" : { }
+    }, {
+      "id" : "test_job_reports",
+      "createdAt" : "2020-05-12T00:12:46.507Z",
+      "searchClusterId" : "default",
+      "commitWithin" : 10000,
+      "solrParams" : {
+        "name" : "test_job_reports",
+        "numShards" : 1,
+        "replicationFactor" : 1
+      },
+      "type" : "JOB_REPORTS",
+      "relatedCollectionId" : "test",
+      "metadata" : { }
+    } ]
+    }
+}'''
+
+    def "parse and flatten a json Collection-fragment and return path PlusObject"() {
+        when:
+        JsonSlurper slurper = new JsonSlurper()
+        def json = slurper.parseText(testCollectionJson)
+        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(json, 1, '/', '/')
+        Set<String> paths = flatties.keySet()
+
+        then:
+        flatties instanceof Map
+        paths.size() == 13
+
+        paths[0] == '/id'
+        flatties[paths[0]] == 'test_typeahead_inclusion_list'
+
+        paths[7] == '/properties/collection'
+
+        paths[10] == '/properties/foo/0'
+        flatties[paths[10]] == 'a'
+    }
+
+    def "parse and flatten a test objects.json partial file and return path PlusObject"() {
+        when:
+        File objectsFile = new File(getClass().getResource('/apps/objects.test.f5.partial.json').toURI())
+
+        JsonSlurper slurper = new JsonSlurper()
+        def json = slurper.parse(objectsFile)
+        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(json, 1, '/', '/')
+        Set<String> paths = flatties.keySet()
+
+        then:
+        flatties instanceof Map
+        paths.size() == 13
+
+        paths[0] == '/id'
+        flatties[paths[0]] == 'test_typeahead_inclusion_list'
+
+        paths[7] == '/properties/collection'
+
+        paths[10] == '/properties/foo/0'
+        flatties[paths[10]] == 'a'
+    }
+
+
 }
 
 
