@@ -306,7 +306,7 @@ class JsonObject {
                     children.each { String childName, Object childVal ->
                         String path = "${counter}${separator}${childName}"
 //                        String path = "[${counter}].${childName}"
-                        log.info "What do we do here? $path [$childVal] -- Skip??"
+                        log.info "What do we do here? Path:($path) -- ChildVal:[$childVal] -- Skip??"
                         entries[path] = childVal
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
@@ -335,9 +335,9 @@ class JsonObject {
  * @param level helper var to track depth in recursive calls
  * @return list of paths <String>s
  */
-    static List<String> flatten(def object, int level = 0) {
+    static List<String> flatten(def object, int level = 0, String separator = '/') {
         List<String> entries = []
-        log.debug "$level) flatten object: $object..."
+        log.debug "$level) flatten object: $object... with separator:$separator"
         if (object instanceof Map) {
             def keyset = object.keySet()
             Map map = (Map) object
@@ -348,7 +348,7 @@ class JsonObject {
                     level++
                     def children = flatten(value, level)
                     children.each { String child ->
-                        entries << "${key}.${child}".toString()
+                        entries << "${key}${separator}${child}".toString()
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
@@ -367,7 +367,7 @@ class JsonObject {
                     level++
                     def children = flatten(val, level)
                     children.each { String child ->
-                        entries << "[${counter}].${child}"
+                        entries << "[${counter}]${separator}${child}"
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
