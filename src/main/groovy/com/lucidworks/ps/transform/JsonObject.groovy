@@ -304,9 +304,8 @@ class JsonObject {
                     level++
                     def children = flattenWithLeafObject(val, level, prefix, separator)
                     children.each { String childName, Object childVal ->
-                        String path = "${counter}${separator}${childName}"
-//                        String path = "[${counter}].${childName}"
-                        log.info "What do we do here? Path:($path) -- ChildVal:[$childVal] -- Skip??"
+                        String path = "${separator}${counter}${childName}"
+                        log.debug "\t\tprocess child Path:($path) -- ChildVal:[$childVal] -- Skip??"
                         entries[path] = childVal
                     }
                     log.debug "\t" * level + "submap keys: ${children}"
