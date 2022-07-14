@@ -9,14 +9,19 @@ package com.lucidworks.ps.transform
 
 class JsonObjectTransformer extends BaseTransformer {
 
+    /**
+     * Construct transformer with a JsonSlurped object (Maps/Collections/LeafNodes), to enable get/set/copy/remove functionality
+     * @param source
+     * @param destination
+     * @param pathSeparator
+     */
     JsonObjectTransformer(Object source, Map<String, Object> destination = [:], String pathSeparator = '/') {
         if (checkSourceDestinationTypesAreValid(source, destination)) {
             this.sourceObject = source
             this.destinationObject = destination
-//            this.rules = rules
             this.separator = separator
-            if(!destination) {
-                log.info "Does this clone work? Do we need to implement a process to: create and then deep copy??"
+            if (!destination) {
+                log.info "No dest map given as param, trying to deep-clone sourcce for destination, Does this clone work? Do we need to implement a process to: create and then deep copy??"
                 destination = source.clone()
             }
             // get the flattened paths of the source and dest json objects, for the transform to use below
@@ -31,45 +36,65 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     /**
-     * check basics of transformation objects, this may grow in scope to handle other types of objects, but for Json transformations, this should be all we need...?
-     * note: is it possible to do a transformation with a null destination???
-     * @param source jsonslurped object (map or list)
-     * @param destination jsonslurped object (map or list)
-     * @return true for valid source/destination
+     * walk through all flattened entries, and look at the
+     * @param pattern
+     * @param flatpathItems
+     * @return submap of matching flatpath entries
+     *
+     * todo -- consider returning match object??? premature optimization? just match regexes here, and potential subsequent transform action. (the latter is the current approach)
      */
-    boolean checkSourceDestinationTypesAreValid(Object source, Object destination) {
-        boolean isvalid = false
-        if (source instanceof Map || source instanceof Collection) {
-            if (destination == null || destination instanceof Map || destination instanceof Collection) {
-                isvalid = true
-            } else {
-                log.warn "Source object type (${source.getClass().simpleName}) seems valid, but destination type (${destination.getClass().simpleName}) was not, probably should cancel transformation..."
-                isvalid = false
-            }
+    def findAllItemsMatching(def pathPattern, def valuePattern, Map<String, Object> flatpathItems) {
+        def keys = flatpathItems.keySet()
+        def matchingPaths = keys.findAll { String path ->
+            path ==~ pathPattern
         }
-        return isvalid
+        def matchingValues = flatpathItems.subMap(matchingPaths).findAll { String key, def val ->
+            def valMatch = (val ==~ valuePattern)
+        }
+
+        return matchingValues
     }
 
-//    @Override
-//    def performCopyRules(Object rules) {
-//        List results = []
-//             rules.each { def rule ->
-//                 log.info "\t\tCOPY rule: $rule"
-//                 results << rule
-//             }
-//             return results
-//    }
+
+    /**
+     * get a group of copy rules, iterate through them
+     * NOTE: thinking through structure of copy rule:
+     * @param copyRules
+     * sample rule structure:
+     *      [sourcePath:'(.*Leaf)', sourceItem:'(simple)(.*)', destinationPath:'', destinationValue:'Complex $1']
+     * @return results??
+     */
+    @Override
+    def performCopyRules(def copyRules) {
+        log.info "Rules: $copyRules"
+//    def performCopyRules(Map<String, Object> copyRules) {
+        List results = []
+        copyRules.each { def copyRule ->
+            String srcPath = copyRule.sourcePath
+            def srcVal = copyRule.sourceItem
+            def destPath = copyRule.destinationPath
+
+            log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry: $destPath -- transform: $srcVal"
+            def srcPaths = findAllItemsMatching(srcPath, srcVal, srcFlatpaths)
+            srcPaths.each {
+                log.info "do copy here: $it"
+            }
+            log.info "Found items matching paths: "
+            results << rule
+        }
+        return results
+    }
 
     @Override
     def performSetRules(Object rules) {
 //        return super.performSetRules(rules)
         List results = []
-             rules.each { def rule ->
-                 log.info "\t\tset rule: $rule"
-     //            sourceObject
-                 results << rule
-             }
-             return results
+        rules.each { def rule ->
+            log.info "\t\tset rule: $rule"
+            //            sourceObject
+            results << rule
+        }
+        return results
     }
 
     @Override
@@ -100,15 +125,37 @@ class JsonObjectTransformer extends BaseTransformer {
         return null
     }
 
-    /**
-     * quick and dirty ploceholder function to operate like GPath or JsonPath
-     * @param slurpedJsonObject the object to perform expression on (Map/Collection combination -from JsonSlurpoer)
-     * @param expr the string to evaluate: a Gpath-like string
-     * @return result of evaluation (read value, or result of setting...)
-     *
-     * @note this will likely only set string values -- is this a blocker?
-     * @see groovy.json.JsonSlurper
-     */
+
+/**
+ * check basics of transformation objects, this may grow in scope to handle other types of objects, but for Json transformations, this should be all we need...?
+ * note: is it possible to do a transformation with a null destination???
+ * @param source jsonslurped object (map or list)
+ * @param destination jsonslurped object (map or list)
+ * @return true for valid source/destination
+ */
+    boolean checkSourceDestinationTypesAreValid(Object source, Object destination) {
+        boolean isvalid = false
+        if (source instanceof Map || source instanceof Collection) {
+            if (destination == null || destination instanceof Map || destination instanceof Collection) {
+                isvalid = true
+            } else {
+                log.warn "Source object type (${source.getClass().simpleName}) seems valid, but destination type (${destination.getClass().simpleName}) was not, probably should cancel transformation..."
+                isvalid = false
+            }
+        }
+        return isvalid
+    }
+
+
+/**
+ * quick and dirty ploceholder function to operate like GPath or JsonPath
+ * @param slurpedJsonObject the object to perform expression on (Map/Collection combination -from JsonSlurpoer)
+ * @param expr the string to evaluate: a Gpath-like string
+ * @return result of evaluation (read value, or result of setting...)
+ *
+ * @note this will likely only set string values -- is this a blocker?
+ * @see groovy.json.JsonSlurper
+ */
     static Object evalObjectPathExpression(Object o, String expr, String root = 'ROOT') throws IllegalArgumentException {
         def result
         log.info "\t\tEval expression($expr) on object (${o instanceof Map ? o.keySet() : o})"

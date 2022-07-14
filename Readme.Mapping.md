@@ -85,3 +85,7 @@ def jsonDefaultOutput = new JsonGenerator.Options()
         .dateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         .build()
 `
+
+### Transform rules
+#### Copy
+[sourcePath:'(.*Leaf)', sourceItem:'(simple)(.*)', destinationPath:'', destinationValue:'']
