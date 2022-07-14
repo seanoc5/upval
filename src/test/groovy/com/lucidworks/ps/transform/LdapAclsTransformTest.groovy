@@ -2,6 +2,7 @@ package com.lucidworks.ps.transform
 
 
 import groovy.json.JsonSlurper
+import misc.ObjectTransformerJayway
 import spock.lang.Specification
 
 class LdapAclsTransformTest extends Specification {

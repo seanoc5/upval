@@ -1,4 +1,5 @@
-package com.lucidworks.ps.transform
+package misc
+
 
 import groovy.json.JsonSlurper
 import spock.lang.Specification

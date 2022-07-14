@@ -9,12 +9,20 @@ package com.lucidworks.ps.transform
 
 class JsonObjectTransformer extends BaseTransformer {
 
-    JsonObjectTransformer(Object source, Rules rules, Map<String, Object> destination = [:], String pathSeparator = '/') {
-        if(checkSourceDestinationTypesAreValid(source, destination)) {
+    JsonObjectTransformer(Object source, Map<String, Object> destination = [:], String pathSeparator = '/') {
+        if (checkSourceDestinationTypesAreValid(source, destination)) {
             this.sourceObject = source
             this.destinationObject = destination
-            this.rules = rules
+//            this.rules = rules
             this.separator = separator
+            if(!destination) {
+                log.info "Does this clone work? Do we need to implement a process to: create and then deep copy??"
+                destination = source.clone()
+            }
+            // get the flattened paths of the source and dest json objects, for the transform to use below
+            srcFlatpaths = JsonObject.flattenWithLeafObject(source)
+            destFlatpaths = JsonObject.flattenWithLeafObject(destination)
+
         } else {
             String msg = "Source and destination are not both valid, throwing error"
             log.warn msg
@@ -42,45 +50,30 @@ class JsonObjectTransformer extends BaseTransformer {
         return isvalid
     }
 
-    /**
-     * explicit override just for clarity/visibility, unsure if we need customization, or can leave as falling through to super method...
-     * @return
-     */
 //    @Override
-//    def transform() {
-//        return super.transform()
-//    }
-
-
-
-    /**
-     *
-     * @param rules
-     * @return
-     */
-//    @Override
-//    def performCopyRules(Rules rules) {
+//    def performCopyRules(Object rules) {
 //        List results = []
-//        rules.copy.each { def rule ->
-//            log.info "\t\tCOPY rule: $rule"
-//            sourceObject
-//            results << rule
-//        }
-//        return results
+//             rules.each { def rule ->
+//                 log.info "\t\tCOPY rule: $rule"
+//                 results << rule
+//             }
+//             return results
 //    }
 
     @Override
-    def performSetRules(Rules rules) {
+    def performSetRules(Object rules) {
+//        return super.performSetRules(rules)
         List results = []
-        rules.set.each { def rule ->
-            log.info "\t\tSET rule: $rule"
-            results << rule
-        }
-        return results
+             rules.each { def rule ->
+                 log.info "\t\tset rule: $rule"
+     //            sourceObject
+                 results << rule
+             }
+             return results
     }
 
     @Override
-    def performRemoveRules(Rules rules) {
+    def performRemoveRules(def rules) {
         List results = []
         rules.remove.each { def rule ->
             log.info "Remove rule: $rule"
@@ -92,7 +85,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
     @Override
     def doCopy(def valToSet, def destNodes) {
-     return doSet(valToSet, destNodes)
+        return doSet(valToSet, destNodes)
     }
 
     @Override
@@ -106,7 +99,8 @@ class JsonObjectTransformer extends BaseTransformer {
         log.warn "Implement me!! blank operation at the moment"
         return null
     }
-/**
+
+    /**
      * quick and dirty ploceholder function to operate like GPath or JsonPath
      * @param slurpedJsonObject the object to perform expression on (Map/Collection combination -from JsonSlurpoer)
      * @param expr the string to evaluate: a Gpath-like string

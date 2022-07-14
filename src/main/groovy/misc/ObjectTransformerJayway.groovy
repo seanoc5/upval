@@ -1,4 +1,4 @@
-package com.lucidworks.ps.transform
+package misc
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath

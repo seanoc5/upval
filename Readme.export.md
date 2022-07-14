@@ -15,8 +15,12 @@ If we abstract up one level from the “what to remove/keep to make diff work”
     remove /.*debug.*/  objects
     remove /^pref.*/  blobs
     transform JS (and other multi-line script like tags)
-    remove top-level lastUpdated tags
+    remove top-level lastUpdated  (modified?) tags
     remove lop-level  updates tags
 
 Put that as a default transformation template for any project and leave it at that.  If it’s wrong for a project, it can be adjusted.  If the adjustment is continually needed, it can be made part of the default.
 ```
+
+
+Note:
+https://lucidworks.atlassian.net/wiki/spaces/~621306800/pages/1947369512/Using+the+standard+DC+Large+APP+to+kickstart+a+project

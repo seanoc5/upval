@@ -1,4 +1,4 @@
-import com.lucidworks.ps.transform.ObjectTransformerJayway
+import misc.ObjectTransformerJayway
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper

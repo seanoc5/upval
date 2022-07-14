@@ -1,5 +1,6 @@
 package com.lucidworks.ps.transform
 
+import misc.ObjectTransformerJayway
 import org.apache.log4j.Logger
 
 /**

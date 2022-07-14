@@ -1,6 +1,5 @@
 package misc.remove
-
-import com.lucidworks.ps.transform.SimpleTransform
+//import com.lucidworks.ps.transform.SimpleTransform
 import de.danielbechler.diff.ObjectDifferBuilder
 import de.danielbechler.diff.node.DiffNode
 import de.danielbechler.diff.node.Visit

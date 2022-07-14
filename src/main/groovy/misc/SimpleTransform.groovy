@@ -1,6 +1,4 @@
-package com.lucidworks.ps.transform
-
-
+package misc
 /**
  * test class for working through dynamic function invocation
  * very simple test

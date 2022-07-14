@@ -11,7 +11,7 @@ import spock.lang.Specification
  */
 
 /**
- * @deprecated ?? revisit to see if there is anything current/useful here...
+ * @ deprecated ?? revisit to see if there is anything current/useful here...
  */
 class JsonObjectTransformerTest extends Specification {
     static final String sampleLeafValue = 'simple leaf value in subMap of "one"'
@@ -37,6 +37,28 @@ class JsonObjectTransformerTest extends Specification {
     static final Rules rules = new Rules(rulesMap)
 
     // --------------------- TESTS --------------------
+    def "Basic transform test"() {
+        given:
+        def rules = [
+                copy:[],
+                set:[/.*DC_Large/],
+                remove:[/.*(created|modified|lastUpdated)/]
+                ]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+
+        when:
+        def results = transformer.transform(rules)
+
+        then:
+        results instanceof Map
+
+    }
+
+
+    /**
+     * todo -- revisit? outdated/broken??
+     * @return
+     */
     def "basic eval-path 'get' expressions should work on default map"() {
         given:
         String slashyExpression = '/threeTopLeaf'
@@ -63,11 +85,12 @@ class JsonObjectTransformerTest extends Specification {
     def "transformer should be able to get values from destination Map when provided"() {
         given:
         Map destTemplate = srcMap               // use the srcMap as a sample template for the detination
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destTemplate, '/')
         String slashyTest = oneSubLeafPath
         String dotTest = 'one.oneSubLeaf'       // sampleLeafValue
         String dotTestList = 'two[2]'           // 'three
         String dotTestListComplex = 'one.clistOfMaps[1].cSubMap2[0]'       // three  .csubMap2
+        transformer.transform(rules)
 
         when:
         def slashyResult = transformer. getDestinationValue(slashyTest)
@@ -88,7 +111,7 @@ class JsonObjectTransformerTest extends Specification {
         String testPath1 = oneSubLeafPath
         String testPath2 = 'one.aMap[1]'
         String testPath3 = 'one.aMap[2]'
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destTemplate, '/')
 
         when:
         def result2 = transformer.setDestinationValue(testPath2, 'testPath2 updated')
@@ -100,71 +123,5 @@ class JsonObjectTransformerTest extends Specification {
 
 
     }
-
-    def "GetNode"() {
-        given:
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, [:], '/')
-
-        when:
-        def nodeList = transformer.getNode('one.aMap')
-        def nodeMap = transformer.getNode('one.bSubMap')
-
-        then:
-        nodeList instanceof List
-        nodeMap instanceof Map
-
-    }
-
-/*
-       def "GetNodeParent"() {
-       given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
-
-        when:
-
-        then:
-
-    }
-
-    def "PerformCopyRules"() {
-        given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
-
-        when:
-
-        then:
-
-    }
-
-    def "PerformSetRules"() {
-        given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
-
-        when:
-
-        then:
-
-    }
-
-    def "PerformRemoveRules"() {
-        given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
-
-        when:
-
-        then:
-
-    }
-
-    def "Transform"() {
-        given:
-        BaseTransformer transformer = new BaseTransformer(srcMap, rules, [:], '/')
-
-        when:
-
-        then:
-
-    }
-*/
 
 }

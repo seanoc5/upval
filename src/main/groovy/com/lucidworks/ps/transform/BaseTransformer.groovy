@@ -23,25 +23,26 @@ abstract class BaseTransformer {
     }
 
 //    abstract BaseTransformer(def source, Rules rules, Map<String, Object> destination, String pathSeparator)
-    BaseTransformer(def source, Rules rules, Map<String, Object> destination = [:], String pathSeparator = '/') {
+    BaseTransformer(def source, Map<String, Object> destination = [:], String pathSeparator = '/') {
         this.sourceObject = source
         this.destinationObject = destination
-        this.rules = rules
+//        this.rules = rules
         this.separator = separator
     }
 
     /**
      * main action to perform series of transformations
      */
-    def transform() {
-        log.info "COPY results: $copyResult"
-        def copyResult = performCopyRules(rules)
+    def transform(def rules) {
+        // todo -- refactor to have rules be the argument, and constructor is just source and optional destination/tempalte
+        def copyResult = performCopyRules(rules.copy)
+        log.info "COPY rules (${rules.copy}) -> results: $copyResult"
 
-        log.info "SET results: $copyResult"
-        def setResult = performSetRules(rules)
+        def setResult = performSetRules(rules.set)
+        log.info "SET (${rules.set}) -> results: $setResult"
 
-        log.info "REMOVE results: $copyResult"
-        def removeResult = performRemoveRules(rules)
+        def removeResult = performRemoveRules(rules.remove)
+        log.info "REMOVE (${rules.remove}) -> results: $removeResult"
 
         return [copyResult: copyResult, setResult:setResult, removeResult:removeResult]
 
@@ -54,7 +55,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performCopyRules(Rules rules){
+    def performCopyRules(def rules){
         List results = []
         rules.copy.each { def rule ->
             log.info "\t\tCOPY rule: $rule"
@@ -70,9 +71,9 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performSetRules(Rules rules){
+    def performSetRules(def rules){
         List results = []
-        rules.set.each { def rule ->
+        rules.each { def rule ->
             log.info "\t\tSET rule: $rule"
             results << rule
         }
@@ -86,7 +87,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performRemoveRules(Rules rules){
+    def performRemoveRules(def rules){
         List results = []
         rules.remove.each { def rule ->
             log.info "\t\tREMOVE rule: $rule"

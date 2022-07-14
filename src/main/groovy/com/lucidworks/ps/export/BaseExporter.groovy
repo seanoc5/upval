@@ -10,7 +10,7 @@ class BaseExporter {
 
     /**
      * main constructor - get a list of rules to help with "exporting"
-     * @see com.lucidworks.ps.transform.ObjectTransformerJayway for similar (same?) functionality
+     * @see misc.ObjectTransformerJayway for similar (same?) functionality
      * @param exportMappingRules
      */
     BaseExporter(def thingToExport, Map exportMappingRules) {
