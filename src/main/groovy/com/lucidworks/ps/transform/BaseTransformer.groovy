@@ -19,6 +19,10 @@ abstract class BaseTransformer {
     abstract def srcFlatpaths        // these need to be parsed base on type of source/dest objects (i.e. based on descendant class type)
     abstract def destFlatpaths
 
+    BaseTransformer() {
+    }
+
+//    abstract BaseTransformer(def source, Rules rules, Map<String, Object> destination, String pathSeparator)
     BaseTransformer(def source, Rules rules, Map<String, Object> destination = [:], String pathSeparator = '/') {
         this.sourceObject = source
         this.destinationObject = destination
@@ -40,6 +44,78 @@ abstract class BaseTransformer {
         def removeResult = performRemoveRules(rules)
 
     }
+
+
+
+    /**
+     * process all of the given 'copy' rules
+     * @param rules
+     * @return
+     */
+    def performCopyRules(Rules rules){
+        List results = []
+        rules.copy.each { def rule ->
+            log.info "\t\tCOPY rule: $rule"
+//            sourceObject
+            results << rule
+        }
+        return results
+
+    }
+
+    /**
+     * process all of the given 'sest' rules
+     * @param rules
+     * @return
+     */
+    def performSetRules(Rules rules){
+        List results = []
+        rules.set.each { def rule ->
+            log.info "\t\tSET rule: $rule"
+            results << rule
+        }
+        return results
+
+
+    }
+
+    /**
+     * process all of the given 'remove' rules
+     * @param rules
+     * @return
+     */
+    def performRemoveRules(Rules rules){
+        List results = []
+        rules.remove.each { def rule ->
+            log.info "\t\tREMOVE rule: $rule"
+            sourceObject
+            results << rule
+        }
+        return results
+
+    }
+
+
+    /**
+     * process single 'copy' rules
+     * @param rules
+     * @return
+     */
+    abstract def doCopyRule(def rule)
+
+    /**
+     * process all of the given 'sest' rules
+     * @param rules
+     * @return
+     */
+    abstract def doSetRule(def rules)
+
+    /**
+     * process all of the given 'remove' rules
+     * @param rules
+     * @return
+     */
+    abstract def doRemoveRule(def rules)
 
 //    def getSourceValue(def path) {
 //        log.debug "Get source object value from path: $path"
@@ -118,24 +194,4 @@ abstract class BaseTransformer {
 
 
 
-    /**
-     * process all of the given 'copy' rules
-     * @param rules
-     * @return
-     */
-    abstract def performCopyRules(Rules rules)
-
-    /**
-     * process all of the given 'sest' rules
-     * @param rules
-     * @return
-     */
-    abstract def performSetRules(Rules rules)
-
-    /**
-     * process all of the given 'remove' rules
-     * @param rules
-     * @return
-     */
-    abstract def performRemoveRules(Rules rules)
 }

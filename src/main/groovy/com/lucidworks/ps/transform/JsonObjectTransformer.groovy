@@ -10,25 +10,46 @@ package com.lucidworks.ps.transform
 class JsonObjectTransformer extends BaseTransformer {
 
     JsonObjectTransformer(Object source, Rules rules, Map<String, Object> destination = [:], String pathSeparator = '/') {
-        super(source, rules, destination, pathSeparator)
+        if(checkSourceDestinationTypesAreValid(source, destination)) {
+            this.sourceObject = source
+            this.destinationObject = destination
+            this.rules = rules
+            this.separator = separator
+        } else {
+            String msg = "Source and destination are not both valid, throwing error"
+            log.warn msg
+            throw new IllegalArgumentException(msg)
+        }
     }
 
-//    JsonObjectTransformer(Object source, Rules rules, Object destination) {
-//        super(source, rules, destination)
-//    }
-//
-//    JsonObjectTransformer(Object source, Rules rules) {
-//        super(source, rules)
-//    }
+    /**
+     * check basics of transformation objects, this may grow in scope to handle other types of objects, but for Json transformations, this should be all we need...?
+     * note: is it possible to do a transformation with a null destination???
+     * @param source jsonslurped object (map or list)
+     * @param destination jsonslurped object (map or list)
+     * @return true for valid source/destination
+     */
+    boolean checkSourceDestinationTypesAreValid(Object source, Object destination) {
+        boolean isvalid = false
+        if (source instanceof Map || source instanceof Collection) {
+            if (destination == null || destination instanceof Map || destination instanceof Collection) {
+                isvalid = true
+            } else {
+                log.warn "Source object type (${source.getClass().simpleName}) seems valid, but destination type (${destination.getClass().simpleName}) was not, probably should cancel transformation..."
+                isvalid = false
+            }
+        }
+        return isvalid
+    }
 
     /**
      * explicit override just for clarity/visibility, unsure if we need customization, or can leave as falling through to super method...
      * @return
      */
-    @Override
-    def transform() {
-        return super.transform()
-    }
+//    @Override
+//    def transform() {
+//        return super.transform()
+//    }
 
 
     /**
@@ -36,15 +57,16 @@ class JsonObjectTransformer extends BaseTransformer {
      * @param rules
      * @return
      */
-    @Override
-    def performCopyRules(Rules rules) {
-        List results = []
-        rules.copy.each { def rule ->
-            log.info "\t\tCOPY rule: $rule"
-            results << rule
-        }
-        return results
-    }
+//    @Override
+//    def performCopyRules(Rules rules) {
+//        List results = []
+//        rules.copy.each { def rule ->
+//            log.info "\t\tCOPY rule: $rule"
+//            sourceObject
+//            results << rule
+//        }
+//        return results
+//    }
 
     @Override
     def performSetRules(Rules rules) {
@@ -59,8 +81,8 @@ class JsonObjectTransformer extends BaseTransformer {
     @Override
     def performRemoveRules(Rules rules) {
         List results = []
-        rules.copy.each { def rule ->
-            log.info "Copy rule: $rule"
+        rules.remove.each { def rule ->
+            log.info "Remove rule: $rule"
             results << rule
         }
         return results

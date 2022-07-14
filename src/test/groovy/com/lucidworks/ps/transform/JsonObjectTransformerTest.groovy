@@ -10,6 +10,9 @@ import spock.lang.Specification
  * @description:
  */
 
+/**
+ * @deprecated ?? revisit to see if there is anything current/useful here...
+ */
 class JsonObjectTransformerTest extends Specification {
     static final String sampleLeafValue = 'simple leaf value in subMap of "one"'
     static final Map srcMap = [
@@ -67,7 +70,7 @@ class JsonObjectTransformerTest extends Specification {
         String dotTestListComplex = 'one.clistOfMaps[1].cSubMap2[0]'       // three  .csubMap2
 
         when:
-        def slashyResult = transformer.getDestinationValue(slashyTest)
+        def slashyResult = transformer. getDestinationValue(slashyTest)
         def dotTestResult = transformer.getDestinationValue(dotTest)
         def dotTestListResult = transformer.getDestinationValue(dotTestList)
         def dotTestListComplexResult = transformer.getDestinationValue(dotTestListComplex)

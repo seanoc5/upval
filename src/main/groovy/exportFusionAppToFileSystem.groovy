@@ -42,8 +42,9 @@ if (!appZipFile?.canRead()) {
                 if (groupedExport) {
                     outFolder = Helper.getOrMakeDirectory(exportFolder, typeName)
                 }
-                ((BaseObject) exportable).export(outFolder)
-                log.info "exported BaseObject: $exportable"
+                def outfile = ((BaseObject) exportable).export(outFolder)
+                log.info "exported to file:($outfile.absolutePath) from BaseObject: $exportable"
+
             } else if (exportable instanceof Collection) {
                 Collection exp = exportable
                 log.warn "Exportable (${exp.size()}) is of type: (${exp.getClass().simpleName}) "

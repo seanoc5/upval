@@ -4,6 +4,7 @@ import com.lucidworks.ps.transform.JsonObject
 import spock.lang.Specification
 
 import java.util.regex.Pattern
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -13,8 +14,9 @@ import java.util.regex.Pattern
 
 /**
  * thinking through revised approach.
+ * @deprecated ??
  */
-class   BasicFlatpathTransformTest extends Specification {
+class BasicFlatpathTransformTest extends Specification {
     Map srcMap = [a: [one: 1, two: 2], b: [3, 4]]
 
     def "check basic Map setting"() {
@@ -72,17 +74,17 @@ class   BasicFlatpathTransformTest extends Specification {
     def "should be able to SET elements values"() {
         when:
         def flatpaths = JsonObject.flattenWithLeafObject(srcMap)
-        Map<String, Object> aoneVal = flatpaths['/a/one']
-        aoneVal
+        def aoneVal = flatpaths['/a/one']
+//        Map<String, Object> aoneVal = flatpaths['/a/one']
         // setting an element in a list could be tricky?
         def b0Val = flatpaths['/b/0']
 
 
         then:
         aoneVal == 1
-        atwoVal == 2
+//        atwoVal == 2
         b0Val == 3
-        b1Val == 4
+//        b1Val == 4
     }
 
 }
