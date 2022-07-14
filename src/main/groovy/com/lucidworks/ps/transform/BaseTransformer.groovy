@@ -43,6 +43,8 @@ abstract class BaseTransformer {
         log.info "REMOVE results: $copyResult"
         def removeResult = performRemoveRules(rules)
 
+        return [copyResult: copyResult, setResult:setResult, removeResult:removeResult]
+
     }
 
 
@@ -116,6 +118,8 @@ abstract class BaseTransformer {
      * @return
      */
     abstract def doRemove(def destNodes)
+
+//    abstract def getDestinationValue(String pi
 
 //    def getSourceValue(def path) {
 //        log.debug "Get source object value from path: $path"
