@@ -52,6 +52,7 @@ class JsonObjectTransformer extends BaseTransformer {
 //    }
 
 
+
     /**
      *
      * @param rules
@@ -89,7 +90,23 @@ class JsonObjectTransformer extends BaseTransformer {
 
     }
 
-    /**
+    @Override
+    def doCopy(def valToSet, def destNodes) {
+     return doSet(valToSet, destNodes)
+    }
+
+    @Override
+    def doSet(def valToSet, def destNodes) {
+        log.warn "Implement me!! blank operation at the moment"
+        return null
+    }
+
+    @Override
+    def doRemove(def destNodes) {
+        log.warn "Implement me!! blank operation at the moment"
+        return null
+    }
+/**
      * quick and dirty ploceholder function to operate like GPath or JsonPath
      * @param slurpedJsonObject the object to perform expression on (Map/Collection combination -from JsonSlurpoer)
      * @param expr the string to evaluate: a Gpath-like string

@@ -101,21 +101,21 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    abstract def doCopyRule(def rule)
+    abstract def doCopy(def valueToSet, def destNodes)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract def doSetRule(def rules)
+    abstract def doSet(def valueToSet, def destNodes)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract def doRemoveRule(def rules)
+    abstract def doRemove(def destNodes)
 
 //    def getSourceValue(def path) {
 //        log.debug "Get source object value from path: $path"
