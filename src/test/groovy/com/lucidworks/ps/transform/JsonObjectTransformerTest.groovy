@@ -19,27 +19,26 @@ class JsonObjectTransformerTest extends Specification {
                     clistOfMaps: [[cSubmap1: ['one', 'two']], [cSubMap2: ['three', 'four']]],
                     oneSubLeaf : sampleLeafValue
             ],
-            topLeaf: sampleLeafValue,
-            two    : ['one', 'two', 'three',]
+            two    : ['one', 'two', 'three',],
+            threeTopLeaf: sampleLeafValue,
     ]
     // a sample value to use for setting/updating in rules, make this a constant to allow better condition testing/checking
     static final String newValue = 'new leaf value replacement'
     // one hard-coded slashy-path to work with for testing
-    public static final String SLASHY_PATH_EX = '/one/oneSubLeaf'
+    public static final String oneSubLeafPath = '/one/oneSubLeaf'
     // create source map for better readability, this could be condensed...
     static final Map rulesMap = [
             copy  : ['.*': ''],
-            set   : ["${SLASHY_PATH_EX}": newValue],
+            set   : ["${oneSubLeafPath}": newValue],
             remove: ['/two']]
     static final Rules rules = new Rules(rulesMap)
 
     // --------------------- TESTS --------------------
     def "basic eval-path 'get' expressions should work on default map"() {
         given:
-        String slashyExpression = '/topLeaf'
-        String rootExpression = 'ROOT.topLeaf'
+        String slashyExpression = '/threeTopLeaf'
         String subMapExpression = '/one/aMap'
-        String subMapExpressionFirst = 'one.aMap[0]'
+        String subMapExpressionFirst = '/one/aMap/0'
         String missingExpression = 'one.nothingHere'
 
         when:
@@ -62,7 +61,7 @@ class JsonObjectTransformerTest extends Specification {
         given:
         Map destTemplate = srcMap               // use the srcMap as a sample template for the detination
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')
-        String slashyTest = SLASHY_PATH_EX
+        String slashyTest = oneSubLeafPath
         String dotTest = 'one.oneSubLeaf'       // sampleLeafValue
         String dotTestList = 'two[2]'           // 'three
         String dotTestListComplex = 'one.clistOfMaps[1].cSubMap2[0]'       // three  .csubMap2
@@ -83,7 +82,7 @@ class JsonObjectTransformerTest extends Specification {
     def "transformer should be able to set various values in destination object of type map"() {
         given:
         Map destTemplate = [x: 'fubar']
-        String testPath1 = SLASHY_PATH_EX
+        String testPath1 = oneSubLeafPath
         String testPath2 = 'one.aMap[1]'
         String testPath3 = 'one.aMap[2]'
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, rules, destTemplate, '/')

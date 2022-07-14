@@ -257,7 +257,7 @@ class JsonObject {
      * @return escaped string (ready for stuffing into a json output
      * <br>NOTE:
      */
-    static String escapeSource(String src){
+    static String escapeSource(String src) {
         StringEscapeUtils.escapeEcmaScript(src)
     }
 
@@ -279,7 +279,7 @@ class JsonObject {
                     level++
                     Map<String, Object> children = flattenWithLeafObject(value, level, '/', '/')
                     children.each { String child, Object childObject ->
-                        String path = separator + key +  child
+                        String path = separator + key + child
                         if (childObject instanceof Map || childObject instanceof List) {
                             log.debug "skip this (${childObject.getClass().simpleName}"
                             entries[path] = null
@@ -329,12 +329,15 @@ class JsonObject {
 
 
     /**
- * simple method to 'walk' Json Slurped object, and get element paths
- * @param object Json Slurped object (maps/lists)
- * @param level helper var to track depth in recursive calls
- * @return list of paths <String>s
- */
+     * simple method to 'walk' Json Slurped object, and get element paths
+     * @param object Json Slurped object (maps/lists)
+     * @param level helper var to track depth in recursive calls
+     * @return list of paths <String>s
+     *
+     * @deprecated use flattenWithLeafObject instead
+     */
     static List<String> flatten(def object, int level = 0, String separator = '/') {
+        log.warn "Use flattenWithLeafObject in place of this outdated 'flatten' call..."
         List<String> entries = []
         log.debug "$level) flatten object: $object... with separator:$separator"
         if (object instanceof Map) {

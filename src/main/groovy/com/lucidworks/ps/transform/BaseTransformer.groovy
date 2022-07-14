@@ -71,6 +71,7 @@ abstract class BaseTransformer {
      * @param path
      * @param object
      */
+//    abstract getNode(def path, Object object) {
 //    static getNode(def path, Object object) {
 //        log.info "Get Node from path: $path in object type: ${object.getClass().simpleName} "
 //        def result = evalObjectPathExpression(object, path)
