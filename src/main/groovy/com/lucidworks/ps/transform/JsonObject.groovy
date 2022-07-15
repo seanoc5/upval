@@ -77,7 +77,7 @@ class JsonObject {
         // start at the top, element will be set to each 'child' element as we walk the parsed segments
         def element = srcMap
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
-        for (int depth = 0; depth < numSegments && element; depth++) {
+        for (int depth = 0; depth < numSegments && element!=null; depth++) {
             String currentSegment = segments[depth]
             log.debug "\t\t$depth) process segment: $currentSegment in element:($element)..."
             Object child = getChildElement(currentSegment, element)
@@ -101,7 +101,7 @@ class JsonObject {
                     log.info "\t\t$depth) found (currently missing) leaf node in  currentSegment:$currentSegment in path: $path, set to value: $valToSet"
                     result = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
                 } else {
-                    log.warn "\t\t$depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
+                    log.warn "\t\tsegment depth $depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
                     if (createIfMissing) {
                         child = createMissingNode(element, currentSegment)
                         result = child
@@ -126,6 +126,8 @@ class JsonObject {
      * @param valToSet intended for string/number, but perhaps also allows for more complex values to set???
      * @param element
      * @return the same valToSet param (as a success check), or null if failed???
+     *
+     * todo -- fix missing hierarchies -- currently returning each created segment flatly -- not correct
      */
     static String setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
         def result
@@ -151,7 +153,7 @@ class JsonObject {
             }
 
         } else if (element instanceof Map) {
-            log.info "Set MAP key($currentSegment) to value ($valToSet) in parent map($element)"
+            log.info "\t\tSet MAP key($currentSegment) to value ($valToSet) in parent map($element)"
             element[currentSegment] = valToSet
             // todo -- what makes sense for method return? testing approach of returning valToSet (srcMap should be updated in place)
             result = valToSet
@@ -236,6 +238,8 @@ class JsonObject {
         } else if (parentElement instanceof Map) {
             log.info "\t\tadd missing MAP entry for path segment($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
             ((Map) parentElement).put(missingSegment, newEmptyChild)
+        } else {
+            log.warn "Unknown parent element: ${parentElement} of type (${parentElement.getClass().simpleName}"
         }
         return newEmptyChild
     }

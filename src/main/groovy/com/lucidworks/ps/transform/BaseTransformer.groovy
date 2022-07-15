@@ -32,9 +32,20 @@ abstract class BaseTransformer {
 
     /**
      * main action to perform series of transformations
+     * todo -- fix creating missing hierarchies
      */
     def transform(def rules) {
-        // todo -- refactor to have rules be the argument, and constructor is just source and optional destination/tempalte
+        if(!destinationObject){
+            if(rules.copy) {
+                log.info "\t\tNo destination object (template) given, but we DO HAVE copy rules (${rules.copy}, so we are NOT cloning the default as a destination template"
+            } else {
+                log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
+                destinationObject = sourceObject.clone()
+            }
+        } else {
+            log.info "transformer.transform() was given both source and destination objects, no cloning needed..."
+        }
+
         def copyResult = performCopyRules(rules.copy)
         log.info "COPY rules (${rules.copy}) -> results: $copyResult"
 
@@ -55,7 +66,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performCopyRules(def rules){
+    def performCopyRules(List<Map> rules){
         List results = []
         rules.copy.each { def rule ->
             log.info "\t\tCOPY rule: $rule"

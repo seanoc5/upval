@@ -14,30 +14,22 @@ import spock.lang.Specification
  * @ deprecated ?? revisit to see if there is anything current/useful here...
  */
 class JsonObjectTransformerTest extends Specification {
-    static final String sampleLeafValue = 'simple leaf value in subMap of "one"'
     static final Map srcMap = [
+            id          : 'LWF_Commerce',
+            created     : '2022-07-15',
             one         : [
-                    aMap       : ['foo', 'bar'],
+                    aMap       : ['foo', 'bar', 'LWFX-123'],
                     bSubMap    : [b1: 'b-one', b2: 'b-two', b3list: ['b3-1', 'b3-1']],
                     clistOfMaps: [[cSubmap1: ['one', 'two']], [cSubMap2: ['three', 'four']]],
-                    oneSubLeaf : sampleLeafValue
+                    oneSubLeaf : 'Simple leaf',
+                    id         : 'LWF_test',
+                    created    : '2020-01-01',
             ],
             two         : ['one', 'two', 'three',],
-            threeTopLeaf: sampleLeafValue,
+            threeTopLeaf: 'Simple leaf',
     ]
-    // a sample value to use for setting/updating in rules, make this a constant to allow better condition testing/checking
-//    static final String newValue = 'new leaf value replacement'
-    // one hard-coded slashy-path to work with for testing
-//    public static final String oneSubLeafPath = '/one/oneSubLeaf'
-    // note: sourcePathPattern, sourceItemPattern, sourceValueExpression(regex), destinationPath
-    // create source map for better readability, this could be condensed...
-//    static final Map rulesMap = [
-//            copy  : [[sourcePath:'(.*Leaf)', sourceItemPattern:'(simple)(.*)', destinationPath:'', destinationValue:'Complex $1']],
-//            set   : ["${oneSubLeafPath}": newValue],
-//            remove: ['/two']]
-//    static final Rules rules = new Rules(rulesMap)
 
-    // --------------------- TESTS --------------------
+
     def "find all entries with value"() {
         given:
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
@@ -65,17 +57,26 @@ class JsonObjectTransformerTest extends Specification {
 
     }
 
-    def "Basic transform test"() {
+    def "Basic copy test"() {
+        given:
+        def rules = [copy  : [[sourcePath: '.*', sourceItemPattern: 'LWF.*'], ],]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+
+        when:
+        def results = transformer.transform(rules)
+
+        then:
+        results instanceof Map
+
+    }
+    def "regex replace transform test"() {
         given:
         def rules = [
                 copy  : [
-//                        [sourcePath:'/one/.*', ],     // todo -- fix JsonObject setting missing items
-//                        [sourcePath:'/two/0', ],
-                        [sourcePath:'(.*Leaf)', sourceItemPattern:'(simple)(.*)', destinationPath:'', destinationValue:'Complex $1'],
-                        [sourcePath:'(.*Leaf)', sourceItemPattern:'(simple)(.*)', destinationPath:'', destinationValue:'Complex $1']
+                        [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationValue: 'Acme_'],     // trying `~` syntax to say search/replace with
                 ],
-                set   : [destinationPath: /.*DC_Large/],
-                remove: [/.*(created|modified|lastUpdated)/]
+//                set   : [destinationPath: /.*DC_Large/],
+//                remove: [/.*(created|modified|lastUpdated)/]
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
 

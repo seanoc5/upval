@@ -36,8 +36,8 @@ class Rules {
      * @param rulesMap
      */
     Rules(Map rulesMap){
-        this.copy = rulesMap.copy
-        this.set = rulesMap.set
-        this.remove = rulesMap.remove
+//        this.copy = rulesMap.copy
+//        this.set = rulesMap.set
+//        this.remove = rulesMap.remove
     }
 }
