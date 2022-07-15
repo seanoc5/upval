@@ -16,7 +16,8 @@ abstract class BaseTransformer {
     Rules rules
     String separator
 
-    abstract def srcFlatpaths        // these need to be parsed base on type of source/dest objects (i.e. based on descendant class type)
+    abstract def srcFlatpaths
+    // these need to be parsed base on type of source/dest objects (i.e. based on descendant class type)
     abstract def destFlatpaths
 
     BaseTransformer() {
@@ -35,8 +36,10 @@ abstract class BaseTransformer {
      * todo -- fix creating missing hierarchies
      */
     def transform(def rules) {
-        if(!destinationObject){
-            if(rules.copy) {
+        Map<String, Object> results = [:]
+
+        if (!destinationObject) {
+            if (rules.copy) {
                 log.info "\t\tNo destination object (template) given, but we DO HAVE copy rules (${rules.copy}, so we are NOT cloning the default as a destination template"
             } else {
                 log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
@@ -46,19 +49,29 @@ abstract class BaseTransformer {
             log.info "transformer.transform() was given both source and destination objects, no cloning needed..."
         }
 
-        def copyResult = performCopyRules(rules.copy)
-        log.info "COPY rules (${rules.copy}) -> results: $copyResult"
+        if (rules.copy) {
+            results.copyResults = performCopyRules(rules.copy)
+            log.info "COPY rules (${rules.copy}) -> results: ${results.copyResults}"
+        } else {
+            log.info "No copy rules, skipping..."
+        }
 
-        def setResult = performSetRules(rules.set)
-        log.info "SET (${rules.set}) -> results: $setResult"
+        if (rules.set) {
+            results.setResults = performSetRules(rules.set)
+            log.info "SET (${rules.set}) -> results: ${results.setResults}"
+        } else {
+            log.info "No copy rules, skipping..."
+        }
 
-        def removeResult = performRemoveRules(rules.remove)
-        log.info "REMOVE (${rules.remove}) -> results: $removeResult"
+        if (rules.remove) {
+            results.removeResults = performRemoveRules(rules.remove)
+            log.info "REMOVE (${rules.remove}) -> results: ${results.removeResults}"
+        } else {
+            log.info "No copy rules, skipping..."
+        }
 
-        return [copyResult: copyResult, setResult:setResult, removeResult:removeResult]
-
+        return results
     }
-
 
 
     /**
@@ -66,7 +79,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performCopyRules(List<Map> rules){
+    def performCopyRules(List<Map> rules) {
         List results = []
         rules.copy.each { def rule ->
             log.info "\t\tCOPY rule: $rule"
@@ -82,7 +95,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performSetRules(def rules){
+    def performSetRules(def rules) {
         List results = []
         rules.each { def rule ->
             log.info "\t\tSET rule: $rule"
@@ -98,7 +111,7 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performRemoveRules(def rules){
+    def performRemoveRules(def rules) {
         List results = []
         rules.remove.each { def rule ->
             log.info "\t\tREMOVE rule: $rule"
@@ -115,24 +128,23 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    abstract def doCopy(def valueToSet, def destNodes)
+    abstract def doCopy(def valueToSet, List<String> destNodePaths)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract def doSet(def valueToSet, def destNodes)
+    abstract def doSet(def valueToSet, List<String> destNodePaths)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract def doRemove(def destNodes)
+    abstract def doRemove(List<String> destNodePaths)
 
 //    abstract def getDestinationValue(String pi
-
 //    def getSourceValue(def path) {
 //        log.debug "Get source object value from path: $path"
 //        def result
@@ -143,7 +155,6 @@ abstract class BaseTransformer {
 //        }
 //        return result
 //    }
-
 //    def getDestinationValue(def path) {
 //        log.debug "Get destination object value from path: $path"
 //        def result
@@ -207,7 +218,6 @@ abstract class BaseTransformer {
 //        def rslt = evalObjectPathExpression(destinationObject, exp)
 //        return rslt
 //    }
-
 
 
 }

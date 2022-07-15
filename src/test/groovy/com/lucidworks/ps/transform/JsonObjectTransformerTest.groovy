@@ -66,14 +66,16 @@ class JsonObjectTransformerTest extends Specification {
         def results = transformer.transform(rules)
 
         then:
+        //todo more testing here...
         results instanceof Map
-
     }
+
+
     def "regex replace transform test"() {
         given:
         def rules = [
                 copy  : [
-                        [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationValue: 'Acme_'],     // trying `~` syntax to say search/replace with
+                        [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationExpression: 'Acme_'],     // trying `~` syntax to say search/replace with
                 ],
 //                set   : [destinationPath: /.*DC_Large/],
 //                remove: [/.*(created|modified|lastUpdated)/]
@@ -85,6 +87,9 @@ class JsonObjectTransformerTest extends Specification {
 
         then:
         results instanceof Map
+        transformer.destinationObject.id == 'Acme_Commerce'
+        transformer.destinationObject.one.id == 'Acme_test'
+
 
     }
 

@@ -48,19 +48,39 @@ class JsonObjectTransformer extends BaseTransformer {
     def findAllItemsMatching(def pathPattern, def valuePattern, Map<String, Object> flatpathItems) {
         def matches = null
         def keys = flatpathItems.keySet()
-        def matchingPaths = keys.findAll { String path ->
-            path ==~ pathPattern
+
+        def matchingPaths
+        if (pathPattern == '.*' || !pathPattern) {
+            log.info "\t\tShortcut: setting matching paths to all flat paths based on pathPattern:$pathPattern"
+            matchingPaths = keys
+        } else {
+            matchingPaths = keys.findAll { String path ->
+                path ==~ pathPattern
+            }
+            log.info "\t\tpathPattern($pathPattern) matched: $matchingPaths"
         }
-        log.info "\t\tpathPattern($pathPattern) matched: $matchingPaths"
 
         if (valuePattern) {
             log.debug "We have a valuePattern to further file"
+            boolean pathContains = valuePattern.startsWith('~')
+            if (pathContains){
+                valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
+                log.debug "\t\tdoing string contains search"
+            } else {
+                log.debug "\t\tdoing pattern search"
+            }
             matches = flatpathItems.subMap(matchingPaths).findAll { String key, def val ->
-                def valMatch = (val =~ valuePattern)
-                if (valMatch.matches()) {
-                    log.debug "Add matcher to return thingie here? not unless things are slow with re-matching in doing the actual rule..."
+                boolean valMatches = false
+                if(pathContains){
+                    valMatches = ((String)val).contains(valuePattern)
+                } else {
+                    def valMatch = (val =~ valuePattern)
+                    if (valMatch.matches()) {
+                        log.debug "Add matcher to return thingie here? not unless things are slow with re-matching in doing the actual rule..."
+                        valMatches = true
+                    }
                 }
-                return valMatch.matches()
+                return valMatches
             }
             log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matches.size()} matches by value matching..."
         } else {
@@ -93,19 +113,14 @@ class JsonObjectTransformer extends BaseTransformer {
             log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'same as source'} -- transform: ${srcValPattern ?: 'none'}"
             def srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
 
-            def destPaths = getDestinationPaths(destPath)
-
             srcPaths.each { String flatPath, def srcValue ->
-//            srcPaths.each { String flatPath ->
-//                def srcValue = srcFlatpaths[flatPath]
+                def destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
                 def destValue = transformDestinationValue(srcValue, srcValPattern, destPath, destValuePattern)
-                log.info "\t\tdo copy value($srcValue) from source($flatPath) to destmap($destinationObject) ?"
-                def result = doCopy(destValue, )
-                log.info "do copy here: $it"
+                log.info "\t\tdo copy value($srcValue) from source($flatPath) to destination paths($destPaths) ?"
+                def result = doCopy(destValue, destPaths)
+                results << result
             }
-            log.debug "Found items matching paths: $srcPaths"
-            log.info "Dest object after copyrules: $destinationObject"
-            results << copyRule
+            log.debug "Dest object after copyrules: $destinationObject"
         }
         return results
 
@@ -122,12 +137,17 @@ class JsonObjectTransformer extends BaseTransformer {
             case '':
             case TX_STRAIGHT:
                 destValue = srcValue
+                log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) "
                 break
 
             case '~':
             case TX_REGEX_REPLACE:
+                if(srcPattern.startsWith('~')){
+                    log.debug "removing leading tilde (indicated regex replace transformation, not part of replace str)"
+                    srcPattern = srcPattern[1..-1]
+                }
                 destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
-                log.info "\t\t$TX_REGEX_REPLACE) transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern) "
+                log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern) "
                 break
 
             case TX_TEMPLATE:
@@ -135,8 +155,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 destValue = transformWithStringTemplate(srcValue, srcPattern, destPath, destPattern)
         }
 
-
-
+        return destValue
     }
 
     String transformWithStringTemplate(def srcValue, def srcPattern, def destPath, def destPattern) {
@@ -145,31 +164,31 @@ class JsonObjectTransformer extends BaseTransformer {
         throw new IllegalArgumentException(msg)
 
         // todo -- look at String templating: https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html
-          StringBuilder valToSet = new StringBuilder()
-          log.info "We have a destination value (assume it is a transform pattern...: $destValuePattern"
-          def valMatch = (value =~ srcValPattern)
-          if (valMatch.matches()) {
-              def groups = valMatch[0]
-              if (groups.size() > 1) {
-                  log.warn "More code here: stringbuilder for destination pattern..."
-                  int i = 1
-                  groups[1..-1].each {
-                      log.info "\t\tReplace $i: " + groups[i]
-                      i++
-                  }
-                  JsonObject.setObjectNodeValue(destinationObject, srcValue + "--should have been modified....")
-              } else {
-                  log.info "found a match but no groups....?"
-              }
-              log.info "\t\tbuild destination value, matcher: ${[0]}"
-          } else {
-              log.warn "We have a destination value, but no match... what do we do? panic?? source path: [$flatPath] srcval: $value :: destValPattern: $destValuePattern"
-          }
-  //                        } else {
-  //                            log.debug "\t\tNo destValuePattern so just straight value ($srcValue) copy from srcpath($flatPath) to dest object"
-  //                            JsonObject.setObjectNodeValue(destinationObject, flatPath, srcValue)
-  //                            log.debug "Dest object map: ${destinationObject.keySet()}"
-  //                        }
+        StringBuilder valToSet = new StringBuilder()
+        log.info "We have a destination value (assume it is a transform pattern...: $destValuePattern"
+        def valMatch = (value =~ srcValPattern)
+        if (valMatch.matches()) {
+            def groups = valMatch[0]
+            if (groups.size() > 1) {
+                log.warn "More code here: stringbuilder for destination pattern..."
+                int i = 1
+                groups[1..-1].each {
+                    log.info "\t\tReplace $i: " + groups[i]
+                    i++
+                }
+                JsonObject.setObjectNodeValue(destinationObject, srcValue + "--should have been modified....")
+            } else {
+                log.info "found a match but no groups....?"
+            }
+            log.info "\t\tbuild destination value, matcher: ${[0]}"
+        } else {
+            log.warn "We have a destination value, but no match... what do we do? panic?? source path: [$flatPath] srcval: $value :: destValPattern: $destValuePattern"
+        }
+        //                        } else {
+        //                            log.debug "\t\tNo destValuePattern so just straight value ($srcValue) copy from srcpath($flatPath) to dest object"
+        //                            JsonObject.setObjectNodeValue(destinationObject, flatPath, srcValue)
+        //                            log.debug "Dest object map: ${destinationObject.keySet()}"
+        //                        }
     }
 
 
@@ -226,22 +245,25 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    def doCopy(def valToSet, def destNodes) {
-        log.info "Set destNode: $destNodes (just using the single/current srcPath for now) to value: $valToSet"
-        destNodes.each {def destNode ->
-            log.info "\t\tSet dest node: $destNode"
-            JsonObject.setObjectNodeValue(destinationObject, destFlatpaths, valToSet)
+    def doCopy(def valToSet, List<String> destNodePaths) {
+        log.info "Set destNode: $destNodePaths (just using the single/current srcPath for now) to value: $valToSet"
+        List results = []
+        destNodePaths.each { String destPath ->
+            log.info "\t\tSet dest node: $destPath to value: ($valToSet)"
+            def r = JsonObject.setObjectNodeValue(destinationObject, destPath, valToSet)
+            results << r
         }
+        return results
     }
 
     @Override
-    def doSet(def valToSet, def destNodes) {
+    def doSet(def valToSet, List<String> destNodePaths) {
         log.warn "Implement me!! blank operation at the moment"
         return null
     }
 
     @Override
-    def doRemove(def destNodes) {
+    def doRemove(List<String> destNodePaths) {
         log.warn "Implement me!! blank operation at the moment"
         return null
     }
@@ -319,9 +341,9 @@ class JsonObjectTransformer extends BaseTransformer {
             // todo -- revisit if we ever have multiple destination paths that do not matchin 1:1 source path...? remove this code??
             destPaths = findAllItemsMatching(destPath, '.*', destFlatpaths)
         } else {
-            destPath = srcPath
-            log.info "\t\tNo destination path(s): mirror source path ($srcPath) for destination: ($destPath)"
+            destPaths << srcPath
+            log.info "\t\tNo destination path(s): mirror source path ($srcPath) for destination path list: ($destPaths)"
         }
-
+        return destPaths
     }
 }
