@@ -293,9 +293,29 @@ class JsonObjectTest extends Specification {
 
         paths[15] == '/objects/collections/1/type'
         flatties[paths[15]] == 'JOB_REPORTS'
-
     }
 
+
+    def "should add missing branches and leafs"(){
+        given:
+        Map map = [:]
+
+        when:
+//        def a = JsonObject.setObjectNodeValue(map, '/a','a-value' )
+//        def bSubOne = JsonObject.setObjectNodeValue(map, '/b/one','b-one' )
+        // [c:[[two:c-0-two]]
+        def c0Two = JsonObject.setObjectNodeValue(map, '/c/0/two','c-0-two' )
+
+        then:
+        a == 'a-value'
+        map.a == a
+
+        bSubOne == 'b-one'
+        map.b.one == bSubOne
+
+        c0Two=='c-0-two'
+        map.c[0].two == c0Two
+    }
 
 }
 

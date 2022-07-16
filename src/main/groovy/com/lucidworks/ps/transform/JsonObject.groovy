@@ -22,6 +22,36 @@ class JsonObject {
     static final String DEFAULT_SEPARATOR = '/'
 
     /**
+     * new approach to setting values, building missing nodes as needed
+     * @param objectToUpdate JsonSlurped object to update at the leaf of flatpath param
+     * @param flatPath flattened path of leafnode in objectToUpdate (will create as needed)
+     * @param value (assuming primative, but possible sub-Map/List?
+     * return result...?
+     */
+    def setPathValue(def objectToUpdate, String flatPath, def value, String separator = '/'){
+        List<String> parts= flatPath.split(separator)
+        parts.each{
+            def item = 1
+
+        }
+    }
+
+    def getChild(def current, String childPath){
+        def child
+        if(current instanceof Map) {
+            if (childPath.isInteger()) {
+                log.warn "Current Item($current) is a map, but child path($childPath) is an integer, treating this as a map key, but is this valid??"
+            }
+
+            child = current[childPath]
+            if (!child) {
+
+            }
+        }
+    }
+
+
+    /**
      * break the path into segments, walk the source object to get values,
      * try to handle maps AND collections(Lists)
      * @param srcMap
@@ -79,7 +109,7 @@ class JsonObject {
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
         for (int depth = 0; depth < numSegments && element!=null; depth++) {
             String currentSegment = segments[depth]
-            log.debug "\t\t$depth) process segment: $currentSegment in element:($element)..."
+            log.info "\t\t$depth) process segment: $currentSegment in element:($element)..."
             Object child = getChildElement(currentSegment, element)
             if (child) {
                 // child exists, if leaf node set the element in parent, otherwise just set the parent element's child value
@@ -104,7 +134,8 @@ class JsonObject {
                     log.warn "\t\tsegment depth $depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
                     if (createIfMissing) {
                         child = createMissingNode(element, currentSegment)
-                        result = child
+//                        result = child      // remove me? should just be element = child??
+                        element = child
                     } else {
                         log.warn "\t\t param: $createIfMissing is false, so we are leaving missing element ($currentSegment) as empty/null.."
                     }
@@ -224,6 +255,17 @@ class JsonObject {
      * @return new element (empty map or list)
      */
     static def createMissingNode(Object parentElement, String missingSegment, def newEmptyChild = [:]) {
+        if (missingSegment.isInteger()) {
+            Integer index = Integer.parseInt(missingSegment)
+            log.debug "\t\tset newEmptyChild to LIST for missing (Integer: $index) segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
+            newEmptyChild = new ArrayList(index)
+        } else {
+            log.debug "Leaving newEmptyChild as arg: $newEmptyChild"
+        }
+        return newEmptyChild
+    }
+
+    static def createMissingNodeOrig(Object parentElement, String missingSegment, def newEmptyChild = [:]) {
         if (parentElement instanceof List) {
             log.debug "\t\tadd missing LIST element for segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
             Integer index = Integer.parseInt(missingSegment)

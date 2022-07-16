@@ -1,13 +1,26 @@
 # Mapping Notes
 
 ## Transform Overview
-### Helper.flattenWithLeafObject approach
+### JsonObject.flattenWithLeafObject approach
 - flatten slurped json object -> get Map of all element flat-paths with values/objects 
 - iterate all copyRules
   - evaluate source (one or more matching sources)
   - each source flat-path entry that matches copyRule source pattern:
     - get dest path (if source path has regex group, build dest path with substitutions)
     - copy value from source entry (ies) to dest entry 
+
+### JsonObject set value
+* /a/b/foo = bar
+  * a exists
+    * b exists
+      * set (create or overwrite) foo
+    * b missing
+      * create b entry (blank)
+      * set (create or overwrite) foo
+* /a/0/b/foo
+  * a exists
+
+
 
 ## Objects needing Transformation
 ### Ldap-Acls
