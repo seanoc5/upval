@@ -296,25 +296,30 @@ class JsonObjectTest extends Specification {
     }
 
 
+
     def "should add missing branches and leafs"(){
         given:
         Map map = [:]
 
         when:
-//        def a = JsonObject.setObjectNodeValue(map, '/a','a-value' )
-//        def bSubOne = JsonObject.setObjectNodeValue(map, '/b/one','b-one' )
-        // [c:[[two:c-0-two]]
+        def c5three = JsonObject.setObjectNodeValue(map, '/c/5/three','c-5-three' )
         def c0Two = JsonObject.setObjectNodeValue(map, '/c/0/two','c-0-two' )
+        def bSubOne = JsonObject.setObjectNodeValue(map, '/b/one','b-one' )
+        def a = JsonObject.setObjectNodeValue(map, '/a','a-value' )
 
         then:
-        a == 'a-value'
-        map.a == a
+        c5three=='c-5-three'
+        map.c[5].three == c5three
+
+        c0Two=='c-0-two'
+        map.c[0].two == c0Two
 
         bSubOne == 'b-one'
         map.b.one == bSubOne
 
-        c0Two=='c-0-two'
-        map.c[0].two == c0Two
+        a == 'a-value'
+        map.a == a
+
     }
 
 }

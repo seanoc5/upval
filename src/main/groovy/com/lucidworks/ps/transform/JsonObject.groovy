@@ -28,17 +28,17 @@ class JsonObject {
      * @param value (assuming primative, but possible sub-Map/List?
      * return result...?
      */
-    def setPathValue(def objectToUpdate, String flatPath, def value, String separator = '/'){
-        List<String> parts= flatPath.split(separator)
-        parts.each{
+    def setPathValue(def objectToUpdate, String flatPath, def value, String separator = '/') {
+        List<String> parts = flatPath.split(separator)
+        parts.each {
             def item = 1
 
         }
     }
 
-    def getChild(def current, String childPath){
+    def getChild(def current, String childPath) {
         def child
-        if(current instanceof Map) {
+        if (current instanceof Map) {
             if (childPath.isInteger()) {
                 log.warn "Current Item($current) is a map, but child path($childPath) is an integer, treating this as a map key, but is this valid??"
             }
@@ -107,7 +107,7 @@ class JsonObject {
         // start at the top, element will be set to each 'child' element as we walk the parsed segments
         def element = srcMap
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
-        for (int depth = 0; depth < numSegments && element!=null; depth++) {
+        for (int depth = 0; depth < numSegments && element != null; depth++) {
             String currentSegment = segments[depth]
             log.info "\t\t$depth) process segment: $currentSegment in element:($element)..."
             Object child = getChildElement(currentSegment, element)
@@ -133,8 +133,13 @@ class JsonObject {
                 } else {
                     log.warn "\t\tsegment depth $depth) found a missing 'child' for segment ($currentSegment), create it if createIfMissing($createIfMissing) is true..."
                     if (createIfMissing) {
-                        child = createMissingNode(element, currentSegment)
-//                        result = child      // remove me? should just be element = child??
+                        String nextSegment = segments[depth + 1]
+                        def newEmptyChild = [:]
+                        if (nextSegment.isInteger()) {
+                            newEmptyChild = []
+                        }
+                        child = createMissingNode(element, currentSegment, newEmptyChild)
+                        result = child      // remove me? should just be element = child??
                         element = child
                     } else {
                         log.warn "\t\t param: $createIfMissing is false, so we are leaving missing element ($currentSegment) as empty/null.."
@@ -178,6 +183,7 @@ class JsonObject {
                     result = valToSet
                 }
             } else {
+
                 String msg = "We are in a List, but the segment ($currentSegment) is not an integer!! bailing!!!"
                 log.warn msg
                 throw (new IllegalArgumentException(msg))
@@ -255,16 +261,28 @@ class JsonObject {
      * @return new element (empty map or list)
      */
     static def createMissingNode(Object parentElement, String missingSegment, def newEmptyChild = [:]) {
-        if (missingSegment.isInteger()) {
-            Integer index = Integer.parseInt(missingSegment)
-            log.debug "\t\tset newEmptyChild to LIST for missing (Integer: $index) segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
-            newEmptyChild = new ArrayList(index)
+        if (parentElement instanceof Collection) {
+            if (missingSegment.isInteger()) {
+                Integer index = Integer.parseInt(missingSegment)
+//            List newList = new ArrayList(index)
+//            newList[index] = newEmptyChild
+                parentElement[index] = newEmptyChild
+                log.info "\t\tset newEmptyChild to LIST for missing (Integer: $index) segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
+            } else {
+                String msg = "invalid! parentelement($parentElement) is a collection, but missingSegment is not an integer!!!"
+                log.warn msg
+                throw new IllegalAccessException(msg)
+            }
         } else {
-            log.debug "Leaving newEmptyChild as arg: $newEmptyChild"
+//            log.debug "Leaving newEmptyChild as arg: $newEmptyChild"
+            ((Map) parentElement).put(missingSegment, newEmptyChild)
+            log.info "\t\tadd missing MAP entry for path segment($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
+
         }
         return newEmptyChild
     }
 
+/*
     static def createMissingNodeOrig(Object parentElement, String missingSegment, def newEmptyChild = [:]) {
         if (parentElement instanceof List) {
             log.debug "\t\tadd missing LIST element for segment/index:($missingSegment) to parent 'element':($parentElement) with default empty child ($newEmptyChild)"
@@ -285,6 +303,7 @@ class JsonObject {
         }
         return newEmptyChild
     }
+*/
 
 
     /**
