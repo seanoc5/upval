@@ -35,7 +35,7 @@ The tilde `~` is a custom syntax indicating we want to match anything in the sou
 
 This has been tested with case sensitive replacements. The java/groovy command does use a regex replacement (https://docs.groovy-lang.org/latest/html/api/org/codehaus/groovy/runtime/StringGroovyMethods.html) so more advanced patterns may be available. 
 
-The Spock unit test  [JsonObjectTransformeDeployTest.groovy](http://docs.groovy-lang.org/next/html/gapi/groovy/json/JsonSlurper.html) performs the search/replace and can be edited to add more in-depth testing of results and expectations. 
+The Spock unit test  [JsonObjectTransformeDeployTest.groovy](https://github.com/seanoc5/upval/blob/master/src/test/groovy/com/lucidworks/ps/transform/JsonObjectTransformeDeployTest.groovy) performs the search/replace and can be edited to add more in-depth testing of results and expectations. 
 
 Basic overview of flow: 
 * loads  the exported DC_Large.zip from the test resources folder,
