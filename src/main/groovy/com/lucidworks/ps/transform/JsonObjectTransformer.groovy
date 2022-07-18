@@ -21,10 +21,8 @@ class JsonObjectTransformer extends BaseTransformer {
             if (destination) {
                 destinationObject = destination
             } else {
-//                log.warn "No destination/template object given in constructor, clone source object for now (want to have JsonObject be able to create missing hierarchy, but not working at the moment"
-                log.info "No destination/template object given in constructor, using blank map (is it safe to assume we always default with a map??)"
-
-//                destinationObject = source.clone()
+                destinationObject = source
+                log.info "No destination/template object given in constructor, using source as destination (i.e. inplace updating)"
             }
 
             this.separator = separator

@@ -51,23 +51,23 @@ abstract class BaseTransformer {
 
         if (rules.copy) {
             results.copyResults = performCopyRules(rules.copy)
-            log.info "COPY rules (${rules.copy}) -> results: ${results.copyResults}"
+            log.info "COPY rules (${rules.copy}) -> results: ${results.copyResults?.size()}"
         } else {
-            log.info "No copy rules, skipping..."
+            log.info "No COPY rules, skipping..."
         }
 
         if (rules.set) {
             results.setResults = performSetRules(rules.set)
-            log.info "SET (${rules.set}) -> results: ${results.setResults}"
+            log.info "SET (${rules.set}) -> results: ${results.setResults?.size()}"
         } else {
-            log.info "No copy rules, skipping..."
+            log.info "No SET rules, skipping..."
         }
 
         if (rules.remove) {
             results.removeResults = performRemoveRules(rules.remove)
-            log.info "REMOVE (${rules.remove}) -> results: ${results.removeResults}"
+            log.info "REMOVE (${rules.remove}) -> results: ${results.removeResults?.size()}"
         } else {
-            log.info "No copy rules, skipping..."
+            log.info "No REMOVE rules, skipping..."
         }
 
         return results

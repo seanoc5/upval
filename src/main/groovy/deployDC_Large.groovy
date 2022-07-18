@@ -1,5 +1,5 @@
 import com.lucidworks.ps.Helper
-import com.lucidworks.ps.clients.ExportedAppArgParser
+import com.lucidworks.ps.clients.DeploymentArgParser
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.transform.JsonObjectTransformer
 import groovy.cli.picocli.OptionAccessor
@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 Logger log = Logger.getLogger(this.class.name);
 log.info "start Fusion app assessment (for complexity) script: ${this.class.name}..."
 
-OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
+OptionAccessor options = DeploymentArgParser.parse(this.class.name, args)
 File appZip = new File(options.source)
 File exportDir = null
 if(options.exportDir){
@@ -23,16 +23,26 @@ if(options.exportDir){
 }
 Map srcMap =  Application.getObjectsJsonMap(appZip)
 
-if(exportDir){
-    File outfile = new File(exportDir, "assessment.json")
-    String json = JsonOutput.toJson(fullAssessment)
-    outfile.text = JsonOutput.prettyPrint(json)
-    log.info "Wrote assessment to file: ${outfile.absoluteFile}"
+def rules = null
+if(options.config) {
+    File cfgFile = new File(options.config)
+    ConfigObject config = new ConfigSlurper().parse(cfgFile.toURI().toURL())
+    rules = config.rules
+} else {
+    throw new IllegalArgumentException("No config file given")
 }
 
+//Map destMap = srcMap.
 JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+def results = transformer.transform(rules)
 
-log.info "Sum complexity: $sumComplexity with "
+if(exportDir){
+    File outfile = new File(exportDir, "test-objects.json")
+    String json = JsonOutput.toJson(transformer.destinationObject)
+    outfile.text = JsonOutput.prettyPrint(json)
+    log.info "Wrote transformed objects.json to file: ${outfile.absoluteFile}"
+}
+
 
 log.info "done...?"
 
