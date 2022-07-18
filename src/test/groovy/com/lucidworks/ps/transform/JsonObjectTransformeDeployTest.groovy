@@ -16,8 +16,8 @@ import spock.lang.Specification
 class JsonObjectTransformeDeployTest extends Specification {
     def "should find expected number of matching rename DC_Large objects.json items"() {
         given:
-        File appZip = new File(getClass().getResource('/apps/DC_Large.zip').toURI())
-        Map objectsMap = Application.getObjectsJson(appZip)
+        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
+        Map objectsMap = Application.getObjectsJsonMap(appZip)
         JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap, objectsMap.clone)
         String srcPath = '.*'       // look across all source items
         String srcValPattern = '~DC_Large'      // use tilde '~' to signify "contains" matching (and imply find/replace)
@@ -51,8 +51,8 @@ class JsonObjectTransformeDeployTest extends Specification {
 
     def "should rename DC_Large objects.json items"() {
         given:
-        File appZip = new File(getClass().getResource('/apps/DC_Large.zip').toURI())
-        Map objectsMap = Application.getObjectsJson(appZip)
+        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
+        Map objectsMap = Application.getObjectsJsonMap(appZip)
         Map destMap = objectsMap.clone()
         assert  destMap==null
         // todo -- do we need to do something for groovy lazymaps? seems they are empty until accessed? try simple keyseet access here to get a good clone...?

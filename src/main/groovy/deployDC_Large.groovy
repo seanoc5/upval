@@ -1,6 +1,5 @@
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.ExportedAppArgParser
-import com.lucidworks.ps.model.BaseObject
 import com.lucidworks.ps.model.fusion.Application
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
@@ -14,50 +13,15 @@ Logger log = Logger.getLogger(this.class.name);
 log.info "start Fusion app assessment (for complexity) script: ${this.class.name}..."
 
 OptionAccessor options = ExportedAppArgParser.parse(this.class.name, args)
-File src = new File(options.source)
+File appZip = new File(options.source)
 File exportDir = null
 if(options.exportDir){
     exportDir = Helper.getOrMakeDirectory( new File(options.exportDir))
 } else {
     log.info "No export dir given, not saving assessment..."
 }
-Application app = new Application(src)
+Map objectJson =  Application.getObjectsJsonMap(appZip)
 
-
-    def things = app.getThings(type)
-    if(things) {
-        log.info "\t\t ---------------------- Process type: $type --------------------------"
-        if(things instanceof BaseObject){
-            BaseObject fusionObject = (BaseObject)things
-            def assessment = fusionObject.assessComplexity()
-            fullAssessment[type] = assessment
-        } else {
-            log.info "Things of type($type) are not extended from BaseObject, so we need to assess 'manually'..."
-            if(things instanceof Collection){
-                log.warn "\t\tTODO:: Assess ($type) collection: ${things.size()}"
-            } else if(things instanceof Map){
-                log.warn "\t\tTODO:: Assess ($type) MAP, with keys: ${things.keySet()}"
-            } else {
-                log.warn "\t\tTODO:: Assess ($type) something UNKNOWN?? -- ${things}"
-            }
-        }
-    } else {
-        log.warn "No thing: $type, which is fine unless you were expecting something back...?"
-    }
-}
-
-int sumComplexity = 0
-int sumItems = 0
-int sumTypes = 0
-fullAssessment.each { String thing, Map map ->
-    log.info "Assessment of $thing with (${map.size}) items, and rough guess complexity: ${map.complexity}"
-    sumComplexity+= map.complexity
-    sumTypes++
-    sumItems+= map.size
-    map.items?.each {
-        log.debug "\t\tassesment item: $it"
-    }
-}
 if(exportDir){
     File outfile = new File(exportDir, "assessment.json")
     String json = JsonOutput.toJson(fullAssessment)
