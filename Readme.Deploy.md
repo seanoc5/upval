@@ -15,7 +15,7 @@ Groovy's [JsonSlurper](http://docs.groovy-lang.org/next/html/gapi/groovy/json/Js
 JsonObjectTransformer will perform 'savvy' transformations of that objects.json based on provided `Rules`. These rules are currently simple Maps of rule-types: `copy`, `set`, and `remove`. 
 Each rule type can have a list of specific rules. The individual rules are Maps of actions.
 
-For example, [JsonObjectTransformeDeployTest.groovy](http://docs.groovy-lang.org/next/html/gapi/groovy/json/JsonSlurper.html) defines a single copy rule that copies (with transformation) all objects.json entries that have a value containing `DC_Large`. 
+For example, [JsonObjectTransformeDeployTest.groovy](https://github.com/seanoc5/upval/blob/master/src/test/groovy/com/lucidworks/ps/transform/JsonObjectTransformeDeployTest.groovy) defines a single copy rule that copies (with transformation) all objects.json entries that have a value containing `DC_Large`. 
 The current (July 2022)  representation of that ruleset is: 
 ```
 [copy: [
