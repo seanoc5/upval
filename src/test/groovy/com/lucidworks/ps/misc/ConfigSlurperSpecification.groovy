@@ -46,4 +46,23 @@ def getProtocol(){
         config.getProtocol == 'https'
     }
 
+    def "should load rules from config file with configslurper"() {
+        given:
+        URL configUrl = getClass().getResource('/configurations/deployDCLargeConfiguration.groovy')
+        File config = new File(configUrl.toURI())
+        ConfigSlurper configSlurper = new ConfigSlurper()
+
+
+        when:
+        ConfigObject cfgObject = configSlurper.parse(configUrl)
+        Map rules = cfgObject.rules
+        Map copyRule0 = rules.copy[0]
+
+        then:
+        rules instanceof Map
+        rules.copy instanceof List
+        copyRule0 instanceof Map
+        copyRule0.keySet().toList() == ['sourcePath', 'sourceItemPattern', 'destinationExpression', ]
+
+    }
 }

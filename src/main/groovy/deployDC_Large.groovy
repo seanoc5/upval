@@ -1,6 +1,7 @@
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.ExportedAppArgParser
 import com.lucidworks.ps.model.fusion.Application
+import com.lucidworks.ps.transform.JsonObjectTransformer
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
 import groovy.transform.Field
@@ -20,7 +21,7 @@ if(options.exportDir){
 } else {
     log.info "No export dir given, not saving assessment..."
 }
-Map objectJson =  Application.getObjectsJsonMap(appZip)
+Map srcMap =  Application.getObjectsJsonMap(appZip)
 
 if(exportDir){
     File outfile = new File(exportDir, "assessment.json")
@@ -28,6 +29,8 @@ if(exportDir){
     outfile.text = JsonOutput.prettyPrint(json)
     log.info "Wrote assessment to file: ${outfile.absoluteFile}"
 }
+
+JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
 
 log.info "Sum complexity: $sumComplexity with "
 
