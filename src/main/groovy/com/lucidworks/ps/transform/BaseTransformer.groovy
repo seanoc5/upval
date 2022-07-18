@@ -11,9 +11,9 @@ abstract class BaseTransformer {
     /** JsonSlurped object (maps/lists) to read from */
     def sourceObject
     /** Maps/lists object that is the goal of the transformation */
-    def destinationObject
+    def destinationObject = [:]
     /** Rules object that provides structure to a collection of transform rules */
-    Rules rules
+//    Rules rules
     String separator
 
     abstract def srcFlatpaths
@@ -42,8 +42,8 @@ abstract class BaseTransformer {
             if (rules.copy) {
                 log.info "\t\tNo destination object (template) given, but we DO HAVE copy rules (${rules.copy}, so we are NOT cloning the default as a destination template"
             } else {
-                log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
-                destinationObject = sourceObject.clone()
+//                log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
+//                destinationObject = sourceObject.clone()
             }
         } else {
             log.info "transformer.transform() was given both source and destination objects, no cloning needed..."

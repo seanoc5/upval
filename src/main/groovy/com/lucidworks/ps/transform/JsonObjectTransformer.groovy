@@ -21,8 +21,10 @@ class JsonObjectTransformer extends BaseTransformer {
             if (destination) {
                 destinationObject = destination
             } else {
-                log.warn "No destination/template object given in constructor, clone source object for now (want to have JsonObject be able to create missing hierarchy, but not working at the moment"
-                destinationObject = source.clone()
+//                log.warn "No destination/template object given in constructor, clone source object for now (want to have JsonObject be able to create missing hierarchy, but not working at the moment"
+                log.info "No destination/template object given in constructor, using blank map (is it safe to assume we always default with a map??)"
+
+//                destinationObject = source.clone()
             }
 
             this.separator = separator
@@ -51,7 +53,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
         def matchingPaths
         if (pathPattern == '.*' || !pathPattern) {
-            log.info "\t\tShortcut: setting matching paths to all flat paths based on pathPattern:$pathPattern"
+            log.info "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
             matchingPaths = keys
         } else {
             matchingPaths = keys.findAll { String path ->
@@ -110,8 +112,9 @@ class JsonObjectTransformer extends BaseTransformer {
             def destPath = copyRule.destinationPath
             def destValuePattern = copyRule.destinationExpression
 
-            log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'same as source'} -- transform: ${srcValPattern ?: 'none'}"
+            log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'clone of source'} -- transform: ${srcValPattern ?: 'none'}"
             def srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
+            log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern"
 
             srcPaths.each { String flatPath, def srcValue ->
                 def destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
@@ -235,12 +238,13 @@ class JsonObjectTransformer extends BaseTransformer {
 
     @Override
     def performRemoveRules(def rules) {
-        List results = []
-        rules.each { def rule ->
-            log.info "Remove rule: $rule"
-            results << rule
-        }
-        return results
+        throw new IllegalArgumentException("Code not implemented yet!!!")
+//        List results = []
+//        rules.each { def rule ->
+//            log.info "Remove rule: $rule"
+//            results << rule
+//        }
+//        return results
 
     }
 

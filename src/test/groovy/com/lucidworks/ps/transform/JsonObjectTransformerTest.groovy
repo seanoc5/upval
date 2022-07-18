@@ -68,6 +68,10 @@ class JsonObjectTransformerTest extends Specification {
         then:
         //todo more testing here...
         results instanceof Map
+        transformer.destinationObject.id == 'LWF_Commerce'
+        transformer.destinationObject.one.id == 'LWF_test'
+        transformer.destinationObject.one.aMap.size() == 3
+        transformer.destinationObject.one.aMap[2] == 'LWFX-123'
     }
 
 
@@ -81,92 +85,56 @@ class JsonObjectTransformerTest extends Specification {
 //                remove: [/.*(created|modified|lastUpdated)/]
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        Map destMap = transformer.destinationObject
 
         when:
         def results = transformer.transform(rules)
 
         then:
         results instanceof Map
-        transformer.destinationObject.id == 'Acme_Commerce'
-        transformer.destinationObject.one.id == 'Acme_test'
-
-
+        destMap.id == 'Acme_Commerce'
+        destMap.one.id == 'Acme_test'
     }
-
 
     /**
-     * todo -- revisit? outdated/broken??
+     * todo -- implement set rules, currently just a placeholder...
      * @return
      */
-/*
-    def "basic eval-path 'get' expressions should work on default map"() {
+    def "regex set transform test"() {
         given:
-        String slashyExpression = '/threeTopLeaf'
-        String subMapExpression = '/one/aMap'
-        String subMapExpressionFirst = '/one/aMap/0'
-        String missingExpression = 'one.nothingHere'
+        def rules = [
+                set   : [destinationPath: /.*DC_Large/],
+        ]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        Map destMap = transformer.destinationObject
 
         when:
-        def slashyResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, slashyExpression)
-        def rootResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, rootExpression)
-        def subMapResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, subMapExpression)
-        def subMapFirstResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, subMapExpressionFirst)
-        def missingResult = JsonObjectTransformer.evalObjectPathExpression(srcMap, missingExpression)
+        def results = transformer.transform(rules)
 
         then:
-        slashyResult == sampleLeafValue
-        rootResult == sampleLeafValue
-        subMapResult == srcMap.one.aMap
-        subMapFirstResult == srcMap.one.aMap[0]
-        missingResult == null
+//        results instanceof Map
+        destMap.id == 'Acme_Commerce'
+        destMap.one.id == 'Acme_test'
     }
-*/
 
-
-/*
-    def "transformer should be able to get values from destination Map when provided"() {
+    /**
+     * todo -- implement remove rules, currently just a placeholder...
+     * @return
+     */
+    def "should remove items based on rules"() {
         given:
-        Map destTemplate = srcMap               // use the srcMap as a sample template for the detination
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destTemplate, '/')
-        String slashyTest = oneSubLeafPath
-        String dotTest = 'one.oneSubLeaf'       // sampleLeafValue
-        String dotTestList = 'two[2]'           // 'three
-        String dotTestListComplex = 'one.clistOfMaps[1].cSubMap2[0]'       // three  .csubMap2
-        transformer.transform(rules)
+        def rules = [
+                remove   : [destinationPath: /.*DC_Large/],
+        ]
+        Map destMap = srcMap.clone()
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap,destMap)
 
         when:
-        def slashyResult = transformer.getDestinationValue(slashyTest)
-        def dotTestResult = transformer.getDestinationValue(dotTest)
-        def dotTestListResult = transformer.getDestinationValue(dotTestList)
-        def dotTestListComplexResult = transformer.getDestinationValue(dotTestListComplex)
+        def results = transformer.transform(rules)
 
         then:
-        slashyResult == sampleLeafValue
-        dotTestResult == sampleLeafValue
-        dotTestListResult == 'three'
-        dotTestListComplexResult == 'three'
+        destMap.id == 'Acme_Commerce'
+        destMap.one.id == 'Acme_test'
     }
-*/
-
-/*
-    def "transformer should be able to set various values in destination object of type map"() {
-        given:
-        Map destTemplate = [x: 'fubar']
-        String testPath1 = oneSubLeafPath
-        String testPath2 = 'one.aMap[1]'
-        String testPath3 = 'one.aMap[2]'
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destTemplate, '/')
-
-        when:
-        def result2 = transformer.setDestinationValue(testPath2, 'testPath2 updated')
-        def result1 = transformer.setDestinationValue(testPath1, 'testPath1 updated')
-
-        then:
-        result1
-        result2
-
-
-    }
-*/
 
 }

@@ -113,33 +113,42 @@ class JsonObjectTest extends Specification {
 
         when:
         // set a List element by index:
-        def b0 = JsonObject.setObjectNodeValue(srcMap, '/b/0', valToSet)
+        Map<String, Object> b0 = JsonObject.setObjectNodeValue(srcMap, '/b/0', valToSet)
+        def b0Key = b0.keySet()[0]
+
         // add a new element (map entry) to existing parent (sub-map: a)
-        def resultThree = JsonObject.setObjectNodeValue(srcMap, '/a/three', valToSet)       // see upval JsonObject for 'slashy' string GPath/JsonPath alternative
+        Map<String, Object> resultThree = JsonObject.setObjectNodeValue(srcMap, '/a/three', valToSet)       // see upval JsonObject for 'slashy' string GPath/JsonPath alternative
+
         // create new 'top' leaf node
-        def resultNewLeaf = JsonObject.setObjectNodeValue(srcMap, '/newTopLeaf', valToSet)
+        Map<String, Object> resultNewLeaf = JsonObject.setObjectNodeValue(srcMap, '/newTopLeaf', valToSet)
+
         // create a new map (not simple primative value) in a new element (map entry)
-        def resultNewFourSubMap = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
+        Map<String, Object> resultNewFourSubMap = JsonObject.setObjectNodeValue(srcMap, '/a/four', newMapToAdd)
+
         // check navigating through maps and lists
-        def resulCompositekey1 = JsonObject.setObjectNodeValue(srcMap, '/compositeList/2/submapkey1', valToSet)
+        Map<String, Object> resulCompositekey1 = JsonObject.setObjectNodeValue(srcMap, '/compositeList/2/submapkey1', valToSet)
 
         then:
-        b0 == valToSet                      // successfully set list element by index
-        resultNewLeaf == valToSet           // added a new leaf node: to parent element(map) `a`
-        srcMap.newTopLeaf == valToSet       //
+        b0.get(b0Key) == valToSet                      // successfully set list element by index
+        resultNewLeaf.keySet()[0] == '/newTopLeaf'           // added a new leaf node: to parent element(map) `a`
+        resultNewLeaf.get(resultNewLeaf.keySet()[0]) == valToSet
 
-        resultThree == valToSet
+        srcMap.newTopLeaf == valToSet
+
+        resultThree.keySet()[0] == '/a/three'
+        resultThree.get(resultThree.keySet()[0]) == valToSet
         srcMap.a.three == valToSet          // element `a.three` does exist now
-        resultNewFourSubMap == '{bizz=1, buzz=2}'    // todo can we force returning the actual object rather than the toString() of the object?
-        srcMap.a.four == newMapToAdd
+        resultNewFourSubMap.toString() == "[/a/four:{bizz=1, buzz=2}]"      // todo can we force returning the actual object rather than the toString() of the object?
+        srcMap.a.four.bizz == 1
+        srcMap.a.four.buzz == 2
     }
 
     def "basic SET values sanity checks with datatables"() {
         when:
-        def result = JsonObject.setObjectNodeValue(srcMap, path, v, separator)
+        Map<String, Object> result = JsonObject.setObjectNodeValue(srcMap, path, v, separator)
 
         then:
-        checkValue == result
+        checkValue == result.get(result.keySet()[0])
 
         where:
         path                           | separator | v           | checkValue
@@ -296,126 +305,33 @@ class JsonObjectTest extends Specification {
     }
 
 
-
-    def "should add missing branches and leafs"(){
+    def "should add missing branches and leafs"() {
         given:
         Map map = [:]
 
         when:
-        def c5three = JsonObject.setObjectNodeValue(map, '/c/5/three','c-5-three' )
-        def c0Two = JsonObject.setObjectNodeValue(map, '/c/0/two','c-0-two' )
-        def bSubOne = JsonObject.setObjectNodeValue(map, '/b/one','b-one' )
-        def a = JsonObject.setObjectNodeValue(map, '/a','a-value' )
+        def c5three = JsonObject.setObjectNodeValue(map, '/c/5/three', 'c-5-three')
+        def c0Two = JsonObject.setObjectNodeValue(map, '/c/0/two', 'c-0-two')
+        def bSubOne = JsonObject.setObjectNodeValue(map, '/b/one', 'b-one')
+        def a = JsonObject.setObjectNodeValue(map, '/a', 'a-value')
 
         then:
-        c5three=='c-5-three'
-        map.c[5].three == c5three
+        map.c[5].three == 'c-5-three'
 
-        c0Two=='c-0-two'
-        map.c[0].two == c0Two
+        c0Two.keySet()[0] == '/c/0/two'
+        c0Two.get(c0Two.keySet()[0]) == 'c-0-two'
+        map.c[0].two == 'c-0-two'
 
-        bSubOne == 'b-one'
-        map.b.one == bSubOne
+        bSubOne.keySet()[0] == '/b/one'
+        bSubOne.get(bSubOne.keySet()[0]) == 'b-one'
+        map.b.one == 'b-one'
 
-        a == 'a-value'
-        map.a == a
+        a.keySet()[0] == '/a'
+        a.get(a.keySet()[0]) == 'a-value'
+        map.a == 'a-value'
 
     }
 
 }
 
 
-/*
-// copy/pasted code from HelperSpecification
-    Map map = [
-            top1: [
-                    list1   : [1, 2, 3],
-                    middle1a: [bottom1a1: [subbottom1a1a: 'endleaf1'], bottom1a2: 'endleaf2',],
-                    middle1b: [bottom1b1: 'endleaf3'],
-                    middle1c: [[listMap1: 'a'], [listMap2: 'b']]
-            ],
-            top2: [
-                    list1   : [1, 2, 3],
-                    middle2a: [bottom2a1: 'endleaf1', bottom2a2: 'endleaf2'],
-                    middle2b: [bottom2b1: 'endleaf3']
-            ]
-    ]
-
-    def "should add missing map elements"() {
-        given:
-        Map srcMap = [a: [one: 1, two: 2], b: [1, 2]]
-        String existingPath = '/a/two'
-        String missingPath = '/a/three/myMissingLeaf'
-        def valToUpdate = 'my UPDATE Value'
-        def valToCreate = 'my NEW value'
-
-        when:
-        def missingElement = JsonObject.getObjectNodeValue(srcMap, missingPath, '/')
-
-        def existingElement = JsonObject.getObjectNodeValue(srcMap, existingPath, '/')
-        def originalExistingElementValue = existingElement.toString()
-        def updatedElement = JsonObject.setObjectNodeValue(srcMap, existingPath, valToUpdate)
-        def addedElement = JsonObject.setObjectNodeValue(srcMap, existingPath, '/', valToCreate)
-//        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
-
-        then:
-        missingElement == null
-        originalExistingElementValue == '2'
-        updatedElement == valToUpdate
-        addedElement == valToCreate
-        srcMap.a.two == valToUpdate
-        srcMap.a.three.myMissingLeaf == valToCreate
-    }
-
-    def "should add missing list elements"() {
-        given:
-        Map srcMap = [b: ['first', 'second']]
-        String existingPath = '/b/1'
-        String missingPath = '/b/2'
-        def valToUpdate = 'my UPDATE Value'
-        def valToCreate = 'my NEW value'
-
-        when:
-        def missingElement = Helper.getObjectNodeValue(srcMap, missingPath, '/')
-        def existingElement = Helper.getObjectNodeValue(srcMap, existingPath, '/')
-        def originalExistingElementValue = existingElement.toString()
-        def updatedElement = Helper.setJsonObjectNode(srcMap, existingPath, '/', valToUpdate)
-        def addedElement = Helper.setJsonObjectNode(srcMap, missingPath, '/', valToCreate)
-
-        then:
-        missingElement == null
-        originalExistingElementValue == 'secoond'
-        updatedElement['two'] == valToUpdate
-        addedElement['myMissingLeaf'] == valToCreate
-        srcMap.a.two == valToUpdate
-        srcMap.a.three.myMissingLeaf == valToCreate
-    }
-
-
-    def "simple flatten functionality"() {
-        when:
-        def flatties = Helper.flatten(map, 1)
-
-        then:
-        flatties instanceof List
-        flatties.size() == 14
-        flatties[0] == 'top1.middle1a.bottom1a1.subbottom1a1a'
-        flatties[1] == 'top1.middle1a.bottom1a2'
-    }
-
-    def "flattenPlusObject"() {
-        when:
-        Map<String, Object> flatties = JsonObject.flattenWithLeafObject(map, 1, '/', '/')
-        Set<String> paths = flatties.keySet()
-
-        then:
-        flatties instanceof Map
-        paths.size() == 14
-        paths[0] == 'top1.list1.0'
-        flatties[paths[0]] == 1
-        paths[1] == 'top1.list1.1'
-
-        paths[13] == 'top2.middle2b.bottom2b1'
-        flatties[paths[13]] == 'endleaf3'
-    }
- */
