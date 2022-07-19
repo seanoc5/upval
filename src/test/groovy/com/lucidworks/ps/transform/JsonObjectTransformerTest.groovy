@@ -85,7 +85,7 @@ class JsonObjectTransformerTest extends Specification {
 //                set   : [destinationPath: /.*DC_Large/],
 //                remove: [/.*(created|modified|lastUpdated)/]
         ]
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
         Map destMap = transformer.destinationObject
 
         when:
@@ -134,10 +134,10 @@ class JsonObjectTransformerTest extends Specification {
 
         when:
         def results = transformer.transform(rules)
+        def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
 
         then:
-        destMap.id == 'Acme_Commerce'
-        destMap.one.id == 'Acme_test'
+        newFlatties.size() == 5
     }
 
 

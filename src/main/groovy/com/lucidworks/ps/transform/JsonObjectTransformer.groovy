@@ -28,6 +28,8 @@ class JsonObjectTransformer extends BaseTransformer {
             this.separator = separator
             // get the flattened paths of the source and dest json objects, for the transform to use below
             srcFlatpaths = JsonObject.flattenWithLeafObject(source)
+            def ksFoo = destination.keySet()
+            // trouble with lazymaps? inconsistent issues with empty/null, trying this to see about waking up the lazy map...
             destFlatpaths = JsonObject.flattenWithLeafObject(destination)
 
         } else {
@@ -52,9 +54,9 @@ class JsonObjectTransformer extends BaseTransformer {
         def matchingPaths
         if (pathPattern == '.*' || !pathPattern) {
             log.info "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
-            matchingPaths = keys
+            matchingPaths = flatpathItems
         } else {
-            matchingPaths = keys.findAll { String path ->
+            matchingPaths = flatpathItems.findAll { String path, Object val ->
                 path ==~ pathPattern
             }
             log.info "\t\tpathPattern($pathPattern) matched: $matchingPaths"
@@ -62,16 +64,17 @@ class JsonObjectTransformer extends BaseTransformer {
 
         if (valuePattern) {
             log.debug "We have a valuePattern to further file"
-            boolean pathContains = valuePattern.startsWith('~')
-            if (pathContains) {
+            boolean tildeOperator = valuePattern.startsWith('~')
+            if (tildeOperator) {
                 valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
-                log.debug "\t\tdoing string contains search"
+                log.debug "\t\tdoing String.contains() search (tildeOperator=true)"
             } else {
-                log.debug "\t\tdoing pattern search"
+                log.info "\t\tdoing pattern search with groovy string regex (should handle regex and groups, likely more extended regex...)"
             }
-            matchingFlatPaths = flatpathItems.subMap(matchingPaths).findAll { String key, def val ->
+
+            matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String key, def val ->
                 boolean valMatches = false
-                if (pathContains) {
+                if (tildeOperator) {
                     valMatches = ((String) val).contains(valuePattern)
                 } else {
                     def valMatch = (val =~ valuePattern)
@@ -83,10 +86,13 @@ class JsonObjectTransformer extends BaseTransformer {
                 return valMatches
             }
             log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching..."
+
         } else {
-            matchingFlatPaths = matchingPaths
+            matchingFlatPaths = flatpathItems.subMap(matchingPaths)
+            assert matchingFlatPaths.size() == matchingPaths.size()
             log.debug "\t\tNo valuePattern given, we will return just the path matches..."
         }
+
         return matchingFlatPaths
     }
 
@@ -101,9 +107,9 @@ class JsonObjectTransformer extends BaseTransformer {
      * @return results??
      */
     @Override
-    def performCopyRules(List<Map> copyRules) {
+    List<Map<String, Object>> performCopyRules(List<Map> copyRules) {
         log.info "Rules: $copyRules"
-        List results = []
+        List<Map> results = []
         copyRules.each { def copyRule ->
             String srcPath = copyRule.sourcePath
             def srcValPattern = copyRule.sourceItemPattern
@@ -117,15 +123,23 @@ class JsonObjectTransformer extends BaseTransformer {
             srcPaths.each { String flatPath, def srcValue ->
                 def destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
                 def destValue = transformDestinationValue(srcValue, srcValPattern, destPath, destValuePattern)
-                log.info "\t\tdo copy value($srcValue) from source($flatPath) to destination paths($destPaths) ?"
-                def result = doCopy(destValue, destPaths)
-                results << result
+                if (destValue == srcValue) {
+                    log.info "\t\t$flatPath) destination value and source value are the same: $srcValue"
+                } else {
+                    log.debug "\t\ttransformDestinationValue yielded a destination($destValue) different from source:($srcValue)"
+                    log.info "\t\tdo copy source path:($flatPath) with value($srcValue) to destination paths($destPaths) and dest value: $destValue "
+                }
+                destPaths.each { String dpath, Object origValue ->
+                    def result = doCopy(destValue, dpath)
+                    log.info "\t\tresult:$result  <---- (original value: $origValue)"
+                    results.addAll(result)
+                }
             }
             log.debug "Dest object after copyrules: $destinationObject"
         }
         return results
-
     }
+
 
     /**
      * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
@@ -143,12 +157,17 @@ class JsonObjectTransformer extends BaseTransformer {
 
             case '~':
             case TX_REGEX_REPLACE:
+                log.debug "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destPattern]"
                 if (srcPattern.startsWith('~')) {
                     log.debug "removing leading tilde (indicated regex replace transformation, not part of replace str)"
                     srcPattern = srcPattern[1..-1]
                 }
                 destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
-                log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern) "
+                if(destValue==srcValue){
+                    log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern] -- is this a problem?"
+                } else {
+                    log.info "\t\tDest value:[$destValue] is transformed from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern]"
+                }
                 break
 
             case TX_TEMPLATE:
@@ -158,6 +177,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
         return destValue
     }
+
 
     String transformWithStringTemplate(def srcValue, def srcPattern, def destPath, def destPattern) {
         String msg = "String template replace/transform Not implemented yet!! Throwing error and running away...  Improper Attempt to transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern)"
@@ -223,7 +243,7 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    def performSetRules(Object rules) {
+    List<Map<String, Object>> performSetRules(Object rules) {
 //        return super.performSetRules(rules)
         List results = []
         rules.each { def rule ->
@@ -241,7 +261,7 @@ class JsonObjectTransformer extends BaseTransformer {
      * todo -- consider refactoring to
      */
     @Override
-    def performRemoveRules(def removeRules) {
+    List<Map<String, Object>> performRemoveRules(def removeRules) {
         List results = []
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
@@ -259,25 +279,20 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    def doCopy(def valToSet, Map<String, Object> destNodePaths) {
-        log.info "Set destNode: $destNodePaths (just using the single/current srcPath for now) to value: $valToSet"
-        List results = []
-        destNodePaths.each { String destPath, Object value ->
-            log.info "\t\tSet dest node: $destPath to value: ($valToSet)"
-            def r = JsonObject.setObjectNodeValue(destinationObject, destPath, valToSet)
-            results << r
-        }
-        return results
+    Map<String, Object> doCopy(def valToSet, String destPath) {
+        log.info "\t\tSet dest node: $destPath to value: ($valToSet)"
+        def result = JsonObject.setObjectNodeValue(destinationObject, destPath, valToSet)
+        return result
     }
 
     @Override
-    def doSet(def valToSet, String destNodePath) {
+    Map<String, Object> doSet(def valToSet, String destNodePath) {
         log.warn "Implement me!! blank operation at the moment"
         return null
     }
 
     @Override
-    def doRemove(String path) {
+    Map<String, Object> doRemove(String path) {
         def result = JsonObject.removeItem(path, destinationObject)
         log.info "\t\tRemove destNode by path: ${path} -- result: $result"
         return result
@@ -352,12 +367,12 @@ class JsonObjectTransformer extends BaseTransformer {
     Map<String, Object> getDestinationPaths(def destPath, def srcPath, def destValuePattern = null) {
         Map<String, Object> destPaths = [:]
         if (destPath) {
-            log.info "\t\tDestination path(s): $destPath"
             // todo -- revisit if we ever have multiple destination paths that do not matchin 1:1 source path...? remove this code??
             destPaths = findAllItemsMatching(destPath, '.*', destFlatpaths)
+            log.info "\t\tDestPath ($destPath) -> Destination path(s): $destPaths "
         } else {
             destPaths = findAllItemsMatching(srcPath, '.*', destFlatpaths)
-            log.warn "\t\tNo destination path(s): mirror source path ($srcPath) for destination path list: ($destPaths) -- Does this work correct???"
+            log.info "\t\tNo destination path(s), so we will mirror source path ($srcPath) for destination path list: ($destPaths) -- Does this work correctly???"
         }
         return destPaths
     }

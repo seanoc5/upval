@@ -79,42 +79,42 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    abstract def performCopyRules(List<Map> rules)
+    abstract List<Map<String, Object>> performCopyRules(List<Map> rules)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract def performSetRules(def rules)
+    abstract List<Map<String, Object>> performSetRules(def rules)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract def performRemoveRules(def rules)
+    abstract List<Map<String, Object>> performRemoveRules(def rules)
 
     /**
      * process single 'copy' rules
      * @param rules
      * @return
      */
-    abstract def doCopy(def valueToSet, Map<String, Object> destNodePaths)
+    abstract Map<String, Object> doCopy(def valueToSet, String destNodePath)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract def doSet(def valueToSet, String destNodePath)
+    abstract Map<String, Object> doSet(def valueToSet, String destNodePath)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract def doRemove(String pathToRemove)
+    abstract Map<String, Object> doRemove(String pathToRemove)
 
 //    abstract def getDestinationValue(String pi
 //    def getSourceValue(def path) {
