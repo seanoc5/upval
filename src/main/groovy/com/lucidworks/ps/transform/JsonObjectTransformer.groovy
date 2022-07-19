@@ -45,8 +45,8 @@ class JsonObjectTransformer extends BaseTransformer {
      *
      * todo -- consider returning match object??? premature optimization? just match regexes here, and potential subsequent transform action. (the latter is the current approach)
      */
-    def findAllItemsMatching(def pathPattern, def valuePattern, Map<String, Object> flatpathItems) {
-        def matches = null
+    Map<String, Object> findAllItemsMatching(String pathPattern, def valuePattern, Map<String, Object> flatpathItems) {
+        Map<String, Object> matchingFlatPaths = null
         def keys = flatpathItems.keySet()
 
         def matchingPaths
@@ -63,16 +63,16 @@ class JsonObjectTransformer extends BaseTransformer {
         if (valuePattern) {
             log.debug "We have a valuePattern to further file"
             boolean pathContains = valuePattern.startsWith('~')
-            if (pathContains){
+            if (pathContains) {
                 valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
                 log.debug "\t\tdoing string contains search"
             } else {
                 log.debug "\t\tdoing pattern search"
             }
-            matches = flatpathItems.subMap(matchingPaths).findAll { String key, def val ->
+            matchingFlatPaths = flatpathItems.subMap(matchingPaths).findAll { String key, def val ->
                 boolean valMatches = false
-                if(pathContains){
-                    valMatches = ((String)val).contains(valuePattern)
+                if (pathContains) {
+                    valMatches = ((String) val).contains(valuePattern)
                 } else {
                     def valMatch = (val =~ valuePattern)
                     if (valMatch.matches()) {
@@ -82,12 +82,12 @@ class JsonObjectTransformer extends BaseTransformer {
                 }
                 return valMatches
             }
-            log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matches.size()} matches by value matching..."
+            log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching..."
         } else {
-            matches = matchingPaths
+            matchingFlatPaths = matchingPaths
             log.debug "\t\tNo valuePattern given, we will return just the path matches..."
         }
-        return matches
+        return matchingFlatPaths
     }
 
 
@@ -111,7 +111,7 @@ class JsonObjectTransformer extends BaseTransformer {
             def destValuePattern = copyRule.destinationExpression
 
             log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'clone of source'} -- transform: ${srcValPattern ?: 'none'}"
-            def srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
+            Map<String, Object> srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
             log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern"
 
             srcPaths.each { String flatPath, def srcValue ->
@@ -143,7 +143,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
             case '~':
             case TX_REGEX_REPLACE:
-                if(srcPattern.startsWith('~')){
+                if (srcPattern.startsWith('~')) {
                     log.debug "removing leading tilde (indicated regex replace transformation, not part of replace str)"
                     srcPattern = srcPattern[1..-1]
                 }
@@ -234,23 +234,35 @@ class JsonObjectTransformer extends BaseTransformer {
         return results
     }
 
+    /**
+     * remove nodes based on rules
+     * @param removeRules
+     * @return
+     * todo -- consider refactoring to
+     */
     @Override
-    def performRemoveRules(def rules) {
-        throw new IllegalArgumentException("Code not implemented yet!!!")
-//        List results = []
-//        rules.each { def rule ->
-//            log.info "Remove rule: $rule"
-//            results << rule
-//        }
-//        return results
+    def performRemoveRules(def removeRules) {
+        List results = []
+        removeRules.each { Map<String, Object> rule ->
+            log.info "Remove rule: $rule"
+            String pathPattern = rule.pathPattern
+            String valuePattern = rule.valuePattern
+            Map<String, Object> matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+            def orderedMatchingPaths = matchingPaths.sort
+            matchingPaths.each { String path ->
+                def rslt = doRemove(path)
+                results << rslt
+            }
+        }
 
+        return results
     }
 
     @Override
-    def doCopy(def valToSet, List<String> destNodePaths) {
+    def doCopy(def valToSet, Map<String, Object> destNodePaths) {
         log.info "Set destNode: $destNodePaths (just using the single/current srcPath for now) to value: $valToSet"
         List results = []
-        destNodePaths.each { String destPath ->
+        destNodePaths.each { String destPath, Object value ->
             log.info "\t\tSet dest node: $destPath to value: ($valToSet)"
             def r = JsonObject.setObjectNodeValue(destinationObject, destPath, valToSet)
             results << r
@@ -259,15 +271,16 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    def doSet(def valToSet, List<String> destNodePaths) {
+    def doSet(def valToSet, String destNodePath) {
         log.warn "Implement me!! blank operation at the moment"
         return null
     }
 
     @Override
-    def doRemove(List<String> destNodePaths) {
-        log.warn "Implement me!! blank operation at the moment"
-        return null
+    def doRemove(String path) {
+        def result = JsonObject.removeItem(path, destinationObject)
+        log.info "\t\tRemove destNode by path: ${path} -- result: $result"
+        return result
     }
 
 
@@ -336,15 +349,15 @@ class JsonObjectTransformer extends BaseTransformer {
         return result
     }
 
-    List getDestinationPaths(def destPath, def srcPath, def destValuePattern = null) {
-        List destPaths = []
+    Map<String, Object> getDestinationPaths(def destPath, def srcPath, def destValuePattern = null) {
+        Map<String, Object> destPaths = [:]
         if (destPath) {
             log.info "\t\tDestination path(s): $destPath"
             // todo -- revisit if we ever have multiple destination paths that do not matchin 1:1 source path...? remove this code??
             destPaths = findAllItemsMatching(destPath, '.*', destFlatpaths)
         } else {
-            destPaths << srcPath
-            log.info "\t\tNo destination path(s): mirror source path ($srcPath) for destination path list: ($destPaths)"
+            destPaths = findAllItemsMatching(srcPath, '.*', destFlatpaths)
+            log.warn "\t\tNo destination path(s): mirror source path ($srcPath) for destination path list: ($destPaths) -- Does this work correct???"
         }
         return destPaths
     }

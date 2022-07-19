@@ -149,7 +149,6 @@ class JsonObject {
                     }
                 }
             }
-
         }
 
         log.debug "return Path ( $path ) with updated element ($element) set to new value ($valToSet) -- result: $result"
@@ -183,9 +182,9 @@ class JsonObject {
 //                    throw (new IllegalArgumentException(msg))
 //                } else {
                 }
-                    log.debug "set list element (${index}) to value: $valToSet"
-                    element[index] = valToSet
-                    result = valToSet
+                log.debug "set list element (${index}) to value: $valToSet"
+                element[index] = valToSet
+                result = valToSet
 //                }
             } else {
 
@@ -221,8 +220,10 @@ class JsonObject {
     static List<String> parsePath(String path, String separator) {
         List<String> segments = path.split(separator)
         if (!segments[0]) {
-            log.debug "Remove empty first segment because path ($path) starts with separator($separator)"
-            segments.remove(0)
+            // todo -- decide on how to handle leading slash/separator...
+            log.debug "Leading separator creates a blank for segment. This could be ok, as long as we are consistent: path:$path -> segments:$segments"
+//            log.warn "Remove empty first segment because path ($path) starts with separator($separator)"
+//            segments.remove(0)
         }
         segments
     }
@@ -314,7 +315,7 @@ class JsonObject {
      * @param level helper to track depth (is this helpful?)
      * @return Map with flattened path(string) as key, and the given object as value
      */
-    static Map<String, Object> flattenWithLeafObject(def object, int level = 0, String prefix = '/', String separator = '/') {
+    static Map<String, Object> flattenWithLeafObject(def object, int level = 0, String prefix = DEFAULT_SEPARATOR, String separator = DEFAULT_SEPARATOR) {
         Map<String, Object> entries = [:]
         log.debug "$level) flattenPlusObject: $object..."
         if (object instanceof Map) {
@@ -429,6 +430,63 @@ class JsonObject {
             log.warn "$level) other?? $object"
         }
         return entries
+    }
+
+
+    /**
+     * code to delete map entry or list item (based on provided path/object structure
+     * @param path full path to remove
+     * todo - consider (regex?) pattern matching here? -- or leave that to the parent code, and just do single item removals here...?
+     */
+    static def removeItem(String path, Map fromMap, String separator = DEFAULT_SEPARATOR) {
+        List<String> segments = parsePath(path, separator)
+        def itemToRemove = null
+        String lastSeg = segments[-1]
+        String parentPath = getParentPath(path)
+        def parentObject = getObjectNodeValue(fromMap, parentPath, separator)
+//        def parent = getParentItem(path, fromMap)
+        if (parentObject instanceof Collection) {
+            if (lastSeg.isInteger()) {
+                List list = (List) parentObject
+                Integer idx = Integer.parseInt(lastSeg)
+                int size = list.size()
+                if (idx < size) {
+                    log.warn "\tBe careful removing list items by index ($lastSeg)... doing so likely to change the list, and bork any other removals based on index (i.e. no promise we process in descending order)"
+                    itemToRemove = list.get(idx)
+                    list.remove(idx)
+                    int newSize = list.size()
+                    log.info "List had ($size) items, removed item with index($idx): $itemToRemove -- new size: $newSize"
+                } else {
+                    log.warn "Last segment seems to be an array index, and it is not < array size (array out of bounds situation), this may be from a previous remoteItem in the same list which borked the index of the Collection "
+                }
+            } else {
+                log.warn "We have a list as the parent($parentObject), and last segment ($lastSeg) is not an integer!!! cannot remove!!!"
+            }
+        } else if (parentObject instanceof Map) {
+            Map map = (Map) parentObject
+            itemToRemove = map.get(lastSeg)         // todo -- minor refactoring, duplicate/confusing use of itemToRemove...
+            if (itemToRemove) {
+                log.debug "\t\tremove map entry($lastSeg) with item ($itemToRemove) from parent map: $map"
+                itemToRemove = map.remove(lastSeg)
+                log.debug "\t\tremoved $itemToRemove"
+            } else {
+                log.warn "Could not get element ($lastSeg) from map with keyset: ${map.keySet()}!!! Nothing to remove...?"
+            }
+        } else {
+            log.warn "Unknown parent ($parentObject) -- not collection nor map...? Cannot remove path: $path"
+        }
+        return ["$path":itemToRemove]
+    }
+
+    static String getParentPath(String path, String separator = DEFAULT_SEPARATOR) {
+        List<String> segments = parsePath(path, separator)
+        segments.removeLast()
+        String parentPath = segments.join(separator)
+    }
+
+    static def getParentItem(String path, Map flatPaths, String separator = DEFAULT_SEPARATOR) {
+        String parentPath = getParentPath(path, separator)
+        def parent = flatPaths[parentPath]
     }
 
 }

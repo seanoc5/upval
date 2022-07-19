@@ -32,7 +32,8 @@ class JsonObjectTransformerTest extends Specification {
 
     def "find all entries with value"() {
         given:
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        Map destMap = srcMap.clone()
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
 
         when:
         def srcMatchesFoo = transformer.findAllItemsMatching('/one/.*', 'foo', transformer.srcFlatpaths)
@@ -59,8 +60,8 @@ class JsonObjectTransformerTest extends Specification {
 
     def "Basic copy test"() {
         given:
-        def rules = [copy  : [[sourcePath: '.*', sourceItemPattern: 'LWF.*'], ],]
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        def rules = [copy: [[sourcePath: '.*', sourceItemPattern: 'LWF.*'],],]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
 
         when:
         def results = transformer.transform(rules)
@@ -78,7 +79,7 @@ class JsonObjectTransformerTest extends Specification {
     def "regex replace transform test"() {
         given:
         def rules = [
-                copy  : [
+                copy: [
                         [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationExpression: 'Acme_'],     // trying `~` syntax to say search/replace with
                 ],
 //                set   : [destinationPath: /.*DC_Large/],
@@ -103,7 +104,7 @@ class JsonObjectTransformerTest extends Specification {
     def "regex set transform test"() {
         given:
         def rules = [
-                set   : [destinationPath: /.*DC_Large/],
+                set: [destinationPath: /.*DC_Large/],
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
         Map destMap = transformer.destinationObject
@@ -112,7 +113,6 @@ class JsonObjectTransformerTest extends Specification {
         def results = transformer.transform(rules)
 
         then:
-//        results instanceof Map
         destMap.id == 'Acme_Commerce'
         destMap.one.id == 'Acme_test'
     }
@@ -124,10 +124,34 @@ class JsonObjectTransformerTest extends Specification {
     def "should remove items based on rules"() {
         given:
         def rules = [
-                remove   : [destinationPath: /.*DC_Large/],
+                remove: [
+                        [pathPattern: /.*bSub.*/, valuePattern: ''],
+                        [pathPattern: /.*/, valuePattern: 'one'],
+                ],
         ]
         Map destMap = srcMap.clone()
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap,destMap)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
+
+        when:
+        def results = transformer.transform(rules)
+
+        then:
+        destMap.id == 'Acme_Commerce'
+        destMap.one.id == 'Acme_test'
+    }
+
+
+    def "should remove items based on rules in larger set"() {
+        given:
+        def rules = [
+                remove: [
+                        [pathPattern: /.*(\/updates\/).*/, valuePattern: '.*'],
+                        [pathPattern: /.*(\/createdAt\/).*/, valuePattern: '.*'],
+                        [pathPattern: /.*/, valuePattern: '~10000'],
+                ],
+        ]
+        Map destMap = srcMap.clone()
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
 
         when:
         def results = transformer.transform(rules)

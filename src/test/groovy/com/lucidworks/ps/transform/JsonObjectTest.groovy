@@ -38,6 +38,42 @@ class JsonObjectTest extends Specification {
         ]
     }
 
+    def "should find parent items"() {
+        given:
+        Map m = [a:[b:[c:[d:1, d2:2]]]]
+        def flatties = JsonObject.flattenWithLeafObject(m)
+        String childPath = '/a/b/c/d'
+        String parentPath = JsonObject.getParentPath(childPath)
+
+        when:
+        def parentItem = JsonObject.getObjectNodeValue(m, parentPath)
+//        def parentItem = JsonObject.getParentItem(childPath, flatties)
+
+        then:
+        parentItem instanceof Map
+        parentItem.d == 1
+
+    }
+
+    def "should remove items in by path"() {
+        Map m = [a:[b:[c:[d1:'delete me', d2:2]]]]
+        def flatties = JsonObject.flattenWithLeafObject(m)
+        String childPath = '/a/b/c/d1'
+        def itemToRemove = JsonObject.getObjectNodeValue(m, childPath)
+        String parentPath = JsonObject.getParentPath(childPath)
+        Map parentItem = JsonObject.getObjectNodeValue(m, parentPath)
+
+        when:
+        assert parentItem.keySet().toList() == ['d1', 'd2']
+        def removedItem = JsonObject.removeItem(childPath,m)
+//        def parentItem = JsonObject.getParentItem(childPath, flatties)
+
+        then:
+        removedItem == 'delete me'
+        parentItem.keySet().toList() == ['d2']
+
+    }
+
 
     def "escaped source should be multiline and unescaped should not"() {
         expect:
@@ -304,7 +340,6 @@ class JsonObjectTest extends Specification {
         flatties[paths[15]] == 'JOB_REPORTS'
     }
 
-
     def "should add missing branches and leafs"() {
         given:
         Map map = [:]
@@ -331,6 +366,7 @@ class JsonObjectTest extends Specification {
         map.a == 'a-value'
 
     }
+
 
 }
 

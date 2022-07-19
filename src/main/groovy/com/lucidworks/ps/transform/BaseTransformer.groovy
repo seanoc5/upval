@@ -42,7 +42,7 @@ abstract class BaseTransformer {
             if (rules.copy) {
                 log.info "\t\tNo destination object (template) given, but we DO HAVE copy rules (${rules.copy}, so we are NOT cloning the default as a destination template"
             } else {
-//                log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
+                log.info "\t\tNo destination object (template) given, but we do NOT have copy rules (${rules.copy}, so clone the source as a template for the destination..."
 //                destinationObject = sourceObject.clone()
             }
         } else {
@@ -79,70 +79,42 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    def performCopyRules(List<Map> rules) {
-        List results = []
-        rules.copy.each { def rule ->
-            log.info "\t\tCOPY rule: $rule"
-//            sourceObject
-            results << rule
-        }
-        return results
-
-    }
+    abstract def performCopyRules(List<Map> rules)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    def performSetRules(def rules) {
-        List results = []
-        rules.each { def rule ->
-            log.info "\t\tSET rule: $rule"
-            results << rule
-        }
-        return results
-
-
-    }
+    abstract def performSetRules(def rules)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    def performRemoveRules(def rules) {
-        List results = []
-        rules.remove.each { def rule ->
-            log.info "\t\tREMOVE rule: $rule"
-            sourceObject
-            results << rule
-        }
-        return results
-
-    }
-
+    abstract def performRemoveRules(def rules)
 
     /**
      * process single 'copy' rules
      * @param rules
      * @return
      */
-    abstract def doCopy(def valueToSet, List<String> destNodePaths)
+    abstract def doCopy(def valueToSet, Map<String, Object> destNodePaths)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract def doSet(def valueToSet, List<String> destNodePaths)
+    abstract def doSet(def valueToSet, String destNodePath)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract def doRemove(List<String> destNodePaths)
+    abstract def doRemove(String pathToRemove)
 
 //    abstract def getDestinationValue(String pi
 //    def getSourceValue(def path) {
