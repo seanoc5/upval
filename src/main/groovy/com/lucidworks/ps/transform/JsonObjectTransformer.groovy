@@ -89,7 +89,8 @@ class JsonObjectTransformer extends BaseTransformer {
             log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching..."
 
         } else {
-            matchingFlatPaths = flatpathItems.subMap(matchingPaths)
+            Set matchingPathKeys = matchingPaths.keySet()
+            matchingFlatPaths = flatpathItems.subMap(matchingPathKeys)
             assert matchingFlatPaths.size() == matchingPaths.size()
             log.debug "\t\tNo valuePattern given, we will return just the path matches..."
         }
@@ -255,11 +256,12 @@ class JsonObjectTransformer extends BaseTransformer {
         return results
     }
 
+    static public final int charPreA = 64
     /**
      * remove nodes based on rules
      * @param removeRules
-     * @return
-     * todo -- consider refactoring to
+     * @return results of removal (list of removed nodes??)
+     * Note: we assume JsonObject.orderIndexKeysDecreasing is necessary to void trying to remove successive collection elements, and have collection indexes change in the process (if we work highest index to lowest, are we safe???)
      */
     @Override
     List<Map<String, Object>> performRemoveRules(def removeRules) {
@@ -269,8 +271,9 @@ class JsonObjectTransformer extends BaseTransformer {
             String pathPattern = rule.pathPattern
             String valuePattern = rule.valuePattern
             Map<String, Object> matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-            def orderedMatchingPaths = matchingPaths.sort
-            matchingPaths.each { String path ->
+            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+            List<String> sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+            sortedKeys.each { String path ->
                 def rslt = doRemove(path)
                 results << rslt
             }
@@ -278,6 +281,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
         return results
     }
+
 
     @Override
     Map<String, Object> doCopy(def valToSet, String destPath) {

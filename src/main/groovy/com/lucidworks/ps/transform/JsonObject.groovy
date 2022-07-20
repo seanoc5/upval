@@ -490,5 +490,47 @@ class JsonObject {
         def parent = flatPaths[parentPath]
     }
 
+    /**
+     * get array index leafs in decreasing order so things like removing an item don't step on similar operations in same list)
+     * @param flatMapToSort
+     * @param separator
+     * @return sorted collection of map keys so that array elements occur in decreasing order
+     */
+    static Set<String> orderIndexKeysDecreasing(Map flatMapToSort, String separator = '/') {
+        Set keys = flatMapToSort.keySet()
+        Map<Integer, List<String>> arrayLeafsGrouped = [:].withDefault { [] }
+        // group array leaf paths by integer index, the we can walk those groups in reverse order -- only relevant for 'remove' functionality???
+        List<String> mapLeafList = []
+        keys.each { String k ->
+            log.debug "Process key: $k"
+            List<String> parts = k.split(separator)
+            String lastItem = parts[-1]
+            if (lastItem.isInteger()) {
+                Integer idx = Integer.parseInt(lastItem)
+                log.debug "\t\tIndex: $idx"
+                arrayLeafsGrouped[idx] << k
+            } else {
+                log.info "\t\tMap key (no sorting/grouping needed): $k"
+                mapLeafList << k
+            }
+        }
+
+        LinkedHashSet<String> myOrderSet = new LinkedHashSet<>()
+        List orderedList = arrayLeafsGrouped.keySet().toList().reverse()
+        orderedList.each { Integer i ->
+            List groupedItems = arrayLeafsGrouped[i]
+            log.info "$i) -> $groupedItems"
+            groupedItems.each {
+                log.info "\t\t$i) Add key: $it"
+                myOrderSet << it
+            }
+        }
+        mapLeafList.each {
+            myOrderSet << it
+        }
+
+        return myOrderSet
+    }
+
 }
 

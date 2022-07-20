@@ -1,6 +1,6 @@
 package com.lucidworks.ps.transform
 
-
+import org.apache.log4j.Logger
 import spock.lang.Specification
 
 /**
@@ -14,6 +14,7 @@ import spock.lang.Specification
  * @ deprecated ?? revisit to see if there is anything current/useful here...
  */
 class JsonObjectTransformerTest extends Specification {
+    static final Logger log = Logger.getLogger(this.class.name);
     static final Map srcMap = [
             id          : 'LWF_Commerce',
             created     : '2022-07-15',
@@ -161,4 +162,31 @@ class JsonObjectTransformerTest extends Specification {
         destMap.one.id == 'Acme_test'
     }
 
+    def "should sort flatPaths with collection index items in reverse order"() {
+        given:
+        Map map = [
+                a: [foo: ['one', 'two'],],
+                b: ['b1', 'b2', 'b3'],
+                c: ['c1', 'c2', 'c3', 'c4',],
+                d: [d1:'d-leaf', d2:'d2', d3:[9,9,9,]]
+        ]
+        def flatties = JsonObject.flattenWithLeafObject(map)
+
+        when:
+        Set<String> myOrderedSet = JsonObject.orderIndexKeysDecreasing(flatties)
+
+        then:
+        myOrderedSet.size() == 14
+        myOrderedSet.getAt(0) == '/c/3'
+        myOrderedSet.getAt(1) == '/b/2'
+        myOrderedSet.getAt(3) == '/d/d3/2'
+        myOrderedSet.getAt(8) == '/a/foo/0'
+        myOrderedSet.getAt(13) == '/d/d2'
+
+    }
+
 }
+
+
+
+
