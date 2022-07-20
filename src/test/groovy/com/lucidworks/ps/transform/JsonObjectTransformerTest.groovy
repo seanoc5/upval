@@ -118,10 +118,6 @@ class JsonObjectTransformerTest extends Specification {
         destMap.one.id == 'Acme_test'
     }
 
-    /**
-     * todo -- implement remove rules, currently just a placeholder...
-     * @return
-     */
     def "should remove items based on rules"() {
         given:
         def rules = [
@@ -136,14 +132,48 @@ class JsonObjectTransformerTest extends Specification {
         when:
         def results = transformer.transform(rules)
         def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
+//        Map destMap = transformer.destinationObject
 
         then:
-        newFlatties.size() == 5
+        transformer.srcFlatpaths.size() == 20
+        transformer.srcFlatpaths['/one/clistOfMaps/0/cSubmap1/0'] == 'one'
+        newFlatties.size() == 14
+
+        newFlatties['/one/clistOfMaps/0/cSubmap1/0'] == 'two'       // Note: if we remove in 'natural' order, it will be 0, then 2 and index 2 (third item) will not exist because the first element will be gone, throwing an error, if done 'intelligently' we will remove in decreasing index order, idex 2, then 0, left with what was index 1, value 'two'
+        destMap.one.clistOfMaps[0].cSubmap1.size() == 1
+        destMap.one.clistOfMaps[0].cSubmap1[0] == 'two'
+
+    }
+
+    def "should remove collections items with potentially dangerous indexing- 1 and 3"() {
+        given:
+        def rules = [
+                remove: [
+                        [pathPattern: /\/two\/(0|2)/, valuePattern: ''],
+                ],
+        ]
+        Map destMap = srcMap.clone()
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
+
+        when:
+        int origSize = srcMap.two.size()
+        def results = transformer.transform(rules)
+        def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
+
+        then:
+        transformer.srcFlatpaths.size() == 20
+        newFlatties.size() == 18
+        origSize == 3
+        destMap.two.size() == 1
+        destMap.two[0] == 'two'
+
     }
 
 
     def "should remove items based on rules in larger set"() {
         given:
+        File idxpJson = new File(getClass().getResource('/apps/indexPipeline.1.json').toURI())
+
         def rules = [
                 remove: [
                         [pathPattern: /.*(\/updates\/).*/, valuePattern: '.*'],
@@ -151,15 +181,15 @@ class JsonObjectTransformerTest extends Specification {
                         [pathPattern: /.*/, valuePattern: '~10000'],
                 ],
         ]
-        Map destMap = srcMap.clone()
+        Map srcMap = JsonObject.parseJson(idxpJson)
+        Map destMap = JsonObject.parseJson(idxpJson)            // todo -- revisit destMap... is there a better approach? just have all rules start with explicitly deep-copying values from source...???
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
 
         when:
         def results = transformer.transform(rules)
 
         then:
-        destMap.id == 'Acme_Commerce'
-        destMap.one.id == 'Acme_test'
+        destMap.updates == null
     }
 
     def "should sort flatPaths with collection index items in reverse order"() {
@@ -168,7 +198,7 @@ class JsonObjectTransformerTest extends Specification {
                 a: [foo: ['one', 'two'],],
                 b: ['b1', 'b2', 'b3'],
                 c: ['c1', 'c2', 'c3', 'c4',],
-                d: [d1:'d-leaf', d2:'d2', d3:[9,9,9,]]
+                d: [d1: 'd-leaf', d2: 'd2', d3: [9, 9, 9,]]
         ]
         def flatties = JsonObject.flattenWithLeafObject(map)
 

@@ -272,7 +272,7 @@ class JsonObjectTransformer extends BaseTransformer {
             String valuePattern = rule.valuePattern
             Map<String, Object> matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
             // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-            List<String> sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+            Set<String> sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
             sortedKeys.each { String path ->
                 def rslt = doRemove(path)
                 results << rslt

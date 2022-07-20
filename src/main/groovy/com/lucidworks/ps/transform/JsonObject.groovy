@@ -1,5 +1,6 @@
 package com.lucidworks.ps.transform
 
+import groovy.json.JsonSlurper
 import org.apache.commons.text.StringEscapeUtils
 
 import org.apache.log4j.Logger
@@ -210,6 +211,27 @@ class JsonObject {
         }
         return result
     }
+
+
+    /**
+     * helper method to parse/slurp json
+     *
+     */
+    static Object parseJson(def jsonFile) {
+        JsonSlurper slurper = new JsonSlurper()
+        def json = slurper.parse(jsonFile)
+    }
+
+    /**
+     * helper method if we have text rather than a file/url/reader...
+     * @param jsonText
+     * @return
+     */
+    static Object parseJsonText(String jsonText) {
+        JsonSlurper slurper = new JsonSlurper()
+        def json = slurper.parseText(jsonText)
+    }
+
 
 
     /**
@@ -465,7 +487,8 @@ class JsonObject {
             }
         } else if (parentObject instanceof Map) {
             Map map = (Map) parentObject
-            itemToRemove = map.get(lastSeg)         // todo -- minor refactoring, duplicate/confusing use of itemToRemove...
+            itemToRemove = map.get(lastSeg)
+            // todo -- minor refactoring, duplicate/confusing use of itemToRemove...
             if (itemToRemove) {
                 log.debug "\t\tremove map entry($lastSeg) with item ($itemToRemove) from parent map: $map"
                 itemToRemove = map.remove(lastSeg)
@@ -476,7 +499,7 @@ class JsonObject {
         } else {
             log.warn "Unknown parent ($parentObject) -- not collection nor map...? Cannot remove path: $path"
         }
-        return ["$path":itemToRemove]
+        return ["$path": itemToRemove]
     }
 
     static String getParentPath(String path, String separator = DEFAULT_SEPARATOR) {
@@ -507,10 +530,10 @@ class JsonObject {
             String lastItem = parts[-1]
             if (lastItem.isInteger()) {
                 Integer idx = Integer.parseInt(lastItem)
-                log.debug "\t\tIndex: $idx"
+                log.debug "\t\torderIndexKeysDecreasing) Index: $idx"
                 arrayLeafsGrouped[idx] << k
             } else {
-                log.info "\t\tMap key (no sorting/grouping needed): $k"
+                log.debug "\t\torderIndexKeysDecreasing) Map key (no sorting/grouping needed): $k"
                 mapLeafList << k
             }
         }
@@ -519,9 +542,9 @@ class JsonObject {
         List orderedList = arrayLeafsGrouped.keySet().toList().reverse()
         orderedList.each { Integer i ->
             List groupedItems = arrayLeafsGrouped[i]
-            log.info "$i) -> $groupedItems"
+            log.info "orderIndexKeysDecreasing() $i) -> $groupedItems"
             groupedItems.each {
-                log.info "\t\t$i) Add key: $it"
+                log.debug "\t\torderIndexKeysDecreasing() $i) Add key: $it"
                 myOrderSet << it
             }
         }
