@@ -107,7 +107,8 @@ class JsonObject {
         // start at the top, element will be set to each 'child' element as we walk the parsed segments
         def element = srcMap
         // loop through path segments, stop when reaching the last element, or a (parent) segment is null
-        for (int depth = 0; depth < numSegments && element != null; depth++) {
+        // todo -- confirm that we want parsePath(path) to yield a blank first element, e.g. parsePath('/id') -> ['','id'] -- this is awkward, but simplifies root slash handling
+        for (int depth = 1; depth < numSegments && element != null; depth++) {
             String currentSegment = segments[depth]
             log.debug "\t\t$depth) process segment: $currentSegment in element:($element)..."
             Object child = getChildElement(currentSegment, element)

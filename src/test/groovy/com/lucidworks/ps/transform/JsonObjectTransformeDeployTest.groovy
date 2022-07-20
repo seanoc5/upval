@@ -18,7 +18,8 @@ class JsonObjectTransformeDeployTest extends Specification {
         given:
         File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
         Map objectsMap = Application.getObjectsJsonMap(appZip)
-        JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap, objectsMap.clone)
+        def ksFoo = objectsMap.keySet()     // hack to wake up lazy map...?
+        JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap, objectsMap)
         String srcPath = '.*'       // look across all source items
         String srcValPattern = '~DC_Large'      // use tilde '~' to signify "contains" matching (and imply find/replace)
         Map<String, Object> srcFlatPaths = transformer.srcFlatpaths

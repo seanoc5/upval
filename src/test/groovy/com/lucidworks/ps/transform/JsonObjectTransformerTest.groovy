@@ -106,7 +106,7 @@ class JsonObjectTransformerTest extends Specification {
         def rules = [
                 set: [destinationPath: /.*DC_Large/],
         ]
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
         Map destMap = transformer.destinationObject
 
         when:

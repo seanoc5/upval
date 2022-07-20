@@ -15,14 +15,15 @@ class JsonObjectTransformer extends BaseTransformer {
      * @param destination
      * @param pathSeparator
      */
-    JsonObjectTransformer(Object source, Map<String, Object> destination = [:], String pathSeparator = '/') {
+    JsonObjectTransformer(Object source, Map<String, Object> destination, String pathSeparator = '/') {
         if (checkSourceDestinationTypesAreValid(source, destination)) {
             this.sourceObject = source
             if (destination) {
                 destinationObject = destination
             } else {
+                // todo -- refactoring to force destination map, can probably remove this check at some point...?
                 destinationObject = source
-                log.info "No destination/template object given in constructor, using source as destination (i.e. inplace updating)"
+                log.warn "No destination/template object given in constructor, using source as destination (i.e. inplace updating)"
             }
 
             this.separator = separator
@@ -126,13 +127,13 @@ class JsonObjectTransformer extends BaseTransformer {
                 if (destValue == srcValue) {
                     log.info "\t\t$flatPath) destination value and source value are the same: $srcValue"
                 } else {
-                    log.debug "\t\ttransformDestinationValue yielded a destination($destValue) different from source:($srcValue)"
+//                    log.debug "\t\ttransformDestinationValue yielded a destination($destValue) different from source:($srcValue)"
                     log.info "\t\tdo copy source path:($flatPath) with value($srcValue) to destination paths($destPaths) and dest value: $destValue "
                 }
                 destPaths.each { String dpath, Object origValue ->
                     def result = doCopy(destValue, dpath)
                     log.info "\t\tresult:$result  <---- (original value: $origValue)"
-                    results.addAll(result)
+                    results << result
                 }
             }
             log.debug "Dest object after copyrules: $destinationObject"

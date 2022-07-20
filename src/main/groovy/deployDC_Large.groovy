@@ -33,7 +33,7 @@ if(options.config) {
 }
 
 //Map destMap = srcMap.
-JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
 def results = transformer.transform(rules)
 
 if(exportDir){
