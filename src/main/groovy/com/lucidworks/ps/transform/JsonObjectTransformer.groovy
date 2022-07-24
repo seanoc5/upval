@@ -28,10 +28,13 @@ class JsonObjectTransformer extends BaseTransformer {
 
             this.separator = separator
             // get the flattened paths of the source and dest json objects, for the transform to use below
-            srcFlatpaths = JsonObject.flattenWithLeafObject(source)
-            def ksFoo = destination.keySet()
+//            srcFlatpaths = JsonObject.flattenWithLeafObject(source)
+            JsonObject srcJsonObject = new JsonObject(source)
+            srcFlatpaths = srcJsonObject.flattenWithObjects()
+//            def ksFoo = destination.keySet()
             // trouble with lazymaps? inconsistent issues with empty/null, trying this to see about waking up the lazy map...
-            destFlatpaths = JsonObject.flattenWithLeafObject(destination)
+            JsonObject destJsonObject = new JsonObject(destination)
+            destFlatpaths = destJsonObject.flattenWithObjects()
 
         } else {
             String msg = "Source and destination are not both valid, throwing error"
@@ -54,7 +57,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
         def matchingPaths
         if (pathPattern == '.*' || !pathPattern) {
-            log.info "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
+            log.debug "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
             matchingPaths = flatpathItems
         } else {
             matchingPaths = flatpathItems.findAll { String path, Object val ->
@@ -70,7 +73,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
                 log.debug "\t\tdoing String.contains() search (tildeOperator=true)"
             } else {
-                log.info "\t\tdoing pattern search with groovy string regex (should handle regex and groups, likely more extended regex...)"
+                log.debug "\t\tdoing pattern($pathPattern) search with groovy string regex (should handle regex and groups, likely more extended regex...)"
             }
 
             matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String key, def val ->
@@ -86,7 +89,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 }
                 return valMatches
             }
-            log.debug "\t\tFiltered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching..."
+            log.info "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
 
         } else {
             Set matchingPathKeys = matchingPaths.keySet()
@@ -165,7 +168,7 @@ class JsonObjectTransformer extends BaseTransformer {
                     srcPattern = srcPattern[1..-1]
                 }
                 destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
-                if(destValue==srcValue){
+                if (destValue == srcValue) {
                     log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern] -- is this a problem?"
                 } else {
                     log.info "\t\tDest value:[$destValue] is transformed from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern]"
@@ -270,13 +273,21 @@ class JsonObjectTransformer extends BaseTransformer {
             log.info "Remove rule: $rule"
             String pathPattern = rule.pathPattern
             String valuePattern = rule.valuePattern
-            Map<String, Object> matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-            List<String> sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
-            sortedKeys.each { String path ->
-                def rslt = doRemove(path)
-                results << rslt
-            }
+            Map<String, Object> matchingPaths = null
+//            if (pathPattern.endsWith('/')) {
+//                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
+                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+//                JsonObject.removeItem()
+//            } else {
+                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+                // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+                Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+                sortedKeys.each { String path ->
+                    def rslt = doRemove(path)
+                    results << rslt
+                }
+//            }
+
         }
 
         return results
