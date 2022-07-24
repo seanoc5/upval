@@ -37,6 +37,7 @@ class JsonObjectTransformerTest extends Specification {
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
 
         when:
+        def srcMatchesOneAMap = transformer.findAllItemsMatching('/one/aMap', '', transformer.srcFlatpaths)
         def srcMatchesFoo = transformer.findAllItemsMatching('/one/.*', 'foo', transformer.srcFlatpaths)
         def srcMatchesFooBar = transformer.findAllItemsMatching('/one/.*', /(foo|bar)/, transformer.srcFlatpaths)
         def srcMatchesBars = transformer.findAllItemsMatching('.*Map.*', /(b-.*)/, transformer.srcFlatpaths)
@@ -59,7 +60,7 @@ class JsonObjectTransformerTest extends Specification {
 
     }
 
-    def "Basic copy test"() {
+    def "copy-rule basic copy test"() {
         given:
         def rules = [copy: [[sourcePath: '.*', sourceItemPattern: 'LWF.*'],],]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
@@ -77,14 +78,12 @@ class JsonObjectTransformerTest extends Specification {
     }
 
 
-    def "regex replace transform test"() {
+    def "copy-rule replace transform test"() {
         given:
         def rules = [
                 copy: [
                         [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationExpression: 'Acme_'],     // trying `~` syntax to say search/replace with
                 ],
-//                set   : [destinationPath: /.*DC_Large/],
-//                remove: [/.*(created|modified|lastUpdated)/]
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
         Map destMap = transformer.destinationObject
@@ -102,7 +101,7 @@ class JsonObjectTransformerTest extends Specification {
      * todo -- implement set rules, currently just a placeholder...
      * @return
      */
-    def "regex set transform test"() {
+    def "regex set-rule transform test"() {
         given:
         def rules = [
                 set: [destinationPath: /.*DC_Large/],
@@ -118,11 +117,7 @@ class JsonObjectTransformerTest extends Specification {
         destMap.one.id == 'Acme_test'
     }
 
-    /**
-     * todo -- implement remove rules, currently just a placeholder...
-     * @return
-     */
-    def "should remove items based on rules"() {
+    def "remove-rule should remove items based on rules"() {
         given:
         def rules = [
                 remove: [
@@ -138,11 +133,34 @@ class JsonObjectTransformerTest extends Specification {
         def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
 
         then:
-        newFlatties.size() == 5
+        newFlatties.size() == 14
     }
 
 
-    def "should remove items based on rules in larger set"() {
+    /**
+     * todo -- implement remove rules, currently just a placeholder...
+     * @return
+     */
+    def "remove-rule should remove item based on simple rule"() {
+        given:
+        def rules = [
+                remove: [
+                        [pathPattern: "/one/aMap", valuePattern: ''],
+                ],
+        ]
+        Map destMap = srcMap.clone()
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
+
+        when:
+        def results = transformer.transform(rules)
+        def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
+
+        then:
+        newFlatties.size() == 14
+    }
+
+
+    def "remove-rule should remove items based on rules in larger set"() {
         given:
         def rules = [
                 remove: [
@@ -162,7 +180,7 @@ class JsonObjectTransformerTest extends Specification {
         destMap.one.id == 'Acme_test'
     }
 
-    def "should sort flatPaths with collection index items in reverse order"() {
+    def "orderIndexKeysDecreasing should sort flatPaths with collection index items in reverse order"() {
         given:
         Map map = [
                 a: [foo: ['one', 'two'],],
