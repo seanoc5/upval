@@ -1,0 +1,126 @@
+{
+  "id": "testIdxPipeline",
+  "stages": [
+    {
+      "type": "javascript-index",
+      "id": "tip1",
+      "script": "function( doc ) { \n\n \n\n                doc.setField( 'debug2_s', 'test-20210809');\n\n\n                return doc;\n}",
+      "type": "javascript-index",
+      "skip": true,
+      "label": "Test",
+      "secretSourceStageId": "tip1"
+    },
+    {
+      "type": "javascript-index",
+      "id": "tip2",
+      "script": "function( doc ) { \n\n  \nvar inputText = doc.getFirstFieldValue('content_productName');\n   if(inputText){\n                var returnText = \"\" + inputText;\n                returnText=returnText.replace(/<sup>TM<\\/sup>/gi, \"™\");\n                doc.setField( 'content_productName', returnText);\n                }\n   if(inputText){\n                var returnText = \"\" + inputText;\n                returnText=returnText.replace(/XpresspostTM/gi, \"XpressPost™\");\n                doc.setField( 'content_productName', returnText);\n                }  \n\nvar inputText = doc.getFirstFieldValue('content_productFullDescription');\n   if(inputText){\n                var returnText = \"\" + inputText;\n                returnText=returnText.replace(/<sup>TM<\\/sup>/gi, \"™\");\n                doc.setField( 'content_productFullDescription', returnText);\n                }\n\n\n                return doc;\n}",
+      "type": "javascript-index",
+      "skip": false,
+      "label": "Replace Special Chars (JS)",
+      "secretSourceStageId": "tip2"
+    },
+    {
+      "type": "field-mapping",
+      "id": "tip3",
+      "mappings": [
+        {
+          "source": "updateDate",
+          "target": "dateupdated_dt",
+          "operation": "move"
+        },
+        {
+          "source": "modifiedTimestamp",
+          "target": "datesync_dt",
+          "operation": "move"
+        },
+        {
+          "source": "createDate",
+          "target": "datecreated_dt",
+          "operation": "move"
+        }
+      ],
+      "reservedFieldsMappingAllowed": false,
+      "type": "field-mapping",
+      "skip": false,
+      "secretSourceStageId": "tip3"
+    },
+    {
+      "type": "solr-dynamic-field-name-mapping",
+      "id": "tip4",
+      "duplicateSingleValuedFields": false,
+      "fieldsToExclude": [],
+      "advancedTextFieldsIndexing": true,
+      "maxTextLengthForAdvancedIndexing": 100,
+      "type": "solr-dynamic-field-name-mapping",
+      "skip": false,
+      "secretSourceStageId": "tip4"
+    },
+    {
+      "type": "regex-extractor",
+      "id": "tip5",
+      "rules": [
+        {
+          "source": [
+            "collection_ss"
+          ],
+          "target": "collection_ss",
+          "writeMode": "overwrite",
+          "pattern": "[^,\\\\s][^\\\\,]*[^,\\\\s]*",
+          "returnIfNoMatch": "input_string",
+          "group": 0
+        },
+        {
+          "source": [
+            "serviceRegion_ss"
+          ],
+          "target": "serviceRegion_ss",
+          "writeMode": "overwrite",
+          "pattern": "[^,\\\\s][^\\\\,]*[^,\\\\s]*",
+          "returnIfNoMatch": "input_string",
+          "group": 0
+        },
+        {
+          "source": [
+            "artist_ss"
+          ],
+          "target": "artist_ss",
+          "writeMode": "overwrite",
+          "pattern": "[^,\\\\s][^\\\\,]*[^,\\\\s]*",
+          "returnIfNoMatch": "input_string",
+          "group": 0
+        }
+      ],
+      "type": "regex-extractor",
+      "skip": false,
+      "secretSourceStageId": "tip5"
+    },
+    {
+      "type": "solr-index",
+      "id": "tip6",
+      "enforceSchema": true,
+      "dateFormats": [],
+      "params": [],
+      "bufferDocsForSolr": false,
+      "type": "solr-index",
+      "skip": false,
+      "secretSourceStageId": "tip6"
+    }
+  ],
+  "properties": {
+    "secretSourcePipelineId": "testIdxPipeline"
+  },
+  "updates": [
+    {
+      "userId": "admin",
+      "timestamp": "2021-04-14T06:28:02.447Z"
+    },
+    {
+      "userId": "ashumway",
+      "timestamp": "2021-12-16T19:22:31.713Z"
+    },
+    {
+      "userId": "ashumway",
+      "timestamp": "2022-03-17T18:45:56.613Z"
+    }
+  ]
+}
