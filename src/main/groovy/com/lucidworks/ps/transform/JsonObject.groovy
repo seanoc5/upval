@@ -1,9 +1,8 @@
 package com.lucidworks.ps.transform
 
+import groovy.json.JsonSlurper
 import org.apache.commons.text.StringEscapeUtils
-
 import org.apache.log4j.Logger
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -20,34 +19,148 @@ import org.apache.log4j.Logger
 class JsonObject {
     static Logger log = Logger.getLogger(this.class.name);
     static final String DEFAULT_SEPARATOR = '/'
+    String separator = DEFAULT_SEPARATOR
+    Object slurpedItems            //   items from JsonSlurper
+    Map<String, Object> flatPathMap
 
-    /**
-     * new approach to setting values, building missing nodes as needed
-     * @param objectToUpdate JsonSlurped object to update at the leaf of flatpath param
-     * @param flatPath flattened path of leafnode in objectToUpdate (will create as needed)
-     * @param value (assuming primative, but possible sub-Map/List?
-     * return result...?
-     */
-    def setPathValue(def objectToUpdate, String flatPath, def value, String separator = '/') {
-        List<String> parts = flatPath.split(separator)
-        parts.each {
-            def item = 1
-
+    JsonObject(String source, String separator = DEFAULT_SEPARATOR) {
+        JsonSlurper slurper = new JsonSlurper()
+        int srcSize = source.size()
+        if (srcSize > 500 || source.contains('{')) {
+            log.info "We seem to have json text, so use slurper.parseText()... "
+            slurpedItems = slurper.parseText(source)
+        } else {
+            log.info "We seem to have constructor with source arg (string) pointing to source ($source), so use slurper.parse()... "
+            slurpedItems = slurper.parse(source)
         }
+        this.separator = separator
+        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
     }
 
-    def getChild(def current, String childPath) {
-        def child
-        if (current instanceof Map) {
-            if (childPath.isInteger()) {
-                log.warn "Current Item($current) is a map, but child path($childPath) is an integer, treating this as a map key, but is this valid??"
+    JsonObject(Map sourceMap, String separator = DEFAULT_SEPARATOR) {
+//            log.info "We seem to have constructor with source arg (${source.getClass().simpleName}) pointing to source ($source), so use slurper.parse()... "
+        slurpedItems = sourceMap
+        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
+    }
+
+    JsonObject(Object source, String separator = DEFAULT_SEPARATOR) {
+//            log.info "We seem to have constructor with source arg (${source.getClass().simpleName}) pointing to source ($source), so use slurper.parse()... "
+        JsonSlurper slurper = new JsonSlurper()
+        log.info "We seem to have constructor with source arg (${source.getClass().simpleName}) pointing to source ($source), so use slurper.parse()... "
+        slurpedItems = slurper.parse(source)
+        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
+    }
+
+    /**
+     * Find all the parsed/slurped items in this object matching path and value filters. If an arg is a pattern, then this will match via standard regex,
+     * @param pathPattern string or pattern to match path
+     * @param valuePattern string or pattern to match path, if valuePattern starts with equals '=' then it is an exact match, otherwise a string arg is value.contains(valuePattern) (case sensitive)
+     * @return Map of items that match, same format as flatPathMap
+     */
+    Map<String, Object> findItems(def pathPattern, def valuePattern) {
+        Map<String, Object> matchingPaths = findItemsByPath(pathPattern, flatPathMap)
+        Map<String, Object> matchingItems = null
+        if(matchingPaths) {
+            matchingItems = findItemsByValue(valuePattern, matchingPaths)
+        } else {
+            log.info "\t\tNo matching paths returned from findItemsByPath, so we are skipping the findItemsByValue() call"
+        }
+
+        return matchingItems
+    }
+
+
+    /**
+     * get all JsonSlurped items by path
+     * @param pathPattern if string object, do a basic string comparison, if Pattern then do regex compare
+     * @param flatMapToSearch
+     * @return
+     */
+    Map<String, Object> findItemsByPath(def pathPattern, Map<String, Object> flatMapToSearch) {
+        Map<String, Object> matchingPaths = null
+        if (!pathPattern || pathPattern == '.*') {
+            log.info "\t\tpathPattern:($pathPattern) indicates using 'all' provided flatmap items in arg (${flatMapToSearch.keySet().size()})"
+            matchingPaths = flatMapToSearch
+        } else {
+            String argType = pathPattern.getClass().simpleName
+            log.info "${argType}:($pathPattern) used for regex matching against flatmap items in arg (${flatMapToSearch.keySet().size()})"
+            matchingPaths = flatMapToSearch.findAll { String path, Object val ->
+                boolean match = false
+                if (pathPattern instanceof String) {
+                    match = pathPattern == path
+                    if(match) {
+                        log.info "\t\t String path compare: $path == $pathPattern ?? ${match}"
+                    } else {
+                        log.debug "\t\t String path compare: $path == $pathPattern ?? ${match}"
+                    }
+                } else {
+                    match = (path ==~ pathPattern)
+                    if(match) {
+                        log.info "\t\t Regex path compare: $path ==~ $pathPattern ?? ${match}"
+                    } else {
+                        log.debug "\t\t Regex pathcompare: $path ==~ $pathPattern ?? ${match}"
+                    }
+                }
+                return match
             }
-
-            child = current[childPath]
-            if (!child) {
-
+            if(!matchingPaths){
+                def foo = getObjectNodeValue(pathPattern)
+                matchingPaths = ["$pathPattern":foo]
+                log.info "Tried getting matchingPaths via getObjectNodeValue($pathPattern): $matchingPaths"
+            }
+            if(matchingPaths) {
+                log.info "\t\tfound (${matchingPaths.size()}) paths matching pathpattern: $pathPattern"
+            } else {
+                log.info "\t\tNo paths found matching path pattern: $pathPattern"
             }
         }
+        return matchingPaths
+    }
+
+    Map<String, Object> findItemsByValue(def valuePattern, Map<String, Object> flatMapToSearch) {
+        Map<String, Object> matchingItems = null
+        if (!valuePattern || valuePattern == '.*') {
+            log.info "\t\tvaluePattern:($valuePattern) indicates using 'all' provided flatmap items in arg (${flatMapToSearch.keySet().size()})"
+            matchingItems = flatMapToSearch
+        } else {
+            log.debug "\t\tvaluePattern:($valuePattern) used for matching against flatmap items in arg (${flatMapToSearch.keySet().size()})"
+            matchingItems = flatMapToSearch.findAll { def path, Object val ->
+                boolean match = false
+                if (valuePattern instanceof String) {
+                    String v = val.toString()
+                    if(valuePattern.startsWith('=')){
+                        String vp=valuePattern[1..-1]
+                        match = (vp==v)
+                        if(match) {
+                            log.info "\t\tvaluePattern ($valuePattern) started with an equals, so we removed that, and doing an exact match against value(${v}): $match"
+                        } else {
+                            log.debug "\t\tvaluePattern ($valuePattern) started with an equals, so we removed that, and doing an exact match against value(${v}): $match"
+                        }
+                    } else {
+                        match = (v.contains(valuePattern))
+                        if(match) {
+                            log.info "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                        } else {
+                            log.debug "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                        }
+                    }
+
+                } else {
+                    match = (val ==~ valuePattern)
+                    if(match) {
+                        log.info "\t\t Regex value compare: $val ==~ $valuePattern ?? ${match}"
+                    } else {
+                        log.debug "\t\t Regex value compare: $val ==~ $valuePattern ?? ${match}"
+                    }
+                }
+                return match
+            }
+        }
+        return matchingItems
+    }
+
+    Object getObjectNodeValue(String path) {
+        getObjectNodeValue(slurpedItems, path, separator)
     }
 
 
@@ -59,8 +172,8 @@ class JsonObject {
      * @param separator
      * @return
      */
-    static def getObjectNodeValue(Map srcMap, String path, String separator = DEFAULT_SEPARATOR) {
-        log.debug "Process path: [$path] in src:$srcMap "
+    static Object getObjectNodeValue(Map srcMap, String path, String separator = DEFAULT_SEPARATOR) {
+        log.debug "Get Node -- Process path: [$path] in src:$srcMap "
         List<String> segments = path.split(separator)
         if (!segments[0]) {
             segments.remove(0)
@@ -75,12 +188,12 @@ class JsonObject {
             if (!child) {
                 log.info "\t\t${depth}) encountered MISSING segment: $seg -> return null, exit for loop..."
             } else {
-                log.debug "\t\t$depth) Found segment ($seg) -> $element"
+                log.debug "\t\t$depth) Found segment:($seg) -> Child:$child   from parent element:($element)"
             }
             element = child
 
         }
-        log.debug "return Path ($path) element (value): $element "
+        log.debug "\t\treturn Path ($path) element (value): $element "
         return element
     }
 
@@ -152,7 +265,7 @@ class JsonObject {
             }
         }
 
-        log.debug "return Path ( $path ) with updated element ($element) set to new value ($valToSet) -- result: $result"
+        log.debug "\t\treturn Path ( $path ) with updated element ($element) set to new value ($valToSet) -- result: $result"
         return result
     }
 
@@ -377,6 +490,68 @@ class JsonObject {
     }
 
 
+     Map<String, Object> flattenWithObjects(def object=slurpedItems, int level = 0) {
+        Map<String, Object> entries = [:]
+        log.info "\t" * level + "$level) flattenWithObjects: $object..."
+        if (object instanceof Map) {
+//            def keyset = object.keySet()
+            Map currentDepthMap = (Map) object
+            currentDepthMap.each { String key, Object value ->
+                log.info "\t" * level + "$level)Key: $key"
+                if (value instanceof Map || value instanceof List) {
+                    level++
+                    entries[separator + key] = value
+                    Map<String, Object> children = flattenWithObjects(value, level)
+                    children.each { String child, Object childObject ->
+                        String path = separator + key + child
+                        if (childObject instanceof Map || childObject instanceof List) {
+                            log.info "\t" * level + "non-leaf entry:(${childObject.getClass().simpleName}: $childObject"
+                            entries[path] = childObject
+                        } else {
+                            log.info "\t" * level+ "leaf entry:(${childObject.getClass().simpleName}: $childObject"
+                            entries[path] = childObject
+                        }
+                    }
+                    log.info "\t" * level + "submap keys: ${children}"
+                } else {
+                    entries[separator + key] = value
+                    log.info "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
+                }
+            }
+            log.info "$level) after collect entries: $entries"
+
+        } else if (object instanceof List) {
+            log.info "\t" * level + "$level) List! $object"
+            List currentDepthList = (List) object
+            currentDepthList.eachWithIndex { def val, int counter ->
+                if (val instanceof Map) {
+                    level++
+                    def children = flattenWithObjects(val, level)
+                    children.each { String childName, Object childVal ->
+                        String path = "${separator}${counter}${childName}"
+                        log.debug "\t\tprocess child Path:($path) -- ChildVal:[$childVal] -- Skip??"
+                        entries[path] = childVal
+                    }
+                    log.debug "\t" * level + "submap keys: ${children}"
+                } else if (val instanceof List) {
+                    String path = "${counter}${separator}${childName}"
+                    log.warn "What do we do here? $path [$childVal] -- Skip??"
+                    entries[path] = childVal
+
+                } else {
+                    log.debug "\t" * level + "$level:$counter) LIST value not a collection, leafNode? $val"
+                    String path = "/${counter}"
+                    entries[path] = val
+                }
+            }
+            log.info "done with list"
+        } else {
+            log.warn "$level) other?? $object"
+        }
+        return entries
+    }
+
+
     /**
      * simple method to 'walk' Json Slurped object, and get element paths
      * @param object Json Slurped object (maps/lists)
@@ -450,13 +625,14 @@ class JsonObject {
             if (lastSeg.isInteger()) {
                 List list = (List) parentObject
                 Integer idx = Integer.parseInt(lastSeg)
-                int size = list.size()
-                if (idx < size) {
-                    log.warn "\tBe careful removing list items by index ($lastSeg)... doing so likely to change the list, and bork any other removals based on index (i.e. no promise we process in descending order)"
+                int origSize = list.size()
+                if (idx < origSize) {
+                    // todo -- revisit index removal...?
+                    log.debug "\tBe careful removing list items by index ($lastSeg)... doing so likely to change the list, and bork any other removals based on index (i.e. no promise we process in descending order)"
                     itemToRemove = list.get(idx)
-                    list.remove(idx)
+                    def foo = list.remove(idx)
                     int newSize = list.size()
-                    log.info "List had ($size) items, removed item with index($idx): $itemToRemove -- new size: $newSize"
+                    log.info "List originally had ($origSize) items, removed item with index($idx): $itemToRemove -- new size: $newSize"
                 } else {
                     log.warn "Last segment seems to be an array index, and it is not < array size (array out of bounds situation), this may be from a previous remoteItem in the same list which borked the index of the Collection "
                 }
@@ -476,7 +652,9 @@ class JsonObject {
         } else {
             log.warn "Unknown parent ($parentObject) -- not collection nor map...? Cannot remove path: $path"
         }
-        return ["$path":itemToRemove]
+        Map result = [:]
+        result.put(path, itemToRemove)      // GString hassles building result map properly... trying this approach...
+        return result
     }
 
     static String getParentPath(String path, String separator = DEFAULT_SEPARATOR) {
@@ -507,10 +685,10 @@ class JsonObject {
             String lastItem = parts[-1]
             if (lastItem.isInteger()) {
                 Integer idx = Integer.parseInt(lastItem)
-                log.debug "\t\tIndex: $idx"
+                log.debug "\t\torderIndexKeysDecreasing Index: $idx"
                 arrayLeafsGrouped[idx] << k
             } else {
-                log.info "\t\tMap key (no sorting/grouping needed): $k"
+                log.debug "\t\torderIndexKeysDecreasing Map key (no sorting/grouping needed): $k"
                 mapLeafList << k
             }
         }
@@ -519,9 +697,9 @@ class JsonObject {
         List orderedList = arrayLeafsGrouped.keySet().toList().reverse()
         orderedList.each { Integer i ->
             List groupedItems = arrayLeafsGrouped[i]
-            log.info "$i) -> $groupedItems"
+            log.debug "orderIndexKeysDecreasing $i) -> $groupedItems"
             groupedItems.each {
-                log.info "\t\t$i) Add key: $it"
+                log.debug "orderIndexKeysDecreasing $i) Add key: $it"
                 myOrderSet << it
             }
         }
@@ -531,6 +709,65 @@ class JsonObject {
 
         return myOrderSet
     }
+
+
+    /**
+     * walk through all flattened entries, and look at the
+     * @param pattern
+     * @param flatpathItems
+     * @return submap of matching flatpath entries
+     *
+     * todo -- consider returning match object??? premature optimization? just match regexes here, and potential subsequent transform action. (the latter is the current approach)
+     */
+/*    Map<String, Object> findAllItemsMatching(String pathPattern, def valuePattern, Map<String, Object> flatpathItems) {
+        Map<String, Object> matchingFlatPaths = null
+        def keys = flatpathItems.keySet()
+
+        def matchingPaths
+        if (pathPattern == '.*' || !pathPattern) {
+            log.debug "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
+            matchingPaths = flatpathItems
+        } else {
+            matchingPaths = flatpathItems.findAll { String path, Object val ->
+                path ==~ pathPattern
+            }
+            log.info "\t\tpathPattern($pathPattern) matched: $matchingPaths"
+        }
+
+        if (valuePattern) {
+            log.debug "We have a valuePattern to further file"
+            boolean tildeOperator = valuePattern.startsWith('~')
+            if (tildeOperator) {
+                valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
+                log.debug "\t\tdoing String.contains() search (tildeOperator=true)"
+            } else {
+                log.debug "\t\tdoing pattern($pathPattern) search with groovy string regex (should handle regex and groups, likely more extended regex...)"
+            }
+
+            matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String key, def val ->
+                boolean valMatches = false
+                if (tildeOperator) {
+                    valMatches = ((String) val).contains(valuePattern)
+                } else {
+                    def valMatch = (val =~ valuePattern)
+                    if (valMatch.matches()) {
+                        log.debug "Add matcher to return thingie here? not unless things are slow with re-matching in doing the actual rule..."
+                        valMatches = true
+                    }
+                }
+                return valMatches
+            }
+            log.info "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
+
+        } else {
+            Set matchingPathKeys = matchingPaths.keySet()
+            matchingFlatPaths = flatpathItems.subMap(matchingPathKeys)
+            assert matchingFlatPaths.size() == matchingPaths.size()
+            log.debug "\t\tNo valuePattern given, we will return just the path matches..."
+        }
+
+        return matchingFlatPaths
+    }*/
 
 }
 
