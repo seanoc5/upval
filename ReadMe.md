@@ -239,6 +239,11 @@ archive: conditions
 ### Proxy settings
 ` export JAVA_OPTS='-Dhttp.proxyHost=my-proxy.mydomain.com -Dhttp.proxyPort=912 -Dhttp.nonProxyHosts="donotproxyme.mydomain.com" -Dhttps.proxyHost=my-proxy.mydomain.com -Dhttps.proxyPort=912 -Dhttps.nonProxyHosts="donotproxyme.mydomain.com"`
 
+### Testing notes
+- Spock framework
+- unrolling: https://spockframework.org/spock/docs/1.3/all_in_one.html#_method_unrolling
+- data tables: https://spockframework.org/spock/docs/2.0/data_driven_testing.html#data-tables
+
 ## TODO -- next steps
 - separate parsing from persisting
 - look at options (extendings) for outputting to filesystem, solr, fusion/solr, source repo

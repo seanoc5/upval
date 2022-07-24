@@ -5,7 +5,7 @@ Notes from Andrew Shumway:
 https://lucidworks.atlassian.net/wiki/spaces/~621306800/pages/1947369512/Using+the+standard+DC+Large+APP+to+kickstart+a+project
 
 
-## Objects.json transformation specific to dployeing DC_Large as Acme_DigiCommerce app
+## Objects.json transformation specific to deploying DC_Large as Acme_DigiCommerce app
 
 Replace all occurances of a string with another string.
 e.g. replace "DC_Large" with a client-specific phrase like "Acme_DigiCommerce"
