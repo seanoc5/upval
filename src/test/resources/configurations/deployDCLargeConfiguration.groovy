@@ -2,9 +2,8 @@ package configurations
 
 rules.copy = [
             [sourcePath           : '.*',
-             sourceItemPattern    : '~DC_Large',
+             sourceItemPattern    : '~DC.Large',
              destinationExpression: 'Acme_DigiCommerce'
             ]
     ]
-
 

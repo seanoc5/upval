@@ -276,7 +276,7 @@ class JsonObjectTransformer extends BaseTransformer {
             Map<String, Object> matchingPaths = null
 //            if (pathPattern.endsWith('/')) {
 //                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
-                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
 //                JsonObject.removeItem()
 //            } else {
                 matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)

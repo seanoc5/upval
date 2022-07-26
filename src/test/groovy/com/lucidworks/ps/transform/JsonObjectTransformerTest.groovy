@@ -156,7 +156,11 @@ class JsonObjectTransformerTest extends Specification {
         def newFlatties = JsonObject.flattenWithLeafObject(transformer.destinationObject)
 
         then:
-        newFlatties.size() == 14
+        // dest map is shallow clone, so in these tests source is also modified (consider doing deep copy to leave source map untouched)
+        transformer.srcFlatpaths.size() == 28
+        newFlatties.size() == 17
+        destMap.one.aMap == null
+        destMap.one.bSubMap.keySet().toList() == [ 'b1', 'b2', 'b3list']
     }
 
 
@@ -166,7 +170,7 @@ class JsonObjectTransformerTest extends Specification {
                 remove: [
                         [pathPattern: /.*(\/updates\/).*/, valuePattern: '.*'],
                         [pathPattern: /.*(\/createdAt\/).*/, valuePattern: '.*'],
-                        [pathPattern: /.*/, valuePattern: '~10000'],
+                        [pathPattern: /.*/, valuePattern: '10000'],
                 ],
         ]
         Map destMap = srcMap.clone()
