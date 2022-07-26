@@ -21,6 +21,8 @@ if(options.exportDir){
 } else {
     log.info "No export dir given, not saving assessment..."
 }
+
+Application app = new Application(appZip)
 Map srcMap =  Application.getObjectsJsonMap(appZip)
 
 def rules = null
