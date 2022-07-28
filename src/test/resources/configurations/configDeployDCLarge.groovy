@@ -7,6 +7,7 @@ rules.copy = [
         ]
 ]
 
+// potentially keep blob and filesystem renames separate, but that may not be necessary. consider merging the rules below into the rules above.
 rules.rename = [
         [namePattern: 'DC_Large', replacement: 'AcmeDigicommerce'],
         [namePattern: ~/TYPEAHEAD/, replacement: 'acme_ta'],
@@ -14,6 +15,7 @@ rules.rename = [
         [namePattern: 'CAT_ID_MAPPING', replacement: 'category_mapping'],
 ]
 
-rules.skip = ['_lw_tmp',
-              'blobs/prefs'
+rules.remove = [
+        [pathPattern: '_lw_tmp', valuePattern: ''],
+        [pathPattern: 'blobs/prefs', valuePattern: ''],
 ]
