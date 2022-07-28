@@ -48,7 +48,7 @@ def getProtocol(){
 
     def "should load rules from config file with configslurper"() {
         given:
-        URL configUrl = getClass().getResource('/configurations/deployDCLargeConfiguration.groovy')
+        URL configUrl = getClass().getResource('/configurations/configDeployDCLarge.groovy')
         File config = new File(configUrl.toURI())
         ConfigSlurper configSlurper = new ConfigSlurper()
 
