@@ -1,5 +1,7 @@
 package com.lucidworks.ps.transform
 
+import java.util.regex.Pattern
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -28,13 +30,15 @@ class JsonObjectTransformer extends BaseTransformer {
 
             this.separator = separator
             // get the flattened paths of the source and dest json objects, for the transform to use below
-//            srcFlatpaths = JsonObject.flattenWithLeafObject(source)
+            srcFlatpaths = JsonObject.flattenWithLeafObject(source)
             JsonObject srcJsonObject = new JsonObject(source)
-            srcFlatpaths = srcJsonObject.flattenWithObjects()
+//            srcFlatpaths = srcJsonObject.flattenWithObjects()
+
 //            def ksFoo = destination.keySet()
             // trouble with lazymaps? inconsistent issues with empty/null, trying this to see about waking up the lazy map...
-            JsonObject destJsonObject = new JsonObject(destination)
-            destFlatpaths = destJsonObject.flattenWithObjects()
+//            JsonObject destJsonObject = new JsonObject(destination)
+//            destFlatpaths = destJsonObject.flattenWithObjects()
+            destFlatpaths = JsonObject.flattenWithLeafObject(destinationObject)
 
         } else {
             String msg = "Source and destination are not both valid, throwing error"
@@ -154,19 +158,14 @@ class JsonObjectTransformer extends BaseTransformer {
         String destValue = null
         String transformType = getTransformType(srcValue, srcPattern, destPath, destPattern)
         switch (transformType) {
-            case '':
-            case TX_STRAIGHT:
+//            case '':
+            case TX_STRAIGHT_COPY:
                 destValue = srcValue
                 log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) "
                 break
 
-            case '~':
             case TX_REGEX_REPLACE:
                 log.debug "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destPattern]"
-                if (srcPattern.startsWith('~')) {
-                    log.debug "removing leading tilde (indicated regex replace transformation, not part of replace str)"
-                    srcPattern = srcPattern[1..-1]
-                }
                 destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
                 if (destValue == srcValue) {
                     log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern] -- is this a problem?"
@@ -176,8 +175,17 @@ class JsonObjectTransformer extends BaseTransformer {
                 break
 
             case TX_TEMPLATE:
-            default:
-                destValue = transformWithStringTemplate(srcValue, srcPattern, destPath, destPattern)
+                throw new IllegalArgumentException("Incomplete code, we have not implemented Template replace yet...")
+                break
+
+            case TX_STRING_REPLACE:
+                // todo -- should this be different functionality from regex replace??
+                destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
+                log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) "
+                break
+
+//            default:
+//                destValue = transformWithStringTemplate(srcValue, srcPattern, destPath, destPattern)
         }
 
         return destValue
@@ -218,30 +226,35 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
 
-    public static final String TX_STRAIGHT = 'straight'
+    public static final String TX_STRAIGHT_COPY = 'straightCopy'
+    public static final String TX_STRING_REPLACE = 'stringReplace'
     public static final String TX_REGEX_REPLACE = 'regexReplace'
     public static final String TX_TEMPLATE = 'template'
 
     String getTransformType(def srcValue, def srcPattern, def destPath, def destPattern) {
         String txType = null
         if (srcPattern) {
-            if (((String) srcPattern).startsWith('~')) {
-                txType = TX_REGEX_REPLACE
-            } else if (destPattern) {
-                if (srcPattern.contains('(') && destPattern.contains('$')) {
-                    txType = TX_TEMPLATE
+            if (destPattern) {
+                if (srcPattern instanceof Pattern) {
+                    log.debug "\t\tsrcPattern($srcPattern) is a Pattern, so do TX_REGEX_REPLACE"
+                    txType = TX_REGEX_REPLACE
+                } else if (destPattern instanceof Pattern) {
+                    log.debug "\t\tdestPattern($destPattern) is a Pattern, so do TX_REGEX_REPLACE"
+                    txType = TX_REGEX_REPLACE           // String Template here??
                 } else {
-                    txType = TX_STRAIGHT
-                    log.warn "Unknown Transaction type, defaulting to ($txType) but we have both source and destination patterns, so this is probably incorrect!! "
+                    txType = TX_STRING_REPLACE
+                    log.debug "both source($srcPattern) and dest($destPattern) are strings, so this will be a simple string replace"
+//                    log.warn "Unknown Transaction type, defaulting to ($txType) but we have both source and destination patterns, so this is probably incorrect!! "
                 }
 
             } else {
                 log.info "\t\tSource pattern but no dest pattern, assuming straight copy (with source pattern filtering)"
-                txType = TX_STRAIGHT
+                txType = TX_STRAIGHT_COPY
             }
 
         } else {
-            txType = TX_STRAIGHT
+            log.info "No source or dest pattern, just perform a simple value copy"
+            txType = TX_STRAIGHT_COPY
         }
         log.info "\t\tTX type ($txType) from SourcePattern:(${srcPattern}) DestPattern: ${destPattern}..."
         return txType
@@ -269,24 +282,25 @@ class JsonObjectTransformer extends BaseTransformer {
     @Override
     List<Map<String, Object>> performRemoveRules(def removeRules) {
         List results = []
+        def destObject = new JsonObject(this.destinationObject)
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
             String pathPattern = rule.pathPattern
             String valuePattern = rule.valuePattern
             Map<String, Object> matchingPaths = null
-//            if (pathPattern.endsWith('/')) {
-//                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
-//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-//                JsonObject.removeItem()
-//            } else {
-                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-                // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-                Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
-                sortedKeys.each { String path ->
-                    def rslt = doRemove(path)
-                    results << rslt
-                }
-//            }
+            if (pathPattern.endsWith('/')) {
+                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
+                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, destObject.flatPathMap)
+                JsonObject.removeItem()
+            } else {
+            matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+            Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+            sortedKeys.each { String path ->
+                def rslt = doRemove(path)
+                results << rslt
+            }
+            }
 
         }
 
