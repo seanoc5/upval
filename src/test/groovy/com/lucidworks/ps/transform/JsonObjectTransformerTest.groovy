@@ -145,7 +145,7 @@ class JsonObjectTransformerTest extends Specification {
         given:
         def rules = [
                 remove: [
-                        [pathPattern: "/one/aMap", valuePattern: ''],
+                        [pathPattern: "/one/aMap.*", valuePattern: ''],
                 ],
         ]
         Map destMap = srcMap.clone()
@@ -157,7 +157,7 @@ class JsonObjectTransformerTest extends Specification {
 
         then:
         // dest map is shallow clone, so in these tests source is also modified (consider doing deep copy to leave source map untouched)
-        transformer.srcFlatpaths.size() == 28
+        transformer.srcFlatpaths.size() == 20
         newFlatties.size() == 17
         destMap.one.aMap == null
         destMap.one.bSubMap.keySet().toList() == [ 'b1', 'b2', 'b3list']
