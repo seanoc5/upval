@@ -60,7 +60,7 @@ class JsonObjectTransformer extends BaseTransformer {
         def keys = flatpathItems.keySet()
 
         def matchingPaths
-        if (pathPattern == '.*' || !pathPattern) {
+        if (pathPattern == '.*' || !pathPattern || pathPattern == '*') {
             log.debug "\t\tShortcut: setting matching paths to all flat paths based on source pathPattern:$pathPattern (?'.*' or empty??)"
             matchingPaths = flatpathItems
         } else {
@@ -71,25 +71,18 @@ class JsonObjectTransformer extends BaseTransformer {
         }
 
         if (valuePattern) {
-            log.debug "We have a valuePattern to further file"
-            boolean tildeOperator = valuePattern.startsWith('~')
-            if (tildeOperator) {
-                valuePattern = valuePattern[1..-1]          //strip tilde and do a string contains search below
-                log.debug "\t\tdoing String.contains() search (tildeOperator=true)"
-            } else {
-                log.debug "\t\tdoing pattern($pathPattern) search with groovy string regex (should handle regex and groups, likely more extended regex...)"
-            }
+            log.info "\t\tWe have a valuePattern to further filter: $valuePattern"
 
-            matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String key, def val ->
+            matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String itemPath, def itemValue ->
                 boolean valMatches = false
-                if (tildeOperator) {
-                    valMatches = ((String) val).contains(valuePattern)
-                } else {
-                    def valMatch = (val =~ valuePattern)
+                if (valuePattern instanceof Pattern) {
+                    def valMatch = (itemValue =~ valuePattern)
                     if (valMatch.matches()) {
                         log.debug "Add matcher to return thingie here? not unless things are slow with re-matching in doing the actual rule..."
                         valMatches = true
                     }
+                } else {
+                    valMatches = ((String) itemValue).contains(valuePattern)
                 }
                 return valMatches
             }
@@ -130,7 +123,12 @@ class JsonObjectTransformer extends BaseTransformer {
             log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern"
 
             srcPaths.each { String flatPath, def srcValue ->
-                def destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
+                Map<String, Object> destPaths = null
+                if (destPath) {
+                    destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
+                } else {
+                    destPaths = ((Map) destFlatpaths).subMap(flatPath)
+                }
                 def destValue = transformDestinationValue(srcValue, srcValPattern, destPath, destValuePattern)
                 if (destValue == srcValue) {
                     log.info "\t\t$flatPath) destination value and source value are the same: $srcValue"
@@ -154,9 +152,9 @@ class JsonObjectTransformer extends BaseTransformer {
      * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
      * @param srcValue
      */
-    def transformDestinationValue(def srcValue, def srcPattern, def destPath, def destPattern) {
+    def transformDestinationValue(def srcValue, def srcPattern, def destPath, def destValuePattern) {
         String destValue = null
-        String transformType = getTransformType(srcValue, srcPattern, destPath, destPattern)
+        String transformType = getTransformType(srcValue, srcPattern, destPath, destValuePattern)
         switch (transformType) {
 //            case '':
             case TX_STRAIGHT_COPY:
@@ -165,12 +163,12 @@ class JsonObjectTransformer extends BaseTransformer {
                 break
 
             case TX_REGEX_REPLACE:
-                log.debug "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destPattern]"
-                destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
+                log.debug "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destValuePattern]"
+                destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
                 if (destValue == srcValue) {
-                    log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern] -- is this a problem?"
+                    log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destValuePattern] -- is this a problem?"
                 } else {
-                    log.info "\t\tDest value:[$destValue] is transformed from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destPattern]"
+                    log.info "\t\tDest value:[$destValue] is transformed from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destValuePattern]"
                 }
                 break
 
@@ -180,7 +178,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
             case TX_STRING_REPLACE:
                 // todo -- should this be different functionality from regex replace??
-                destValue = ((String) srcValue).replaceAll(srcPattern, destPattern)
+                destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
                 log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) "
                 break
 
@@ -283,23 +281,25 @@ class JsonObjectTransformer extends BaseTransformer {
     List<Map<String, Object>> performRemoveRules(def removeRules) {
         List results = []
         def destObject = new JsonObject(this.destinationObject)
+        // todo -- revisit/refactor, this is a quick hack to get 'full' map, including non-leaf nodes....
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
             String pathPattern = rule.pathPattern
             String valuePattern = rule.valuePattern
             Map<String, Object> matchingPaths = null
-            if (pathPattern.endsWith('/')) {
-                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
-                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, destObject.flatPathMap)
-                JsonObject.removeItem()
-            } else {
-            matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-            Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
-            sortedKeys.each { String path ->
-                def rslt = doRemove(path)
-                results << rslt
-            }
+//            if (pathPattern.endsWith('/')) {
+//                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
+//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, destObject.flatPathMap)
+//                JsonObject.removeItem()
+//            } else {
+                matchingPaths = destObject.findItems(pathPattern, valuePattern)
+//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+                // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+                Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+                sortedKeys.each { String path ->
+                    def rslt = doRemove(path)
+                    results << rslt
+//                }
             }
 
         }
@@ -401,7 +401,7 @@ class JsonObjectTransformer extends BaseTransformer {
             destPaths = findAllItemsMatching(destPath, '.*', destFlatpaths)
             log.info "\t\tDestPath ($destPath) -> Destination path(s): $destPaths "
         } else {
-            destPaths = findAllItemsMatching(srcPath, '.*', destFlatpaths)
+            destPaths = findAllItemsMatching(srcPath, '', destFlatpaths)
             log.info "\t\tNo destination path(s), so we will mirror source path ($srcPath) for destination path list: ($destPaths) -- Does this work correctly???"
         }
         return destPaths

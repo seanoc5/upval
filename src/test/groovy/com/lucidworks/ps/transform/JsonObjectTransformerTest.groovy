@@ -48,7 +48,7 @@ class JsonObjectTransformerTest extends Specification {
         srcMatchesFoo.keySet()[0] == '/one/aMap/0'
         srcMatchesFoo['/one/aMap/0'] == 'foo'
 
-        srcMatchesFooBar.size() == 2
+        srcMatchesFooBar.size() == 2        // problem with matching non-leaf objects, this is failing and shows future work...
         srcMatchesFooBar.keySet()[1] == '/one/aMap/1'
         srcMatchesFooBar['/one/aMap/1'] == 'bar'
 
@@ -78,11 +78,14 @@ class JsonObjectTransformerTest extends Specification {
     }
 
 
-    def "copy-rule replace transform test"() {
+    def "copy-rule string replace transform test"() {
         given:
         def rules = [
                 copy: [
-                        [sourcePath: '.*', sourceItemPattern: '~LWF_', destinationPath: '', destinationExpression: 'Acme_'],     // trying `~` syntax to say search/replace with
+                        [sourcePath: '.*',
+                         sourceItemPattern: 'LWF_',
+                         destinationPath: '',
+                         destinationExpression: 'Acme_'],
                 ],
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
@@ -145,7 +148,7 @@ class JsonObjectTransformerTest extends Specification {
         given:
         def rules = [
                 remove: [
-                        [pathPattern: "/one/aMap.*", valuePattern: ''],
+                        [pathPattern: "/one/aMap", valuePattern: ''],
                 ],
         ]
         Map destMap = srcMap.clone()
@@ -157,7 +160,7 @@ class JsonObjectTransformerTest extends Specification {
 
         then:
         // dest map is shallow clone, so in these tests source is also modified (consider doing deep copy to leave source map untouched)
-        transformer.srcFlatpaths.size() == 20
+        transformer.srcFlatpaths.size() == 20           // this is 14 when using 'old' flatmaps with only leafnodes, and 20 with 'new' flatmaps that include paths for non-leaf nodes
         newFlatties.size() == 17
         destMap.one.aMap == null
         destMap.one.bSubMap.keySet().toList() == [ 'b1', 'b2', 'b3list']

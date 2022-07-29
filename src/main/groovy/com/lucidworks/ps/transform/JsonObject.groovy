@@ -40,7 +40,9 @@ class JsonObject {
     JsonObject(Map sourceMap, String separator = DEFAULT_SEPARATOR) {
 //            log.info "We seem to have constructor with source arg (${source.getClass().simpleName}) pointing to source ($source), so use slurper.parse()... "
         slurpedItems = sourceMap
-        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
+//        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
+        // todo -- revisit and refactor... some things work best with flattenWithLeafObject (leaf objects only), and some things (remove rules??) work better with additional paths pointing to non-leaf nodes
+        flatPathMap = flattenWithObjects(slurpedItems, 0)           // trying out flattening with 'full' paths, including non-leaf objects
     }
 
     JsonObject(Object source, String separator = DEFAULT_SEPARATOR) {
@@ -61,7 +63,12 @@ class JsonObject {
         Map<String, Object> matchingPaths = findItemsByPath(pathPattern, flatPathMap)
         Map<String, Object> matchingItems = null
         if(matchingPaths) {
-            matchingItems = findItemsByValue(valuePattern, matchingPaths)
+            if(valuePattern) {
+                matchingItems = findItemsByValue(valuePattern, matchingPaths)
+            } else {
+                log.debug "\t\tNo value pattern given, skipping findItemsByValue... keeping findItemsByPath results: $matchingPaths"
+                matchingItems = matchingPaths
+            }
         } else {
             log.info "\t\tNo matching paths returned from findItemsByPath, so we are skipping the findItemsByValue() call"
         }

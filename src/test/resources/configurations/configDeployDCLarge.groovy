@@ -16,7 +16,7 @@ rules.rename = [
 ]
 
 rules.remove = [
-        [pathPattern: 'updates/', valuePattern: ''],
+        [pathPattern: 'updates', valuePattern: ''],
 //        [pathPattern: '_lw_tmp', valuePattern: ''],
 //        [pathPattern: 'blobs/prefs', valuePattern: ''],
 ]
