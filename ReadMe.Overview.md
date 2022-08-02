@@ -14,6 +14,24 @@ Gradle (https://gradle.org/) is a build tool which tends to be more flexible and
 ### Groovy
 Groovy (https://groovy-lang.org/) is a JVM based language that compiles back to straight java. 
 
+Groovy is an Apache project, and compiles back to pure java. It has some syntactic sugar that I have found useful. All groovy code and functionality can be replaced with (more verbose) Java.
+
+One relevant note is the Pattern operator:
+https://docs.groovy-lang.org/docs/next/html/documentation/core-operators.html#_pattern_operator 
+Putting a tilde `~` infront of a string turns it into a Java Pattern for regex matching. 
+The current JsonObject and rules processing accepts either a string (json) path, or a Pattern. Depending on which is used in the rules config will dictate what type of Json path filtering happens. 
+For a String: the paths are filtered by a Java String.contains(...) call.
+For a Pattern the code does a regex find. The Spock tests should provide tests, but also provide succinct examples of the different approaches.
+
+### Various Groovy links/tutorials
+- https://groovy-lang.org/documentation.html#gettingstarted
+- https://www.timroes.de/groovy-tutorial-for-java-developers
+- http://pledbrook.github.io/groovy-cheat-sheet/guide/index.html
+- https://www.guru99.com/groovy-tutorial.html
+- https://onecompiler.com/cheatsheets/groovy
+- https://programming-idioms.org/cheatsheet/Java/Groovy
+- 
+
 ### Fusion-j project
 UpVal (this project) relies on Fusion-j for session based (basic auth) communication and functionality with Fusion. During this development phase, please clone the `Fusion-j` (https://github.com/seanoc5/fusion-j) repo as a 'sister' directory to `UpVal`.
 The build.gradle in UpVal declares the dependency near the bottom of the file:
