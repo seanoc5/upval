@@ -261,7 +261,10 @@ class JsonObjectTest extends Specification {
         }
 
         def "should remove parent items by path"() {
-            Map m = [a: [b: [c: [d1: 'delete me', d2: 2]]]]
+            Map m = [a:
+                             [b:
+                                      [c:
+                                               [d1: 'delete me', d2: 2]]]]
             def flatties = JsonObject.flattenWithLeafObject(m)
             String childPath = '/a/b/c'
             def itemToRemove = JsonObject.getObjectNodeValue(m, childPath)
