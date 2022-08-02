@@ -99,9 +99,9 @@ class JsonObjectTest extends Specification {
         '/a/one'    | ''           | ['/a/one': 'one']
         ~'/a/(two)' | ''           | ['/a/two': 'two']
         '/b.*'      | ''           | ['/b.*': null]
-        ~'/b.*'     | ''           | ['/b/0': 'three', '/b/1': 'four']
+        ~'/b.*'     | ''           | ['/b':['three', 'four'], '/b/0':'three', '/b/1':'four']
         ~'.*2.*'    | 'comp'       | ['/compositeList/2/submapkey1': 'comp map 1 val']
-        ''          | 'tw'         | ['/a/two': 'two']
+        ''          | 'tw'         | ['/a':['one':'one', 'two': 'two'],'/a/two':'two']
         ''          | '=tw'        | [:]                    // matching paths, but no matching value, return empty map
         ''          | '=two'       | ['/a/two': 'two']
     }
