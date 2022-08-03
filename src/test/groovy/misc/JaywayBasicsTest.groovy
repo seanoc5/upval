@@ -6,12 +6,11 @@ import spock.lang.Specification
 class JaywayBasicsTest extends Specification {
 
 
-
     def "check jayway read basics"() {
         given:
-        Map map= [leafa:'myleaf',
-                  listb:[9,8,7, 'bar'],
-                  submapc:[foo:'bar']]
+        Map map = [leafa  : 'myleaf',
+                   listb  : [9, 8, 7, 'bar'],
+                   submapc: [foo: 'bar']]
 
         when:
         def leafa = JsonPath.read(map, '$.leafa')
@@ -20,26 +19,37 @@ class JaywayBasicsTest extends Specification {
 
         then:
         leafa == 'myleaf'
-        listb == [9,8,7,'bar']
+        listb == [9, 8, 7, 'bar']
     }
-/*
+
+
     def "check jayway read more advanced"() {
         given:
-        Map map= [leafa:'myleaf',
-                  listb:[9,8,7, 'bar'],
-                  submapc:[foo:'bar']]
+        Map map = [leafa  : 'myleaf',
+                   listb  : [
+                           [id: 1, tag: 'a'],
+                           [id: 2, tag: 'b'],
+                           [id: 3, tag: 'c'],
+                   ],
+                   updates: [
+                           ["userId"   : "admin", "timestamp": "2021-04-14T06:28:02.447Z"],
+                           ["userId"   : "ashumway", "timestamp": "2021-12-16T19:22:31.713Z"],
+                   ],
+                   map2   : [submap3: [1, 2, 3], subleaf4: 'foo']
+        ]
 
         when:
-        def mybars = JsonPath.read(map, '$..?('bar')
-        def listb = JsonPath.read(map, '$.listb')
+        def updates = JsonPath.read(map, '$..updates')
+        def updateAdmin = JsonPath.read(map, '$..updates[?(@.userId=="admin")]')
+        def updatePos1 = JsonPath.read(map, '$..updates[1]')
+        def fooVal = JsonPath.read(map, '$..*[?(@.*=="foo")]')
 
 
         then:
-        leafa == 'myleaf'
-        listb == [9,8,7,'bar']
+        updates.size() == 3
+        updatePos0 == [id: 1, tag: 'a']
+        updates[0] == updatePos0
     }
-*/
-
 
 
     def "check jayway write basics"() {
@@ -57,7 +67,6 @@ class JaywayBasicsTest extends Specification {
         previousDestValue == ''
         updatedDestValue == 'MyCollection'
     }
-
 
 
     public static String src = '''
