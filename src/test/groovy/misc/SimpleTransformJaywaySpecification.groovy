@@ -31,16 +31,15 @@ class SimpleTransformJaywaySpecification extends Specification {
 
     def "check jayway read basics"() {
         given:
-//        String foo = 'test'
         String srcPath = '$.properties.collection'
 
         when:
         def collection = JsonPath.read(srcMap, srcPath)
 
-
         then:
         collection == 'MyCollection'
     }
+
 
     def "check jayway write basics"() {
         given:
