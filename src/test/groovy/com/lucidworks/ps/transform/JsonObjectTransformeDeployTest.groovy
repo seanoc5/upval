@@ -72,7 +72,15 @@ class JsonObjectTransformeDeployTest extends Specification {
 
         then:
         updatedObjects instanceof Map
-
-
     }
+
+//    def "should transform app export"(){
+//        given:
+//        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
+//        Application app = new Application(appZip)
+//
+//        when:
+//
+//
+//    }
 }
