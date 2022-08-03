@@ -94,7 +94,7 @@ class JsonObject {
             matchingPaths = flatMapToSearch.findAll { String path, Object val ->
                 boolean match = false
                 if (pathPattern instanceof String) {
-                    match = pathPattern == path
+                    match = path.contains(pathPattern)
                     if(match) {
                         log.info "\t\t String path compare: $path == $pathPattern ?? ${match}"
                     } else {
