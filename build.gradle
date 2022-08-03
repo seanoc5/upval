@@ -52,7 +52,8 @@ dependencies {
     implementation 'javax.json:javax.json-api:1.1.4'
 
     // https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
-    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
+    // todo -- revisit version 2.4.0 vs 2.7.0, the latter seems to clash with solr jayway, and 
+    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
 
     // https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core
