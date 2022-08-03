@@ -11,7 +11,7 @@ rules.copy = [
 // note: `namePattern: ~/TYPEAH\w+\b/` is an unnecessarily-complex pattern, but included to show an example of the Pattern operator, slashy strings, an regex find (no regex replace yet...)
 rules.rename = [
         [namePattern: 'DC_Large', replacement: 'AcmeDigicommerce'],
-        [namePattern: ~/TYPEAH\w+\b/, replacement: 'acme_ta'],
+        [namePattern: 'TYPEAHEAD', replacement: 'acme_ta'],
         [namePattern: 'RESPONSE_TA', replacement: 'response_ta'],
         [namePattern: 'CAT_ID_MAPPING', replacement: 'category_mapping'],
 ]
