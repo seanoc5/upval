@@ -1,6 +1,7 @@
 package misc
 
 import com.jayway.jsonpath.JsonPath
+import groovy.json.JsonSlurper
 import spock.lang.Specification
 
 class JaywayBasicsTest extends Specification {
@@ -40,20 +41,24 @@ class JaywayBasicsTest extends Specification {
 
         when:
         def updates = JsonPath.read(map, '$..updates')
+        def userIds = JsonPath.read(map, '$..updates[*].userId')
         def updateAdmin = JsonPath.read(map, '$..updates[?(@.userId=="admin")]')
         def updatePos1 = JsonPath.read(map, '$..updates[1]')
         def fooVal = JsonPath.read(map, '$..*[?(@.*=="foo")]')
 
 
         then:
-        updates.size() == 3
-        updatePos0 == [id: 1, tag: 'a']
-        updates[0] == updatePos0
+        updates.size() == 1
+        userIds.size() == 2
+        userIds == ['admin', 'ashumway']
+        updateAdmin.userId == ['admin']
+        updatePos1.userId == ['ashumway']
     }
 
 
     def "check jayway write basics"() {
         given:
+        Map srcMap = new JsonSlurper().parseText(src)
         String srcPath = '$.properties.collection'
         String destPath = '$.properties.collection'
 
