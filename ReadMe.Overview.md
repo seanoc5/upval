@@ -17,10 +17,10 @@ Groovy (https://groovy-lang.org/) is a JVM based language that compiles back to 
 Groovy is an Apache project, and compiles back to pure java. It has some syntactic sugar that I have found useful. All groovy code and functionality can be replaced with (more verbose) Java.
 
 One relevant note is the Pattern operator:
-https://docs.groovy-lang.org/docs/next/html/documentation/core-operators.html#_pattern_operator 
-Putting a tilde `~` infront of a string turns it into a Java Pattern for regex matching. 
-The current JsonObject and rules processing accepts either a string (json) path, or a Pattern. Depending on which is used in the rules config will dictate what type of Json path filtering happens. 
-For a String: the paths are filtered by a Java String.contains(...) call.
+https://docs.groovy-lang.org/docs/next/html/documentation/core-operators.html#_pattern_operator. \
+Putting a tilde `~` infront of a string turns it into a Java Pattern for regex matching. \
+The current JsonObject and rules processing accepts either a string (json) path, or a Pattern. Depending on which is used in the rules config will dictate what type of Json path filtering happens. \ 
+For a String: the paths are filtered by a Java String.contains(...) call. \
 For a Pattern the code does a regex find. The Spock tests should provide tests, but also provide succinct examples of the different approaches.
 
 ### Various Groovy links/tutorials
@@ -39,7 +39,7 @@ The build.gradle in UpVal declares the dependency near the bottom of the file:
 This allows seemless development (and build/compile) of both code bases simultaneously.
 
 ## Fusion 4 application migration
-The script `migratefusionApp.groovy` provides command-line parsing and migration of an exported Fusion 4 application. The script will accept either an `objects.json` file, or the full exported zip file. In addition, the script requires a destination Fusion deployment (fusion url, username, and password).
+The script `migratefusionApp.groovy` provides command-line parsing and migration of an exported Fusion 4 application. The script will accept either an `objects.json` file, or the full exported zip file. In addition, the script requires a destination Fusion deployment (fusion url, username, and password). \
 Run the script without any params (or with the -h param) for details on the available (and required) parameters.
 
 
@@ -52,7 +52,7 @@ Run the script without any params (or with the -h param) for details on the avai
 //            def engine = new groovy.text.SimpleTemplateEngine()
 //            assert 'Hello world!'== engine.createTemplate(stringFromDatabase).make([name:name])
 //            def bar = engine.createTemplate(value).make([
-
+make
 - http://www.groovyconsole.appspot.com/edit/22004?execute
 - https://stackoverflow.com/questions/1472453/groovy-variable-substitution-in-dynamic-strings
 - https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html
