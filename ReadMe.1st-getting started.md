@@ -1,8 +1,24 @@
 # Getting Started tips and suggestions
 
-# Tests 
-This project uses Spock test framework:
-https://spockframework.org/spock/docs/2.1/index.html
+## Sample Operations
+### Deploy / transform
+- DC_Large: 
+  - 75% done
+  - deployDC_Large.groovy and configDeployDCLarge.groovy 
+  - outstanding: 
+    - move deployDC_Large from script to object, 
+    - provide working example of how to call from CLI or gradle
+    - import into fusion and look for errors/gaps
+    - list of before and after
+      - all the source things that needed to be transformed 
+- TypeAhead (?)
+- yet-to-be-named
+
+### Savvy-Compare
+
+### Explode (?)
+
+
 
 There are some dark alleys of outdated code, so be prepared for some tests to be broken or half baked.
 
