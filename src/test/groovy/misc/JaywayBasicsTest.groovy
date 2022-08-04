@@ -83,15 +83,15 @@ class JaywayBasicsTest extends Specification {
 
         when:
         def incDir = jsonContext.read(srcPath)
-        // how do we write/update a value...? perhaps not possible with jayway??
-        jsonContext.set(srcPath, true)
         def jsonObject = jsonContext.json
-        String jsonString = JsonOutput.toJson(jsonObject)
-        String prettyJson = JsonOutput.toJson(jsonString)
+
+        jsonContext.set(srcPath, true)
+        assert jsonObject.updates.size() == 2
+        jsonContext.delete('$.updates')
 
         then:
-        jsonContext.json.properties.includeDirectories == true
-
+        jsonObject.properties.includeDirectories == true
+        jsonObject.updates == null
 
     }
 
