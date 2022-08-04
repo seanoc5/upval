@@ -1,6 +1,8 @@
 package misc
 
 import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.internal.JsonContext
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
@@ -33,8 +35,8 @@ class JaywayBasicsTest extends Specification {
                            [id: 3, tag: 'c'],
                    ],
                    updates: [
-                           ["userId"   : "admin", "timestamp": "2021-04-14T06:28:02.447Z"],
-                           ["userId"   : "ashumway", "timestamp": "2021-12-16T19:22:31.713Z"],
+                           ["userId": "admin", "timestamp": "2021-04-14T06:28:02.447Z"],
+                           ["userId": "ashumway", "timestamp": "2021-12-16T19:22:31.713Z"],
                    ],
                    map2   : [submap3: [1, 2, 3], subleaf4: 'foo']
         ]
@@ -56,21 +58,41 @@ class JaywayBasicsTest extends Specification {
     }
 
 
-    def "check jayway write basics"() {
+    def "check jayway read from json string"() {
         given:
-        Map srcMap = new JsonSlurper().parseText(src)
+        Map map = new JsonSlurper().parseText(src)
         String srcPath = '$.properties.collection'
         String destPath = '$.properties.collection'
 
         when:
-        def collection = JsonPath.read(srcMap, srcPath)
-        def previousDestValue = destContext.read(destPath)
-        destContext.set(destPath, collection)
-        def updatedDestValue = destContext.read(destPath)
+        def updates = JsonPath.read(map, '$..updates')
+        def updateChildren = JsonPath.read(map, '$..updates[*]')
+        def props = JsonPath.read(map, '$.properties')
 
         then:
-        previousDestValue == ''
-        updatedDestValue == 'MyCollection'
+        updates.size() == 1
+        updateChildren.size() == 2
+        props.size() == 4
+    }
+
+    def "write values with jayway"() {
+        given:
+//        Map map = new JsonSlurper().parseText(src)
+        JsonContext jsonContext = JsonPath.parse(src)
+        def srcPath = '$.properties.includeDirectories'
+
+        when:
+        def incDir = jsonContext.read(srcPath)
+        // how do we write/update a value...? perhaps not possible with jayway??
+        jsonContext.set(srcPath, true)
+        def jsonObject = jsonContext.json
+        String jsonString = JsonOutput.toJson(jsonObject)
+        String prettyJson = JsonOutput.toJson(jsonString)
+
+        then:
+        jsonContext.json.properties.includeDirectories == true
+
+
     }
 
 
@@ -92,61 +114,17 @@ class JaywayBasicsTest extends Specification {
       "/tmp/hsdupload/"
     ]
   },
-  "coreProperties": {}
-}
-'''
-
-    public static String dest = '''
- {
-   "id" : "#replace#",
-   "diagnosticLogging" : true,
-   "parserId" : "#replace#",
-   "created" : "",
-   "coreProperties" : { },
-   "description" : "S3 version of FS migration",
-   "modified" : "",
-   "type" : "#replace#",
-   "properties" : {
-     "proxyConfig" : {
-       "proxyEndpoint" : ""
-     },
-     "application" : {
-       "bucketName" : "f5-data-sample-bucket",
-       "objectKeys" : [ "s3-sample-key/" ],
-       "region" : "us-west-1"
-     },
-     "authenticationConfig" : {
-       "awsBasicAuthConfig" : {
-         "secretKey" : "xXx-Redacted-xXx",
-         "accessKey" : "AKIAZ5D5ABDI4BBFV34Q"
-       }
-     },
-     "collection" : ""
-   },
-   "pipeline" : "",
-   "connector" : "lucidworks.s3"
- }
-'''
-
-    public static String configsJsonPath = '''
-{
-    "transformerClass": "FileSystemS3",
-    "set": {
-        "$.type": "lucidworks.ldap",
-        "$.connector": "lucidworks.ldap",
-        "$.created": "${new Date()}",
-        "$.modified": "${new Date()}",
-        "$.properties.security":"$[testmap:true]"
+  "updates": [
+    {
+      "userId": "ashumway",
+      "timestamp": "2022-02-08T18:36:17.933Z"
     },
-    "copy": {
-        "$.id": "$.id",
-        "$.pipeline": "$.pipeline",
-        "$.parserId": "$.parserId",
-        "$.properties.searchProperties.userSearchProp.userFilter": "$.properties.f.ldap_user_filter",
-        "$.properties$.searchProperties$.groupSearchProp$.userFilter": "$.properties.f.ldap_group_filter"
+    {
+      "userId": "ashumway",
+      "timestamp": "2022-02-08T18:36:17.940Z"
     }
+  ]
 }
 '''
-
 
 }

@@ -32,6 +32,26 @@ f.userPrincipal ->
 ### Jayway
 https://github.com/json-path/JsonPath
 
+#### Syntax
+it seems jayway may not be able to select "any element containing value 'foo'":  
+https://stackoverflow.com/questions/62809678/filter-by-values-where-key-is-unknown  
+
+other links:  
+https://stackoverflow.com/questions/53277865/what-is-the-java-library-to-remove-modify-a-json-object-based-on-json-path-or-h  
+https://stackoverflow.com/questions/68436665/jsonpath-how-to-get-the-whole-tree-except-one-node  
+https://jsonnet.org/
+
+**Various Examples:** \
+http://jsonpath.herokuapp.com/?path=$..book[?(@.price%20%3C=%20$[%27expensive%27])]
+`$..book[?(@.author =~ /Herman.*/)]`
+
+**Set values:**  
+https://github.com/json-path/JsonPath#set-a-value
+
+**Remove**: \
+https://stackoverflow.com/questions/56092846/jsonpath-removing-object-from-a-complete-object
+
+
 ### Various
 
 https://datatracker.ietf.org/doc/html/rfc6901
