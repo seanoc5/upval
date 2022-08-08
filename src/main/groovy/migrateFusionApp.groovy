@@ -6,15 +6,11 @@ import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
 Logger log = Logger.getLogger(this.class.name)
-
-OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
-
 log.info "start script ${this.class.name}..."
 
+OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
 FusionClient fusionClient = new FusionClient(options)// todo -- revisit where/how to parse the source json (file, zip, or fusionSourceCluster...?), currently mixing approaches, need to clean up
-//String s =
-//def sourceObjects = fusionClient.getObjects()
-///*
+
 File srcJson = fusionClient.objectsJsonFile
 Map parsedMap = ExtractFusionObjectsForIndexing.readObjectsJson(srcJson)
 Map sourceFusionOjectsMap = parsedMap.objects as Map

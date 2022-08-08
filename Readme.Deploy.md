@@ -1,5 +1,10 @@
 # Deploy Component (or App) notes
 
+**NOTE:** this may have naming issues....
+Deploy currently refers to the transform process -- in preparation for actually deploying a component
+
+
+
 ##  DC_Large
 Notes from Andrew Shumway:
 https://lucidworks.atlassian.net/wiki/spaces/~621306800/pages/1947369512/Using+the+standard+DC+Large+APP+to+kickstart+a+project
