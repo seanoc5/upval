@@ -1,4 +1,3 @@
-//package configs
 
 // name of side-car collection, and blob folder, part of other element names
 taName = "${taName ?: 'typeahead'}"
@@ -42,66 +41,17 @@ collections {
 }
 
 
-// testing groovy config rather than json... incomplete
-indexPipelines {
-    main {
-        id = "${baseId}_IPL"
-        stages = [
-                [
-                        id                 : "b3736ea6-c8a8-4180-950a-1c5f47a80f49",
-                        ref                : "lib/index/FusionServiceLib.js",
-                        type               : "managed-js-index",
-                        skip               : false,
-                        label              : "MJS: load FusionServices.js",
-                        secretSourceStageId: "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
-                ],
-                [
-                        id                          : "f6724c11-2e15-4184-ae70-b762ab87ef85",
-                        translationMappings         : [
-                                [
-                                        source   : "Suggestion",
-                                        target   : "value_s",
-                                        operation: "move",
-                                ], [
-                                        source   : "Weight",
-                                        target   : "signal_count",
-                                        operation: "move",
-                                ]
-                        ],
-                        retentionMappings           : [],
-                        updateMappings              : [],
-                        unmappedRule                : [
-                                keep                      : true,
-                                delete                    : false,
-                                fieldToMoveValuesTo       : "",
-                                fieldToCopyValuesTo       : "",
-                                valueToAddToUnmappedFields: "",
-                                valueToSetOnUnmappedFields: "",
-                        ],
-                        reservedFieldsMappingAllowed: false,
-                        type                        : "field-mapping",
-                        skip                        : false,
-                        label                       : "Field Mapping for Inclusion List Suggestions",
-                        secretSourceStageId         : "f6724c11-2e15-4184-ae70-b762ab87ef85",
-                ]
-        ]
+dataSources {
+    fileUpload {
+        id = "${baseId}_inclusion_list"
+        connector = "lucid.fileupload"
+        type = "fileupload"
+        pipeline = "${baseId}_IPL"
+        parserId = "_system"
+        properties = {
+            collection = "${taName}"
+            fileId = "${taName}/Typeahead_inclusion_list.csv"
+            mediaType = "text/csv"
+        }
     }
-
 }
-
-
-//dataSources {
-//    {
-//        "id" : "${foundry.destination.APP}_${foundry.FEATURE_NAME}_inclusion_list"
-//        "created" : "2021-04-26T23:25:09.167Z"
-//        "modified" : "2021-04-26T23:25:09.167Z"
-//        "connector" : "lucid.fileupload"
-//        "type" : "fileupload"
-//        "pipeline" : "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL"
-//        "parserId" : "_system"
-//        "properties" : {
-//        "collection" : "${foundry.destination.APP}_${foundry.FEATURE_NAME}"
-//        "fileId" : "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv"
-//        "mediaType" : "text/csv"
-//    }
-//    }
