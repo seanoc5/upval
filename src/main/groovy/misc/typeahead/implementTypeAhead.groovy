@@ -18,20 +18,27 @@ final Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name} with args: ${args}..."
 
 OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
-Path cfgUrl = Paths.get(options.config)
-File f = new File("/home/sean/work/lucidworks/upval/src/main/resources/configs/configTypeAhead.groovy")
-ConfigObject config = new ConfigSlurper().parse(f.toURI().toURL())
-log.info "Config: $config"
+URL configUrl = getClass().getResource(options.config)
+
 String appName = options.appName
-String taName = config.taName
+String taName = options.taName
+ConfigSlurper configSlurper = new ConfigSlurper()
+Map bindingMap=[appName:appName]
+if(taName){
+    bindingMap['taName'] = taName
+    log.info "Found typeahead name from CLI/options: $taName -- set binding to override config file...."
+}
+configSlurper.setBinding(bindingMap)
+ConfigObject config = configSlurper.parse(configUrl)
+log.info "Config: $config"
+Map taCollectionDef = config.collections.typeahead
 
 FusionClient fusionClient = new FusionClient(options)
-
 def taCollection = fusionClient.getCollection(appName, taName)
 if(taCollection){
     log.warn "Collection: $taName already exists, not recreating..."
 } else {
-    fusionClient.createCollection(taName)
+    fusionClient.createCollection(taCollectionDeftaName)
 }
 
 config.blobs.each {String key, Object val ->
