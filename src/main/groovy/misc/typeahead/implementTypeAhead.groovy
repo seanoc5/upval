@@ -2,6 +2,7 @@ package misc.typeahead
 
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionClientArgParser
+import com.lucidworks.ps.clients.FusionResponseWrapper
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
@@ -34,8 +35,8 @@ log.info "Config: $config"
 Map taCollectionDef = config.collections.typeahead
 
 FusionClient fusionClient = new FusionClient(options)
-def taCollection = fusionClient.getCollection(appName, taName)
-if(taCollection){
+FusionResponseWrapper responseWrapper = fusionClient.getCollection(appName, taName)
+if(responseWrapper.wasSuccess()){
     log.warn "Collection: $taName already exists, not recreating..."
 } else {
     fusionClient.createCollection(taCollectionDef, appName, false)
