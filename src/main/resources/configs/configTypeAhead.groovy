@@ -30,7 +30,7 @@ collections {
         id = "${baseId}"
         searchClusterId = "default"
         commitWithin = 10000
-        solrParams = {
+        solrParams  {
             name = "${baseId}"
             numShards = 1
             replicationFactor = 2
