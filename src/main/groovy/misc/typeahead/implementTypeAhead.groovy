@@ -38,7 +38,7 @@ def taCollection = fusionClient.getCollection(appName, taName)
 if(taCollection){
     log.warn "Collection: $taName already exists, not recreating..."
 } else {
-    fusionClient.createCollection(taCollectionDeftaName)
+    fusionClient.createCollection(taCollectionDef, appName, false)
 }
 
 config.blobs.each {String key, Object val ->
