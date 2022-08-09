@@ -13,21 +13,7 @@
                "maxShardsPerNode": 2
             },
             "type": "DATA",
-            "metadata": {},
-            "updates": [
-               {
-                  "userId": "admin",
-                  "timestamp": "2021-02-11T22:10:07.065Z"
-               },
-               {
-                  "userId": "admin",
-                  "timestamp": "2021-02-11T22:10:07.495Z"
-               },
-               {
-                  "userId": "admin",
-                  "timestamp": "2021-02-11T22:10:07.498Z"
-               }
-            ]
+            "metadata": {}
          }
       ],
       "indexPipelines": [
