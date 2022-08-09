@@ -30,7 +30,7 @@ collections {
         id = "${baseId}"
         searchClusterId = "default"
         commitWithin = 10000
-        solrParams  {
+        solrParams {
             name = "${baseId}"
             numShards = 1
             replicationFactor = 2
@@ -41,6 +41,8 @@ collections {
     }
 }
 
+
+// testing groovy config rather than json... incomplete
 indexPipelines {
     main {
         id = "${baseId}_IPL"
@@ -81,8 +83,8 @@ indexPipelines {
                         skip                        : false,
                         label                       : "Field Mapping for Inclusion List Suggestions",
                         secretSourceStageId         : "f6724c11-2e15-4184-ae70-b762ab87ef85",
-                        ]
                 ]
+        ]
     }
 
 }
