@@ -1,0 +1,32 @@
+
+<component-def name="TYPEAHEAD_DW_F5.4_v4" version="1.0" app="Components">
+   <objects>
+      <object type="blobs" id="lib%2Findex%2FFusionServiceLib.js"/>
+      <object type="blobs" id="TYPEAHEAD_DW%2Ffull-list-of-bad-words_csv-file_2018_07_30.csv"/>
+      <object type="blobs" id="TYPEAHEAD_DW%2FTypeahead_inclusion_list.csv"/>
+      <object type="index-pipelines" id="Components_TYPEAHEAD_DW_IPL_v4"/>
+      <object type="datasources" id="Components_TYPEAHEAD_DW_inclusion_list"/>
+      <object type="query-pipelines" id="Components_TYPEAHEAD_DW_QPL_v4"/>
+      <object type="query-profiles" id="Components_TYPEAHEAD_DW_QPF_v4"/>
+      <object type="query-profiles" id="Components_TYPEAHEAD_DW_history_QPF_v4"/>
+      <object type="query-profiles" id="Components_TYPEAHEAD_DW_entity_QPF_v4"/>
+      <object type="task" id="Components_TYPEAHEAD_DW_docs_cull_v4"/>
+      <object type="spark" id="Components_TYPEAHEAD_DW_clicks_load_v4"/>
+      <object type="spark" id="Components_TYPEAHEAD_DW_entity_load_v4"/>
+   </objects>
+   <collections>
+      <collection name="Components_TYPEAHEAD_DW_v4"/>
+   </collections>
+   <variables>
+      <variable from="TYPEAHEAD_DW" to="foundry.FEATURE_NAME" scope="*"/>
+      <variable from="Components" to="foundry.destination.APP" scope="*"/>
+      <variable from="COLLECTION" to="foundry.destination.COLLECTION" scope="*"/>
+      <variable from="SIGNALS_AGGR_COLLECTION" to="foundry.destination.SIGNALS_AGGR_COLL" scope="*"/>
+      <variable from="ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181" to="foundry.typeahead.ZKHOST" scope="*"/>
+      <variable from="TYPE_FIELD_1" to="foundry.typeahead.TYPE_FIELD_1" scope="*"/>
+      <variable from="TYPE_FIELD_2" to="foundry.typeahead.TYPE_FIELD_2" scope="*"/>
+      <variable from="TYPE_FIELD_3" to="foundry.typeahead.TYPE_FIELD_3" scope="*"/>
+      <variable from="TYPE_FIELD_4" to="foundry.typeahead.TYPE_FIELD_4" scope="*"/>
+      <variable from="TYPE_FIELD_5" to="foundry.typeahead.TYPE_FIELD_5" scope="*"/>
+   </variables>
+</component-def>

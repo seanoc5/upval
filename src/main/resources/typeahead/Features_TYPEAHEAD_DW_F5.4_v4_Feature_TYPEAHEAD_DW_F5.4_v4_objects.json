@@ -1,0 +1,1192 @@
+{
+   "objects": {
+      "collections": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "createdAt": "2021-02-11T22:10:02.772Z",
+            "searchClusterId": "default",
+            "commitWithin": 10000,
+            "solrParams": {
+               "name": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "numShards": 1,
+               "replicationFactor": 2,
+               "maxShardsPerNode": 2
+            },
+            "type": "DATA",
+            "metadata": {},
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:10:07.065Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:10:07.495Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:10:07.498Z"
+               }
+            ]
+         }
+      ],
+      "indexPipelines": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "stages": [
+               {
+                  "id": "b3736ea6-c8a8-4180-950a-1c5f47a80f49",
+                  "ref": "lib/index/FusionServiceLib.js",
+                  "type": "managed-js-index",
+                  "skip": false,
+                  "label": "MJS: load FusionServices.js",
+                  "secretSourceStageId": "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
+               },
+               {
+                  "id": "f6724c11-2e15-4184-ae70-b762ab87ef85",
+                  "translationMappings": [
+                     {
+                        "source": "Suggestion",
+                        "target": "value_s",
+                        "operation": "move"
+                     },
+                     {
+                        "source": "Weight",
+                        "target": "signal_count",
+                        "operation": "move"
+                     }
+                  ],
+                  "retentionMappings": [],
+                  "updateMappings": [],
+                  "unmappedRule": {
+                     "keep": true,
+                     "delete": false,
+                     "fieldToMoveValuesTo": "",
+                     "fieldToCopyValuesTo": "",
+                     "valueToAddToUnmappedFields": "",
+                     "valueToSetOnUnmappedFields": ""
+                  },
+                  "reservedFieldsMappingAllowed": false,
+                  "type": "field-mapping",
+                  "skip": false,
+                  "label": "Field Mapping for Inclusion List Suggestions",
+                  "secretSourceStageId": "f6724c11-2e15-4184-ae70-b762ab87ef85"
+               },
+               {
+                  "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
+                  "script": "(function() {\n  'use strict';\n  var FusionServiceLib;\n\n  var Pattern = java.util.regex.Pattern;\n  var Matcher = java.util.regex.Matcher;\n\n  var VALUE_FIELD = \"value_s\";\n  var TYPE_FIELD = \"ta_type\";\n  var EXCLUDE_BLOB = \"${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv\";\n\n  //Global to hold the NSFW words\n  var exclusionList;\n\n\n  return function (doc, ctx) {\n    if (doc.getId() == null || doc.getFirstField(TYPE_FIELD) == null) {\n      return doc;\n    }\n\n    if (!doc.getFirstField(TYPE_FIELD).getValue().toString() == \"entity\" ){\n      return doc;\n    }\n\n    var exclude = false;\n    \n    // Load in lucidworks.ps FusionService library\n    if (null == FusionServiceLib) {\n      FusionServiceLib = ctx.FusionServiceLib;\n    }\n    \n    if(doc.hasField(VALUE_FIELD))\n    {\n      if(!exclusionList)\n      {\n        var response = FusionServiceLib.getStringBlob(EXCLUDE_BLOB);\n          if(response){\n            exclusionList = response.trim().split(\"\\n\");\n          }\n      }\n\n      var field = doc.getFirstField(VALUE_FIELD);\n      var val = field.getValue().toString();\n      \n\n      for(var i = 0; i < exclusionList.length && !exclude; i++)\n      {\n        var line = exclusionList[i];\n        var offset = line.indexOf(';');\n        if(offset > 0){\n          line = line.substr(0,offset);\n        }     \n\n        //Regex: If profane word/phrase matches an individual word in value, remove\n        //Match: apple profane-word orange\n        //No match: appleprofane-wordorange\n        var pattern = Pattern.compile(\"(?<!\\\\w)\" + line + \"(?!\\\\w)\", Pattern.CASE_INSENSITIVE);\n        var matcher = pattern.matcher(val);\n\n        exclude = matcher.find();\n      }\n    }\n\n    if(exclude)\n    {\n      return;\n    }\n    else{\n      return doc;\n    }\n}\n\n\n\n\n})();\n\n\n\n",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Exclude Docs with Unwanted Terms",
+                  "condition": "true\n/**\n * Loads in full-list-of-bad-words_csv located in the blob store\n * For each phrase/word in the bad word lists, see if it exists in the value_s field or if the entire word is the value_s field\n * Removes the entire document if matched\n * \n * Does not run on entity type documents\n */",
+                  "secretSourceStageId": "525fbd2f-a010-45cd-aadb-e223c994d8e4"
+               },
+               {
+                  "id": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9",
+                  "script": "var clickThreshold = 100;\n\nfunction (doc) {\n  if (doc.getFirstFieldValue('signal_count_i') >= clickThreshold) {\n    return doc;\n  }\n}",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Frequency Threshold Filter",
+                  "condition": "doc.hasField('signal_count_i')\n/* Checks the number of signals generated for each term\n * from the aggregated signal data and removes those\n * below a specified threshold. The threshold is defined\n * by global var threshold\n */",
+                  "secretSourceStageId": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9"
+               },
+               {
+                  "id": "d19efb4f-7543-46f4-80e8-0982da546b25",
+                  "script": "var numericCharsThreshold = 0.75; // in percentage\n\nfunction numericCharactersFilter(doc) {\n  if (doc.hasField(\"value_s\")) {\n    var query = doc.getFirstFieldValue(\"value_s\");\n    var numericChars = query.match(/[0-9]/g);\n    if (!numericChars || (numericChars.length / query.length) < numericCharsThreshold) {\n      return doc;\n    }\n  }\n}",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Numeric Characters Filter",
+                  "condition": "true\n/* Checks the percentage of numeric characters in the\n * completion term and removes those over a set\n * threshold. The threshold is defined by global var\n * threshold and is expressed as a percentage in\n * decimal form.\n */",
+                  "secretSourceStageId": "d19efb4f-7543-46f4-80e8-0982da546b25"
+               },
+               {
+                  "id": "ce395120-943a-4126-a526-b27dbb91815f",
+                  "script": "function normalizeText(doc) {\n    if (doc.hasField('value_s')) {\n        var term = doc.getFirstFieldValue('value_s');\n\n        term = term.replace(/[`~!@#$^*()|+:,<>\\{\\}\\[\\]\\\\\\/]/gi, ' ');\n\n        term = term.toLowerCase().trim();\n\n        // Collapse multiple white spaces between words into one space\n        term = term.replace(/\\s\\s+/g, ' ');\n\n        // Remove leading dot \n        term = term.replace(/^\\./, '');\n\n        doc.setField('value_s', term);\n\n        return doc;\n    }\n}",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Normalize Text",
+                  "condition": "true\n/* Lowercases terms and trims leading and trailing\n * whitespace. Any future changes to how suggestions\n * are displayed should also go here\n */",
+                  "secretSourceStageId": "ce395120-943a-4126-a526-b27dbb91815f"
+               },
+               {
+                  "id": "904e1951-1b06-4621-899f-18d51003c30a",
+                  "script": "var maxLength = 4;\n\nfunction (doc) {\n  if (doc.getFirstFieldValue(\"value_s\").split(\" \").length <= maxLength) {\n    return doc;\n  }\n}",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Suggestion Term Length Filter",
+                  "condition": "true\n/* Checks the number of words in a suggestion and\n * removes those over a specified threshold. The\n * threshold is set by global var threshold\n  */",
+                  "secretSourceStageId": "904e1951-1b06-4621-899f-18d51003c30a"
+               },
+               {
+                  "id": "f4efc0df-d74d-447c-81e0-090ac453c8e4",
+                  "script": "function (doc, ctx) {\n  doc.setField('ta_type', 'history');\n  doc.setField('id', 'history_' + doc.getFirstFieldValue(\"value_s\").replaceAll(' ', '_'));\n  return doc;\n}",
+                  "type": "javascript-index",
+                  "skip": false,
+                  "label": "Add ID and Type Fields",
+                  "condition": "doc.hasField('signal_count_i')\n/* Adds the ta_type and idfield to history documents\n */",
+                  "secretSourceStageId": "f4efc0df-d74d-447c-81e0-090ac453c8e4"
+               },
+               {
+                  "id": "25dcf47d-5c2a-48ad-88f2-66863e0ac678",
+                  "enforceSchema": true,
+                  "fieldsList": true,
+                  "dateFormats": [],
+                  "params": [],
+                  "bufferDocsForSolr": true,
+                  "allowBlacklistedRequestParameters": false,
+                  "type": "solr-index",
+                  "skip": false,
+                  "secretSourceStageId": "25dcf47d-5c2a-48ad-88f2-66863e0ac678"
+               }
+            ],
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-26T23:26:15.017Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-26T23:25:37.167Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-26T23:25:35.252Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-26T23:14:25.848Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:33.304Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:13.081Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:36.638Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:50:01.394Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:13:29.728Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:13:26.050Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:13:17.600Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:00:09.890Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:59:53.454Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:58:53.563Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:58:51.560Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:58:12.036Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:57:28.720Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:48:41.673Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:43:44.300Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:29:21.181Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:26:47.899Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:26:13.649Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:25:00.263Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:22:08.633Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:08:37.473Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:03:36.632Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:56:05.767Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:55:36.334Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:55:24.531Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:54:33.099Z"
+               }
+            ],
+            "properties": {
+               "secretSourcePipelineId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL"
+            }
+         }
+      ],
+      "queryPipelines": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "stages": [
+               {
+                  "id": "ece2b7eb-2916-4aff-91f2-8664563c825b",
+                  "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:entity &&\" + q)\n}",
+                  "shareState": true,
+                  "type": "javascript-query",
+                  "skip": false,
+                  "label": "Only Return Entity Documents",
+                  "condition": "request.hasParam(\"entityOnly\") && request.getFirstParam(\"entityOnly\").equals(\"true\");\n// This stage is used to the make the results only entity documents. The ${foundry.destination.APP}_TYPEAHEAD_DC_entity_QPF will send a entityOnly=true",
+                  "secretSourceStageId": "ece2b7eb-2916-4aff-91f2-8664563c825b"
+               },
+               {
+                  "id": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff",
+                  "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:history && \" + q)\n}",
+                  "shareState": true,
+                  "type": "javascript-query",
+                  "skip": false,
+                  "label": "Only Return History Documents",
+                  "condition": "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n// This stage is used to the make the results only history documents. The ${foundry.destination.APP}_TYPEAHEAD_DC_history_QPF will send a parameter historyOnly=true",
+                  "secretSourceStageId": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff"
+               },
+               {
+                  "id": "9615c4bf-bd84-4c61-9ff3-2c07c73dc582",
+                  "numRecommendations": 10,
+                  "numSignals": 100,
+                  "aggrType": "click@doc_id,filters,query",
+                  "boostId": "id",
+                  "boostingMethod": "query-param",
+                  "boostingParam": "boost",
+                  "queryParams": [
+                     {
+                        "key": "qf",
+                        "value": "query_t"
+                     },
+                     {
+                        "key": "pf",
+                        "value": "query_t^50"
+                     },
+                     {
+                        "key": "pf",
+                        "value": "query_t~3^20"
+                     },
+                     {
+                        "key": "pf2",
+                        "value": "query_t^20"
+                     },
+                     {
+                        "key": "pf2",
+                        "value": "query_t~3^10"
+                     },
+                     {
+                        "key": "pf3",
+                        "value": "query_t^10"
+                     },
+                     {
+                        "key": "pf3",
+                        "value": "query_t~3^5"
+                     },
+                     {
+                        "key": "boost",
+                        "value": "map(query({!field f=query_s v=$q}),0,0,1,20)"
+                     },
+                     {
+                        "key": "mm",
+                        "value": "50%"
+                     },
+                     {
+                        "key": "defType",
+                        "value": "edismax"
+                     },
+                     {
+                        "key": "sort",
+                        "value": "score desc, weight_d desc"
+                     },
+                     {
+                        "key": "fq",
+                        "value": "weight_d:[* TO *]"
+                     }
+                  ],
+                  "rollupField": "doc_id_s",
+                  "rollupWeightField": "weight_d",
+                  "weightExpression": "math:log(weight_d + 1) + 10 * math:log(score+1)",
+                  "rollupWeightStrategy": "max",
+                  "queryParamToBoost": "q",
+                  "includeEnrichedQuery": false,
+                  "type": "recommendation",
+                  "skip": false,
+                  "secretSourceStageId": "9615c4bf-bd84-4c61-9ff3-2c07c73dc582"
+               },
+               {
+                  "id": "3e16eb81-b5e6-47fd-b8c4-a1ff94ed47d4",
+                  "fieldFacets": [
+                     {
+                        "field": "ta_type",
+                        "limit": 100,
+                        "minCount": 1,
+                        "missing": false
+                     },
+                     {
+                        "field": "type",
+                        "limit": 100,
+                        "minCount": 1,
+                        "missing": false
+                     }
+                  ],
+                  "rangeFacets": [],
+                  "type": "facet",
+                  "skip": false,
+                  "secretSourceStageId": "3e16eb81-b5e6-47fd-b8c4-a1ff94ed47d4",
+                  "properties": {
+                     "autoCreated": true
+                  }
+               },
+               {
+                  "id": "5f4e1208-afe4-4fc7-941e-15872d5642f3",
+                  "params": [
+                     {
+                        "key": "defType",
+                        "value": "edismax",
+                        "policy": "append"
+                     }
+                  ],
+                  "type": "set-params",
+                  "skip": false,
+                  "secretSourceStageId": "5f4e1208-afe4-4fc7-941e-15872d5642f3"
+               },
+               {
+                  "id": "14fb0ccb-943e-43c2-a5b2-16889cadb2eb",
+                  "params": [
+                     {
+                        "key": "hl",
+                        "value": "true",
+                        "policy": "append"
+                     },
+                     {
+                        "key": "hl.fl",
+                        "value": "value_t",
+                        "policy": "append"
+                     }
+                  ],
+                  "type": "set-params",
+                  "skip": true,
+                  "label": "Highlighting",
+                  "secretSourceStageId": "14fb0ccb-943e-43c2-a5b2-16889cadb2eb"
+               },
+               {
+                  "id": "9340b52e-11a4-4e1d-a5ef-e4c9b753de70",
+                  "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  logger.info('***Terms q=' + q)\n\n  var s = q.split(' ');\n  var prefix = s[s.length - 1];\n\n  request.putSingleParam('terms', true);\n  request.putSingleParam('terms.prefix', [prefix]);\n  request.putSingleParam('terms.fl', ['value_t']);\n\n  //Ensures that the term itself won't be suggested\n  request.putSingleParam('terms.lower', [prefix]);\n  request.putSingleParam('terms.lower.incl', false);\n\n}",
+                  "shareState": true,
+                  "type": "javascript-query",
+                  "skip": false,
+                  "label": "Add Terms to Response",
+                  "secretSourceStageId": "9340b52e-11a4-4e1d-a5ef-e4c9b753de70"
+               },
+               {
+                  "id": "71e7f340-2dc3-41c8-8330-d2991d87e363",
+                  "rows": 10,
+                  "start": 0,
+                  "sortOrder": [
+                     {
+                        "type": "field",
+                        "order": "desc",
+                        "value": "score"
+                     }
+                  ],
+                  "queryFields": [
+                     {
+                        "field": "value_t"
+                     },
+                     {
+                        "field": "value_s"
+                     },
+                     {
+                        "field": "value_phonetic_en"
+                     },
+                     {
+                        "field": "value_edge"
+                     },
+                     {
+                        "field": "value_en"
+                     }
+                  ],
+                  "returnFields": [
+                     "value_s",
+                     "type",
+                     "ta_type",
+                     "document_url",
+                     "image_url",
+                     "popularity_d",
+                     "signal_count",
+                     "indexed_date"
+                  ],
+                  "returnScore": true,
+                  "type": "search-fields",
+                  "skip": false,
+                  "secretSourceStageId": "71e7f340-2dc3-41c8-8330-d2991d87e363"
+               },
+               {
+                  "id": "3ea61720-eb40-4bfc-be00-e4f2db6868fd",
+                  "httpMethod": "POST",
+                  "allowFederatedSearch": false,
+                  "preferredReplicaType": "pull",
+                  "type": "solr-query",
+                  "skip": false,
+                  "responseSignalsEnabled": true,
+                  "secretSourceStageId": "3ea61720-eb40-4bfc-be00-e4f2db6868fd"
+               },
+               {
+                  "id": "6713beba-089c-47a8-a8c1-c3f0715eafc8",
+                  "script": "function(request, response, ctx){\n  // logger.info('\\n\\n***REQUEST INFO = ' + response.getInnerResponse().toString());\n\n  // var q = request.getFirstParam('q');\n  // qmsg = [];\n  // qmsg.push(q);\n  // response.initialEntity.appendStringList('myqis',qmsg);\n\n  // var fq = request.getParam(\"fq\");\n  // fqmsg = [];\n  // for each (var item in fq) {\n  //   fqmsg.push(item);\n  // }\n  // response.initialEntity.appendStringList('myfqs',fqmsg);\n  \n  var qtime = response.getInnerResponse().getQTime().orElse(\"ERROR\").toString();\n  respMsg1 = [];\n  respMsg1.push(qtime);\n  response.initialEntity.appendStringList('qtime',respMsg1);\n\n  var value = response.getInnerResponse().getResponseHeaderParams().toString();\n  // var params = value.get(\"responseHeader\").get(\"params\");\n  // logger.info('\\n\\n***REQUEST INFO = ' + params);\n\n  respMsg2 = [];\n  respMsg2.push(value);\n    response.initialEntity.appendStringList('params',respMsg2);\n}",
+                  "shareState": true,
+                  "type": "javascript-query",
+                  "skip": false,
+                  "label": "Add response details to response messages",
+                  "secretSourceStageId": "6713beba-089c-47a8-a8c1-c3f0715eafc8"
+               }
+            ],
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T21:37:29.428Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-08T18:38:00.845Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-22T17:43:37.798Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:22:13.280Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:22:48.281Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:23:29.733Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:26:03.034Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:26:49.732Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:27:55.671Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:28:57.489Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-29T23:29:16.721Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:53.039Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:35.841Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:12.245Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:33.004Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:18:06.923Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:18:27.747Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:24:18.969Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:24:21.775Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:27:01.975Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:27:52.558Z"
+               }
+            ],
+            "properties": {
+               "supportedMode": "all",
+               "secretSourcePipelineId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL"
+            }
+         }
+      ],
+      "features": {
+         "${foundry.destination.APP}_${foundry.FEATURE_NAME}": [
+            {
+               "name": "partitionByTime",
+               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "params": {},
+               "enabled": false
+            },
+            {
+               "name": "recommendations",
+               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "params": {
+                  "idField": "id",
+                  "itemsForItem": true,
+                  "queriesForQuery": true,
+                  "itemsForUser": true,
+                  "itemsForQuery": false,
+                  "content": true
+               },
+               "enabled": false
+            },
+            {
+               "name": "searchLogs",
+               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "params": {},
+               "enabled": false
+            },
+            {
+               "name": "signals",
+               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "params": {},
+               "enabled": true
+            }
+         ]
+      },
+      "queryProfiles": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPF",
+            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "searchHandler": "select",
+            "searchMode": "all",
+            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "additionalProperties": {},
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:08:21.955Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-22T17:43:38.380Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:44.157Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:37.179Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:13.665Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:33.682Z"
+               }
+            ]
+         },
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_entity_QPF",
+            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "searchHandler": "select",
+            "searchMode": "all",
+            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "additionalProperties": {},
+            "params": [
+               {
+                  "key": "entityOnly",
+                  "value": "true",
+                  "policy": "append"
+               }
+            ],
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T20:52:46.292Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:12:41.998Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-22T17:43:38.402Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:49.307Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:37.240Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:13.700Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:33.702Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:44:35.728Z"
+               }
+            ]
+         },
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_history_QPF",
+            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "searchHandler": "select",
+            "searchMode": "all",
+            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "additionalProperties": {},
+            "params": [
+               {
+                  "key": "historyOnly",
+                  "value": "true",
+                  "policy": "append"
+               }
+            ],
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T20:14:28.067Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-02-11T22:12:55.747Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-22T17:43:38.427Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:47.565Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:37.259Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:13.717Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:33.720Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:44:14.050Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-05-10T17:44:51.816Z"
+               }
+            ]
+         }
+      ],
+      "tasks": [
+         {
+            "type": "rest-call",
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_docs_cull",
+            "callParams": {
+               "uri": "solr://${foundry.destination.APP}_${foundry.FEATURE_NAME}/update",
+               "method": "post",
+               "queryParams": {},
+               "headers": {},
+               "entity": "<root><delete><query>ta_type:history AND (last_updated_tdt:[* TO NOW-10MINUTES] OR (*:* AND -last_updated_tdt:[* TO *]))</query></delete><commit/></root>"
+            },
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:08:37.117Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:14:26.960Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:14:26.966Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:14:58.952Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:14:58.957Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T16:13:01.630Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T16:13:01.656Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:40.064Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:40.068Z"
+               }
+            ]
+         }
+      ],
+      "sparkJobs": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_clicks_load",
+            "cacheAfterRead": false,
+            "continueAfterFailure": false,
+            "defineFieldsUsingInputSchema": true,
+            "atomicUpdates": false,
+            "format": "solr",
+            "transformSql": "SELECT query_s AS value_s,\n  SUM(aggr_count_i) AS signal_count_i,\n  current_timestamp() AS last_updated_tdt,\n  AVG(weight_d) AS popularity_d\nFROM _input\nGROUP BY value_s",
+            "readOptions": [
+               {
+                  "key": "collection",
+                  "value": "${foundry.destination.SIGNALS_AGGR_COLL}"
+               },
+               {
+                  "key": "zkHost",
+                  "value": "${foundry.typeahead.ZKHOST}"
+               }
+            ],
+            "clearDatasource": false,
+            "outputIndexPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "type": "parallel-bulk-loader",
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-30T23:34:02.591Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-30T23:48:32.280Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-30T23:48:32.295Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:36:32.221Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T00:36:32.225Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:00:03.595Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:00:03.599Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:34:00.312Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:34:00.316Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:35:56.890Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:35:56.894Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:49:24.126Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:49:24.130Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:58:39.207Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T01:58:39.211Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:40:51.913Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:40:51.940Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:53:02.666Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T02:53:02.677Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:05:30.003Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:05:30.019Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:22:03.177Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T03:22:03.200Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:37.357Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-03-31T17:49:37.361Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-01T15:35:38.837Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T20:29:15.194Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-04-13T21:16:34.146Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:43:30.433Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:43:30.437Z"
+               }
+            ],
+            "outputCollection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}"
+         },
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_entity_load",
+            "cacheAfterRead": false,
+            "atomicUpdates": false,
+            "format": "solr",
+            "outputIndexPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "type": "parallel-bulk-loader",
+            "updates": [
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T20:54:46.657Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T21:06:06.449Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T21:06:06.453Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:43:30.593Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:43:30.596Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:47:22.415Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-07T23:47:22.419Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-08T00:10:26.077Z"
+               },
+               {
+                  "userId": "admin",
+                  "timestamp": "2021-06-08T00:10:26.080Z"
+               }
+            ],
+            "outputCollection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+      "transformScala" : "import com.lucidworks.spark.util.SolrSupport\nimport java.time.LocalDateTime\nimport java.time.format.DateTimeFormatter\nimport java.time.ZoneOffset\nimport org.apache.spark.sql.types.{\n    StructType, StructField, StringType}\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.Column\nimport scala.util.control._\n\n\n// main PBL transform\ndef transform(inputDF: Dataset[Row]) : Dataset[Row] = {\n    println(\"---BEGIN TYPE-BASED DOCUMENT LOAD---\")\n\n    var outputDF = spark.emptyDataFrame\n\n    var counter = 1\n    var currentTypeField =  \"\"\n    val loop = new Breaks;\n    // Loop through spark settings for the Type fields which should be in spark.typeField_* format\n    loop.breakable {\n        do {\n            var boolCheck = false\n            try\n            {\n                currentTypeField = sc.getConf.get(\"spark.typeField_\" + counter)\n                counter += 1\n            }\n            catch\n            { \n                case x: NoSuchElementException => \n                { \n                    println(\"End of type field arguments.\")\n                    boolCheck = true\n                }\n            }\n            if(boolCheck){ loop.break }\n\n            println(\"CURRENT TYPE: \" + currentTypeField)\n            //Type fields should be in format: {type name}, {value field}, [{Any other additional fields to pull into the suggestion document separated by \", \"}]\n            val typeFieldArray = currentTypeField.split(\",\").map(_.trim)\n            var fieldArray: Array[Column] = new Array[Column](typeFieldArray.length + 1)\n\n            //Field names wrapped in ` to escape characters like .\n            var typeName = typeFieldArray(0)\n            var valueField = \"`\" + typeFieldArray(1) + \"`\"\n            //Define columns\n            var idCol = regexp_replace(concat(lit(typeName + \"_\"),col(valueField)),\"\\\\s+\",\"\").as(\"id\")\n            var valueCol = col(valueField).as(\"value_s\")\n            var typeCol = lit(typeName).as(\"type\")\n\n            fieldArray(0) = idCol\n            fieldArray(1) =  valueCol            \n            fieldArray(2) =  typeCol\n\n            //Add all other additional fields\n            for(fieldIndex <- 2 until typeFieldArray.length){\n                var additionalField = typeFieldArray(fieldIndex)\n                fieldArray(fieldIndex+1) = col(\"`\" + additionalField + \"`\").as(additionalField)\n            }\n\n\n            //Handle optional fields and build documents for the current type name\n            var currentDF = spark.emptyDataFrame\n            currentDF = inputDF.select(fieldArray: _*).distinct()\n\n            //combine the current type dataframe with the final output dataframe\n            val cols1 = outputDF.columns.toSet\n            val cols2 = currentDF.columns.toSet\n            val total = cols1 ++ cols2 // union\n\n            def expr(myCols: Set[String], allCols: Set[String]) = {\n                allCols.toList.map(x => x match {\n                    case x if myCols.contains(x) => col(x)\n                    case _ => lit(null).as(x)\n                })\n            }\n\n            outputDF = outputDF.select(expr(cols1, total):_*).union(currentDF.select(expr(cols2, total):_*))\n            println(outputDF.head())\n        }\n        while(currentTypeField != null)\n    }\n\n    println(\"---END TYPE-BASED DOCUMENT LOAD---\")\n    println(outputDF.count() + \" DOCUMENTS WRITTEN\")\n\n    outputDF.withColumn(\"indexed_date\", lit(LocalDateTime.now(ZoneOffset.UTC)+\"Z\"))\n    .withColumn(\"ta_type\", lit(\"entity\"))\n}",
+            "sparkConfig" : [ {
+               "key" : "spark.sql.caseSensitive",
+               "value" : "true"
+             }, {
+               "key" : "spark.typeField_1",
+               "value" : "TYPE_FIELD_1"
+             }, {
+               "key" : "spark.typeField_2",
+               "value" : "TYPE_FIELD_2"
+             }, {
+               "key" : "spark.typeField_3",
+               "value" : "TYPE_FIELD_3"
+             }, {
+               "key" : "spark.typeField_4",
+               "value" : "TYPE_FIELD_4"
+             }, {
+               "key" : "spark.typeField_5",
+               "value" : "TYPE_FIELD_5"
+             } ],
+            "continueAfterFailure": false,
+            "defineFieldsUsingInputSchema": true,
+            "readOptions": [
+               {
+                  "key": "collection",
+                  "value": "${foundry.destination.COLLECTION}"
+               },
+               {
+                  "key": "zkHost",
+                  "value": "${foundry.typeahead.ZKHOST}"
+               }
+            ],
+            "clearDatasource": true
+         }
+      ],
+      "blobs": [
+         {
+            "id": "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+            "path": "/${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+            "dir": "/${foundry.FEATURE_NAME}",
+            "filename": "Typeahead_inclusion_list.csv",
+            "contentType": "text/csv",
+            "size": 110,
+            "modifiedTime": "2021-06-07T23:43:24.148Z",
+            "version": 1701953566565990400,
+            "md5": "49e87771204fca511c26852fb229b6e5",
+            "metadata": {
+               "resourceType": "file"
+            }
+         },
+         {
+            "id": "${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+            "path": "/${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+            "dir": "/${foundry.FEATURE_NAME}",
+            "filename": "full-list-of-bad-words_csv-file_2018_07_30.csv",
+            "contentType": "text/csv",
+            "size": 26846,
+            "modifiedTime": "2021-06-07T23:43:24.437Z",
+            "version": 1701953566867980288,
+            "md5": "58592b144f5584625942a1f617d2761f",
+            "metadata": {
+               "resourceType": "file"
+            }
+         },
+         {
+            "id": "lib/index/FusionServiceLib.js",
+            "path": "/lib/index/FusionServiceLib.js",
+            "dir": "/lib/index",
+            "filename": "FusionServiceLib.js",
+            "contentType": "text/javascript",
+            "size": 9866,
+            "modifiedTime": "2021-06-11T17:58:12.025Z",
+            "version": 1702294236196503552,
+            "md5": "231d5da713875ea1b94c88638810a974",
+            "metadata": {
+               "resourceType": "file:js-index"
+            }
+         }
+      ],
+      "dataSources": [
+         {
+            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_inclusion_list",
+            "created": "2021-04-26T23:25:09.167Z",
+            "modified": "2021-04-26T23:25:09.167Z",
+            "connector": "lucid.fileupload",
+            "type": "fileupload",
+            "pipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "parserId": "_system",
+            "properties": {
+               "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "fileId": "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+               "mediaType": "text/csv"
+            }
+         }
+      ]
+   },
+   "metadata": {
+      "formatVersion": "1",
+      "exportedBy": "admin",
+      "exportedDate": "2021-07-09T22:28:12.910Z",
+      "fusionVersion": "5.4.0",
+      "fusionGuid": "d62d4466-a46e-4948-97b4-58597712cc7e"
+   },
+   "properties": [
+      {
+         "id": "foundry.typeahead.ZKHOST",
+         "schema": {
+            "type": "string",
+            "title": "ZKHOST",
+            "description": "ZKHOST",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.destination.SIGNALS_AGGR_COLL",
+         "schema": {
+            "type": "string",
+            "title": "SIGNALS_AGGR_COLL",
+            "description": "SIGNALS_AGGR_COLL",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.FEATURE_NAME",
+         "schema": {
+            "type": "string",
+            "title": "FEATURE_NAME",
+            "description": "FEATURE_NAME",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.typeahead.TYPE_FIELD_1",
+         "schema": {
+            "type": "string",
+            "title": "TYPE_FIELD_1",
+            "description": "TYPE_FIELD_1",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.typeahead.TYPE_FIELD_2",
+         "schema": {
+            "type": "string",
+            "title": "TYPE_FIELD_2",
+            "description": "TYPE_FIELD_2",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.typeahead.TYPE_FIELD_3",
+         "schema": {
+            "type": "string",
+            "title": "TYPE_FIELD_3",
+            "description": "TYPE_FIELD_3",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.typeahead.TYPE_FIELD_4",
+         "schema": {
+            "type": "string",
+            "title": "TYPE_FIELD_4",
+            "description": "TYPE_FIELD_4",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.typeahead.TYPE_FIELD_5",
+         "schema": {
+            "type": "string",
+            "title": "TYPE_FIELD_5",
+            "description": "TYPE_FIELD_5",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.destination.APP",
+         "schema": {
+            "type": "string",
+            "title": "APP",
+            "description": "APP",
+            "hints": []
+         }
+      },
+      {
+         "id": "foundry.destination.COLLECTION",
+         "schema": {
+            "type": "string",
+            "title": "COLLECTION",
+            "description": "COLLECTION",
+            "hints": []
+         }
+      }
+   ]
+}
