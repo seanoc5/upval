@@ -39,7 +39,7 @@ boolean cleanDestination = true
 
 Map<String, List<Map>> rules = null
 //if(options.config) {
-File cfgFile = new File('/home/sean/work/lucidworks/upval/src/test/resources/configurations/deployDCLargeConfiguration.groovy')
+File cfgFile = new File('/home/sean/work/lucidworks/upval/src/test/resources/configs/deployDCLargeConfiguration.groovy')
 ConfigObject config = new ConfigSlurper().parse(cfgFile.toURI().toURL())
 rules = config.rules
 //} else {
