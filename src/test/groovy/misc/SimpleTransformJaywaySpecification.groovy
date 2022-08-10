@@ -58,6 +58,11 @@ class SimpleTransformJaywaySpecification extends Specification {
     }
 
 
+    def "test string parsing reading, writing, and deletion"(){
+        given:
+
+    }
+
 
     public static String src = '''
 {
