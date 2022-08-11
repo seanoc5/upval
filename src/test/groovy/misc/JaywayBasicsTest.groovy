@@ -84,6 +84,7 @@ class JaywayBasicsTest extends Specification {
         when:
         def incDir = jsonContext.read(srcPath)
         def jsonObject = jsonContext.json
+        assert jsonObject.properties.includeDirectories == false
 
         jsonContext.set(srcPath, true)
         assert jsonObject.updates.size() == 2
