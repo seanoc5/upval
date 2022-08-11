@@ -2,7 +2,6 @@ package misc
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
-import com.lucidworks.ps.Helper
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 
@@ -59,6 +58,7 @@ class SimpleTransformJaywaySpecification extends Specification {
     }
 
 
+/*
     def "test string parsing reading, writing, and deletion"(){
         given:
         DocumentContext jaywayDocContext = JsonPath.parse(m)
@@ -68,6 +68,7 @@ class SimpleTransformJaywaySpecification extends Specification {
 
 
     }
+*/
 
 
     public static String src = '''
