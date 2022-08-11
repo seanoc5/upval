@@ -1,7 +1,7 @@
 package misc
 
 import com.lucidworks.ps.Helper
-import com.lucidworks.ps.clients.DeploymentArgParser
+import com.lucidworks.ps.clients.TransformArgParser
 import com.lucidworks.ps.model.fusion.Application
 import groovy.cli.picocli.OptionAccessor
 import groovy.transform.Field
@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 final Logger log = Logger.getLogger(this.class.name);
 log.info "Starting ${this.class.name}..."
 
-OptionAccessor options = DeploymentArgParser.parse(this.class.name, args)
+OptionAccessor options = TransformArgParser.parse(this.class.name, args)
 File appZip = new File(options.source)
 File exportDir = null
 if(options.exportDir){
