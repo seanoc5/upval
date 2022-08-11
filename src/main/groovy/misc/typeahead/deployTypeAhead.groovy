@@ -31,10 +31,13 @@ if(taName){
 configSlurper.setBinding(bindingMap)
 ConfigObject config = configSlurper.parse(configUrl)
 log.info "Config: $config"*/
+File pkgSource = new File(getClass().getResource('/typeahead/').toURI())
 
-File xmlComponentSrc = new File('/home/sean/work/lucidworks/upval/src/main/resources/typeahead/Features_TYPEAHEAD_DW_F5.4_v4_component-def_TYPEAHEAD_DW_F5.4_v4.xml')
-File jsonVariablesSrc = new File('/home/sean/work/lucidworks/upval/src/main/resources/typeahead/Features_TYPEAHEAD_DW_F5.4_v4_variables.json')
-File jsonObjectsSrc = new File('/home/sean/work/lucidworks/upval/src/main/resources/typeahead/Features_TYPEAHEAD_DW_F5.4_v4_Feature_TYPEAHEAD_DW_F5.4_v4_objects.json')
+log.info "File f: ${pkgSource.absolutePath}"
+
+File xmlComponentSrc = new File(pkgSource,'Features_TYPEAHEAD_DW_F5.4_v4_component-def_TYPEAHEAD_DW_F5.4_v4.xml')
+File jsonVariablesSrc = new File(pkgSource,'Features_TYPEAHEAD_DW_F5.4_v4_variables.json')
+File jsonObjectsSrc = new File(pkgSource,'Features_TYPEAHEAD_DW_F5.4_v4_Feature_TYPEAHEAD_DW_F5.4_v4_objects.json')
 //Map taCollectionDef = config.collections.typeahead
 
 JsonSlurper jsonSlurper = new JsonSlurper()
@@ -53,7 +56,7 @@ def taCollection = fusionClient.getCollection(appName, taName)
 if(taCollection){
     log.warn "Collection: $taName already exists, not recreating..."
 } else {
-    fusionClient.createCollection(taCollectionDef, appName, false)
+    fusionClient.createCollection(taName, taCollectionDef, appName, false)
 }
 
 config.blobs.each {String key, Object val ->
