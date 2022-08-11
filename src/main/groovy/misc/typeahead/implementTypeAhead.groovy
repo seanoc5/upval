@@ -2,12 +2,12 @@ package misc.typeahead
 
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionClientArgParser
-import com.lucidworks.ps.clients.FusionResponseWrapper
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
 import java.nio.file.Path
 import java.nio.file.Paths
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -24,25 +24,30 @@ URL configUrl = getClass().getResource(options.config)
 String appName = options.appName
 String taName = options.taName
 ConfigSlurper configSlurper = new ConfigSlurper()
-Map bindingMap=[appName:appName]
-if(taName){
+Map bindingMap = [appName: appName]
+if (taName) {
     bindingMap['taName'] = taName
     log.info "Found typeahead name from CLI/options: $taName -- set binding to override config file...."
 }
 configSlurper.setBinding(bindingMap)
 ConfigObject config = configSlurper.parse(configUrl)
 log.info "Config: $config"
-Map taCollectionDef = config.collections.typeahead
+Map taCollectionDef = config.objects.collections.typeahead
 
 FusionClient fusionClient = new FusionClient(options)
-FusionResponseWrapper responseWrapper = fusionClient.getCollection(appName, taName)
-if(responseWrapper.wasSuccess()){
-    log.warn "Collection: $taName already exists, not recreating..."
-} else {
-    fusionClient.createCollection(taCollectionDef, appName, false)
+def collections = fusionClient.getCollections(appName)
+if (collections) {
+    def taCollection = collections.find { it.id == taName }
+    if (taCollection) {
+        log.warn "Collection: $taName already exists, not recreating : ${taCollection}"
+    } else {
+        log.info "Create new sidecar collection in app: $appName -- collection def: $taCollectionDef"
+        Map paramsMap=[solrParams: taCollectionDef.solrParams]
+        fusionClient.createCollection(taName, paramsMap, appName, false)
+    }
 }
 
-config.blobs.each {String key, Object val ->
+config.blobs.each { String key, Object val ->
     String path = val.path
     String src = val.source
     Path blobFile = Paths.get(src)
