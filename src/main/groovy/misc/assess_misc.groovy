@@ -1,7 +1,7 @@
 package misc
 
 import com.lucidworks.ps.Helper
-import com.lucidworks.ps.clients.DeploymentArgParser
+import com.lucidworks.ps.clients.TransformArgParser
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.transform.JsonObjectTransformer
 import groovy.cli.picocli.OptionAccessor
@@ -15,7 +15,7 @@ import org.apache.log4j.Logger
 Logger log = Logger.getLogger(this.class.name);
 log.info "start Fusion app assessment (for complexity) script: ${this.class.name}..."
 
-OptionAccessor options = DeploymentArgParser.parse(this.class.name, args)
+OptionAccessor options = TransformArgParser.parse(this.class.name, args)
 File appZip = new File(options.source)
 File exportDir = null
 if(options.exportDir){
