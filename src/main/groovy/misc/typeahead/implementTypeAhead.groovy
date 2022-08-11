@@ -12,7 +12,7 @@ import java.nio.file.Paths
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
  * @created :   8/4/22, Thursday
- * @description:
+ * @description: development script focusing on foundry typeahead package, but should lead the way to deploying packages in general
  */
 final Logger log = Logger.getLogger(this.class.name);
 
@@ -34,14 +34,19 @@ ConfigObject config = configSlurper.parse(configUrl)
 log.info "Config: $config"
 Map taCollectionDef = config.objects.collections.typeahead
 
+// ------------- FUSION CLIENT --------------------
 FusionClient fusionClient = new FusionClient(options)
-def collections = fusionClient.getCollections(appName)
-if (collections) {
-    def taCollection = collections.find { it.id == taName }
+
+
+// ------------- Package collections --------------------
+def existingCollections = fusionClient.getCollections(appName)
+config.collections.each {String label, def collectionDef ->
+    def taCollection = existingCollections.find { it.id == taName }
     if (taCollection) {
         log.warn "Collection: $taName already exists, not recreating : ${taCollection}"
     } else {
-        log.info "Create new sidecar collection in app: $appName -- collection def: $taCollectionDef"
+        log.info "Process component collection in app: $appName -- collection def: $taCollectionDef"
+        log.debug "Component collection definition: $taCollectionDef"
         Map paramsMap=[solrParams: taCollectionDef.solrParams]
         fusionClient.createCollection(taName, paramsMap, appName, false)
     }
