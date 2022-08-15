@@ -102,18 +102,23 @@ class JaywayBasicsTest extends Specification {
         JsonSlurper slurper = new JsonSlurper()
         URL url = getClass().getResource('/components/ta-objects.json')
         Map objectsMap = slurper.parse(url)
+        // upval JsonObject
         JsonObject jsonObject = new JsonObject(objectsMap)
+        // Jayway context
         JsonContext jsonContext = JsonPath.parse(url)
-
+//        String jpath = '$..*[[?(@.from_user =~ /.*\$.*/i)]'
 
 
         when:
         Map objects = objectsMap.objects
         def varObjects = jsonObject.findItems('', '$')
-        def dollarObjects = varObjects.findAll{String path, def val -> val instanceof String}
+        varObjects.each {key, val ->
+            println("key: $key -> $val")
+        }
 
         then:
-        objectsMap.keySet().size == 3
+        objectsMap.keySet().size() == 3
+        objectsMap.objects
 
 
     }

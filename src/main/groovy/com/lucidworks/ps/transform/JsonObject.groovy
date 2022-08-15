@@ -133,7 +133,10 @@ class JsonObject {
             log.debug "\t\tvaluePattern:($valuePattern) used for matching against flatmap items in arg (${flatMapToSearch.keySet().size()})"
             matchingItems = flatMapToSearch.findAll { def path, Object val ->
                 boolean match = false
-                if (valuePattern instanceof String) {
+                if(val instanceof Map || val instanceof Collection){
+                    log.debug "Skip non-leaf value ${val.getClass().simpleName}"
+                } else if (valuePattern instanceof String) {
+                    // checking string rather than regex pattern
                     String v = val.toString()
                     if(valuePattern.startsWith('=')){
                         String vp=valuePattern[1..-1]
@@ -144,11 +147,12 @@ class JsonObject {
                             log.debug "\t\tvaluePattern ($valuePattern) started with an equals, so we removed that, and doing an exact match against value(${v}): $match"
                         }
                     } else {
+                        // checking regex pattern (not string above)
                         match = (v.contains(valuePattern))
                         if(match) {
-                            log.debug "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                            log.info "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
                         } else {
-                            log.debug "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                            log.debug "\t\tValue:(${v}) DOES NOT CONTAIN valuePattern:($valuePattern)? -> $match"
                         }
                     }
 
@@ -161,8 +165,8 @@ class JsonObject {
                     }
                 }
                 return match
-            }
-        }
+            }           // end findAll
+        }               // end if-else
         return matchingItems
     }
 
@@ -504,7 +508,7 @@ class JsonObject {
 //            def keyset = object.keySet()
             Map currentDepthMap = (Map) object
             currentDepthMap.each { String key, Object value ->
-                log.info "\t" * level + "$level)Key: $key"
+                log.debug "\t" * level + "$level)Key: $key"
                 if (value instanceof Map || value instanceof List) {
                     level++
                     entries[separator + key] = value
@@ -522,7 +526,7 @@ class JsonObject {
                     log.debug "\t" * level + "submap keys: ${children}"
                 } else {
                     entries[separator + key] = value
-                    log.info "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
+                    log.debug "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
                 }
             }
             log.debug "$level) after collect entries: $entries"
@@ -551,7 +555,7 @@ class JsonObject {
                     entries[path] = val
                 }
             }
-            log.info "done with list"
+            log.debug "done with list"
         } else {
             log.warn "$level) other?? $object"
         }

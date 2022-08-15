@@ -39,8 +39,8 @@ class JsonObjectTransformerTest extends Specification {
         when:
         def srcMatchesOneAMap = transformer.findAllItemsMatching('/one/aMap', '', transformer.srcFlatpaths)
         def srcMatchesFoo = transformer.findAllItemsMatching('/one/.*', 'foo', transformer.srcFlatpaths)
-        def srcMatchesFooBar = transformer.findAllItemsMatching('/one/.*', /(foo|bar)/, transformer.srcFlatpaths)
-        def srcMatchesBars = transformer.findAllItemsMatching('.*Map.*', /(b-.*)/, transformer.srcFlatpaths)
+        def srcMatchesFooBar = transformer.findAllItemsMatching('/one/.*', ~/(foo|bar)/, transformer.srcFlatpaths)
+        def srcMatchesBars = transformer.findAllItemsMatching('.*Map.*', ~/(b-.*)/, transformer.srcFlatpaths)
 
 
         then:
@@ -124,8 +124,8 @@ class JsonObjectTransformerTest extends Specification {
         given:
         def rules = [
                 remove: [
-                        [pathPattern: /.*bSub.*/, valuePattern: ''],
-                        [pathPattern: /.*/, valuePattern: 'one'],
+                        [pathPattern: ~/.*bSub.*/, valuePattern: ''],
+                        [pathPattern: ~/.*/, valuePattern: 'one'],
                 ],
         ]
         Map destMap = srcMap.clone()
