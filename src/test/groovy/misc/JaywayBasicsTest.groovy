@@ -2,6 +2,7 @@ package misc
 
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.internal.JsonContext
+import com.lucidworks.ps.transform.JsonObject
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import spock.lang.Specification
@@ -93,6 +94,27 @@ class JaywayBasicsTest extends Specification {
         then:
         jsonObject.properties.includeDirectories == true
         jsonObject.updates == null
+
+    }
+
+    def "jayway transform TA objects"(){
+        given:
+        JsonSlurper slurper = new JsonSlurper()
+        URL url = getClass().getResource('/components/ta-objects.json')
+        Map objectsMap = slurper.parse(url)
+        JsonObject jsonObject = new JsonObject(objectsMap)
+        JsonContext jsonContext = JsonPath.parse(url)
+
+
+
+        when:
+        Map objects = objectsMap.objects
+        def varObjects = jsonObject.findItems('', '$')
+        def dollarObjects = varObjects.findAll{String path, def val -> val instanceof String}
+
+        then:
+        objectsMap.keySet().size == 3
+
 
     }
 

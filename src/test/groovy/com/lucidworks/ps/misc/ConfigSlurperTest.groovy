@@ -29,6 +29,21 @@ dev {
           skip: false,
         ]
     ]
+    myMap {
+        a = 'one'
+        b='two'
+    }
+    
+   queryParams = [
+        [
+           key = "qf",
+           value = "query_t",
+        ],
+        [
+           key = "pf",
+           value = "query_t^50",
+        ]
+    ]
 }
 
 def getProtocol(){
@@ -103,6 +118,28 @@ def getProtocol(){
         copyRule0.keySet().toList() == ['sourcePath', 'sourceItemPattern', 'destinationExpression', ]
 
     }
+
+    def "should load rules from TA config file with configslurper"() {
+        given:
+        URL configUrl = getClass().getResource('/configs/configTA.groovy')
+        File config = new File(configUrl.toURI())
+        ConfigSlurper configSlurper = new ConfigSlurper()
+
+
+        when:
+        ConfigObject cfgObject = configSlurper.parse(configUrl)
+        Map rules = cfgObject.rules
+        Map copyRule0 = rules.copy[0]
+
+        then:
+        rules instanceof Map
+        rules.copy instanceof List
+        copyRule0 instanceof Map
+        copyRule0.keySet().toList() == ['sourcePath', 'sourceItemPattern', 'destinationExpression', ]
+
+    }
+
+
     def "should load typeahead rules from config file with configslurper"() {
         given:
         Map myBindings = [appName:'test', taName:'mytypeahead']
@@ -121,8 +158,24 @@ def getProtocol(){
         config.collections.typeahead.size() == 6
         ta.size() == 6
         ta.id == "${config.appName}_${config.taName}"
-
     }
 
+
+//    def "test syntax for arrays"(){
+//
+//    }
+
+/*
+    def "merge JsonObject with ConfigObject"(){
+        given:
+        Map m = [a:'one', b:[child1:'two', child2:'three']]
+ConfigObject config = new ConfigSlurper().parse(configString)
+
+        when:
+        def flatties = m.fla
+        then:
+
+    }
+*/
 
 }

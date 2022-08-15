@@ -1,4 +1,3 @@
-
 // name of side-car collection, and blob folder, part of other element names
 taName = "${taName ?: 'typeahead'}"
 appName = "$appName"
@@ -41,7 +40,6 @@ collections {
     }
 }
 
-
 dataSources {
     fileUpload {
         id = "${baseId}_inclusion_list"
@@ -55,4 +53,33 @@ dataSources {
             mediaType = "text/csv"
         }
     }
+}
+
+queryPipelines {
+signalsHistory {
+
+}
+}
+queryProfiles {
+
+}
+
+indexPipelines {
+
+}
+
+indexProfiles {
+
+}
+
+features {
+    // todo -- enable signals on sidecar coll
+}
+
+tasks{
+
+}
+
+sparkJobs{
+
 }

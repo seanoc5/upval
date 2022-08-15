@@ -146,7 +146,7 @@ class JsonObject {
                     } else {
                         match = (v.contains(valuePattern))
                         if(match) {
-                            log.info "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                            log.debug "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
                         } else {
                             log.debug "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
                         }
@@ -499,7 +499,7 @@ class JsonObject {
 
      Map<String, Object> flattenWithObjects(def object=slurpedItems, int level = 0) {
         Map<String, Object> entries = [:]
-        log.info "\t" * level + "$level) flattenWithObjects: $object..."
+        log.debug "\t" * level + "$level) flattenWithObjects: $object..."
         if (object instanceof Map) {
 //            def keyset = object.keySet()
             Map currentDepthMap = (Map) object
@@ -512,23 +512,23 @@ class JsonObject {
                     children.each { String child, Object childObject ->
                         String path = separator + key + child
                         if (childObject instanceof Map || childObject instanceof List) {
-                            log.info "\t" * level + "non-leaf entry:(${childObject.getClass().simpleName}: $childObject"
+                            log.debug "\t" * level + "non-leaf entry:(${childObject.getClass().simpleName}: $childObject"
                             entries[path] = childObject
                         } else {
-                            log.info "\t" * level+ "leaf entry:(${childObject.getClass().simpleName}: $childObject"
+                            log.debug "\t" * level+ "leaf entry:(${childObject.getClass().simpleName}: $childObject"
                             entries[path] = childObject
                         }
                     }
-                    log.info "\t" * level + "submap keys: ${children}"
+                    log.debug "\t" * level + "submap keys: ${children}"
                 } else {
                     entries[separator + key] = value
                     log.info "\t\t$level) Leaf-node?? setting Map key($key) to value($value)"
                 }
             }
-            log.info "$level) after collect entries: $entries"
+            log.debug "$level) after collect entries: $entries"
 
         } else if (object instanceof List) {
-            log.info "\t" * level + "$level) List! $object"
+            log.debug "\t" * level + "$level) List! $object"
             List currentDepthList = (List) object
             currentDepthList.eachWithIndex { def val, int counter ->
                 if (val instanceof Map) {

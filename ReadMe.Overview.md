@@ -301,3 +301,11 @@ archive: conditions
 - DifferenceType: elements/structure/keys, values, order
 - Description
 - 
+
+
+# Various other
+## Json to configObject
+- regex simple values:
+  - `"(\w+)" *: (?=["tf\d])(.*),?`
+- regex compound objects:
+  - `"(\w+)" *: *\[`
