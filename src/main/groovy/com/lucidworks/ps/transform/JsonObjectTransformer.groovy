@@ -116,10 +116,10 @@ class JsonObjectTransformer extends BaseTransformer {
         copyRules.each { def copyRule ->
             String srcPath = copyRule.sourcePath ?: '.*'
             def srcValPattern = copyRule.sourceItemPattern
-                    if(!srcValPattern && copyRule.from){
-                        log.debug "found alternate src value setting (shortcut label) 'from': ${copyRule.from}"
-                        srcValPattern = copyRule.from
-                    }
+            if (!srcValPattern && copyRule.from) {
+                log.debug "found alternate src value setting (shortcut label) 'from': ${copyRule.from}"
+                srcValPattern = copyRule.from
+            }
             def destPath = copyRule.destinationPath
             def destValuePattern = copyRule.destinationExpression ?: copyRule.to        //shortened elvis operator to allow friendly "from->to" labelling
 
@@ -154,11 +154,10 @@ class JsonObjectTransformer extends BaseTransformer {
         return results
     }
 
-
-    /**
-     * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
-     * @param srcValue
-     */
+/**
+ * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
+ * @param srcValue
+ */
     def transformDestinationValue(def srcValue, def srcPattern, def destPath, def destValuePattern) {
         String destValue = null
         String transformType = getTransformType(srcValue, srcPattern, destPath, destValuePattern)
@@ -185,7 +184,13 @@ class JsonObjectTransformer extends BaseTransformer {
 
             case TX_STRING_REPLACE:
                 // todo -- should this be different functionality from regex replace??
-                destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
+                String quoted = Pattern.quote(srcPattern)
+                if(quoted != srcPattern) {
+                    log.info "Escaping/quoting srcPattern:($srcPattern) => $quoted"
+                    destValue = ((String) srcValue).replaceAll(quoted, destValuePattern)
+                } else {
+                    destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
+                }
                 log.info "\t\t$transformType) transform source: ($srcValue) to dest:($destValue) "
                 break
 
@@ -266,18 +271,21 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    List<Map<String, Object>> performSetRules(Object rules) {
-//        return super.performSetRules(rules)
+    List<Map<String, Object>> performSetRules(List<Map> rules) {
         List results = []
-        rules.each { def rule ->
+        rules.each { Map rule ->
             log.info "\t\tset rule: $rule"
-            //            sourceObject
+            def destPath = rule.destinationPath ?: rule.path
+            def valToSet = rule.destinationExpression ?: rule.to        //shortened elvis operator to allow friendly "from->to" labelling
+
+            def result = JsonObject.setObjectNodeValue(destinationObject, destPath, valToSet)
             results << rule
         }
         return results
     }
 
-    static public final int charPreA = 64
+
+//    static public final int charPreA = 64
     /**
      * remove nodes based on rules
      * @param removeRules
@@ -285,28 +293,23 @@ class JsonObjectTransformer extends BaseTransformer {
      * Note: we assume JsonObject.orderIndexKeysDecreasing is necessary to void trying to remove successive collection elements, and have collection indexes change in the process (if we work highest index to lowest, are we safe???)
      */
     @Override
-    List<Map<String, Object>> performRemoveRules(def removeRules) {
+    List<Map<String, Object>> performRemoveRules(List<Map> removeRules) {
         List results = []
         def destObject = new JsonObject(this.destinationObject)
         // todo -- revisit/refactor, this is a quick hack to get 'full' map, including non-leaf nodes....
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
-            String pathPattern = rule.pathPattern
-            String valuePattern = rule.valuePattern
+            // these pattern variables can be String or Regex Pattern
+            def pathPattern = rule.pathPattern
+            def valuePattern = rule.valuePattern
             Map<String, Object> matchingPaths = null
-//            if (pathPattern.endsWith('/')) {
-//                log.info "Remove 'parent' object(s) matching pathPattern:$pathPattern"
-//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, destObject.flatPathMap)
-//                JsonObject.removeItem()
-//            } else {
-                matchingPaths = destObject.findItems(pathPattern, valuePattern)
-//                matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-                // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-                Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
-                sortedKeys.each { String path ->
-                    def rslt = doRemove(path)
-                    results << rslt
-//                }
+            matchingPaths = destObject.findItems(pathPattern, valuePattern)
+            // matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+            Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+            sortedKeys.each { String path ->
+                def rslt = doRemove(path)
+                results << rslt
             }
 
         }
