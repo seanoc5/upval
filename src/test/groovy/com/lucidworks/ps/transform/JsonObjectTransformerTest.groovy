@@ -20,7 +20,7 @@ class JsonObjectTransformerTest extends Specification {
             created     : '2022-07-15',
             one         : [
                     aMap       : ['foo', 'bar', 'LWFX-123'],
-                    bSubMap    : [b1: 'b-one', b2: 'b-two', b3list: ['b3-1', 'b3-1']],
+                    bSubMap    : [b1: 'b-one', b2: 'b-two', b3list: ['b3-1', '${b3-1}']],
                     clistOfMaps: [[cSubmap1: ['one', 'two']], [cSubMap2: ['three', 'four']]],
                     oneSubLeaf : 'Simple leaf',
                     id         : 'LWF_test',
@@ -77,18 +77,48 @@ class JsonObjectTransformerTest extends Specification {
         transformer.destinationObject.one.aMap[2] == 'LWFX-123'
     }
 
+    def "copy-rule abbreviated syntax copy test"() {
+        given:
+        def rules = [
+                copy: [
+                        [sourceItemPattern: 'LWF', destinationExpression: 'ABC'],
+                        [from: 'Simple', to: 'Basic'],
+                ]
+        ]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        String testVal = rules.copy[0].destinationExpression
+
+        when:
+        def results = transformer.transform(rules)
+
+        then:
+        results instanceof Map
+        results.copyResults instanceof List
+        results.copyResults.size() == 5
+        results.copyResults[0] instanceof Map
+        results.copyResults[0].keySet().toList() == ['/id']
+        // todo -- results keys are coming back as GString implementations, which are objects, so even asking for the same text/string won't work, convert keys to regular strings (not GString objects)
+        //((Map)results.copyResults[0]).get('/id') == 'ABC_Commerce'
+        srcMap.id == "${testVal}_Commerce"
+
+        transformer.destinationObject.id == "${testVal}_Commerce"
+        transformer.destinationObject.one.id == "${testVal}_test"
+        transformer.destinationObject.one.aMap.size() == 3
+        transformer.destinationObject.one.aMap[2] == "${testVal}X-123"
+        transformer.destinationObject.threeTopLeaf == 'Basic leaf'      // changed 'Simple' to 'Basic' with shorthand 'from -> to' syntax
+    }
 
     def "copy-rule string replace transform test"() {
         given:
         def rules = [
                 copy: [
-                        [sourcePath: '.*',
-                         sourceItemPattern: 'LWF_',
-                         destinationPath: '',
+                        [sourcePath           : '.*',
+                         sourceItemPattern    : 'LWF_',
+                         destinationPath      : '',
                          destinationExpression: 'Acme_'],
                 ],
         ]
-        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
         Map destMap = transformer.destinationObject
 
         when:
@@ -163,7 +193,7 @@ class JsonObjectTransformerTest extends Specification {
         transformer.srcFlatpaths.size() == 20           // this is 14 when using 'old' flatmaps with only leafnodes, and 20 with 'new' flatmaps that include paths for non-leaf nodes
         newFlatties.size() == 17
         destMap.one.aMap == null
-        destMap.one.bSubMap.keySet().toList() == [ 'b1', 'b2', 'b3list']
+        destMap.one.bSubMap.keySet().toList() == ['b1', 'b2', 'b3list']
     }
 
 
@@ -193,7 +223,7 @@ class JsonObjectTransformerTest extends Specification {
                 a: [foo: ['one', 'two'],],
                 b: ['b1', 'b2', 'b3'],
                 c: ['c1', 'c2', 'c3', 'c4',],
-                d: [d1:'d-leaf', d2:'d2', d3:[9,9,9,]]
+                d: [d1: 'd-leaf', d2: 'd2', d3: [9, 9, 9,]]
         ]
         def flatties = JsonObject.flattenWithLeafObject(map)
 
