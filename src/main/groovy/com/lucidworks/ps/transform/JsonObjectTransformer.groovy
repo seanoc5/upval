@@ -17,7 +17,7 @@ class JsonObjectTransformer extends BaseTransformer {
      * @param destination
      * @param pathSeparator
      */
-    JsonObjectTransformer(Object source, Map<String, Object> destination, String pathSeparator = '/') {
+    JsonObjectTransformer(Object source, Map<String, Object> destination = null, String pathSeparator = '/') {
         if (checkSourceDestinationTypesAreValid(source, destination)) {
             this.sourceObject = source
             if (destination) {
@@ -89,6 +89,7 @@ class JsonObjectTransformer extends BaseTransformer {
             log.info "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
 
         } else {
+            log.debug "No value pattern to match, so return subset of all matched paths"
             Set matchingPathKeys = matchingPaths.keySet()
             matchingFlatPaths = flatpathItems.subMap(matchingPathKeys)
             assert matchingFlatPaths.size() == matchingPaths.size()
@@ -113,10 +114,14 @@ class JsonObjectTransformer extends BaseTransformer {
         log.info "Rules: $copyRules"
         List<Map> results = []
         copyRules.each { def copyRule ->
-            String srcPath = copyRule.sourcePath
+            String srcPath = copyRule.sourcePath ?: '.*'
             def srcValPattern = copyRule.sourceItemPattern
+                    if(!srcValPattern && copyRule.from){
+                        log.debug "found alternate src value setting (shortcut label) 'from': ${copyRule.from}"
+                        srcValPattern = copyRule.from
+                    }
             def destPath = copyRule.destinationPath
-            def destValuePattern = copyRule.destinationExpression
+            def destValuePattern = copyRule.destinationExpression ?: copyRule.to        //shortened elvis operator to allow friendly "from->to" labelling
 
             log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'clone of source'} -- transform: ${srcValPattern ?: 'none'}"
             Map<String, Object> srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
@@ -125,8 +130,10 @@ class JsonObjectTransformer extends BaseTransformer {
             srcPaths.each { String flatPath, def srcValue ->
                 Map<String, Object> destPaths = null
                 if (destPath) {
+                    // rule states we need to copy to destinations different than source, get those destintions
                     destPaths = getDestinationPaths(destPath, flatPath, destValuePattern)
                 } else {
+                    log.debug "no destination path specified, so just copy to the same dest path as source flatpath: $flatPath"
                     destPaths = ((Map) destFlatpaths).subMap(flatPath)
                 }
                 def destValue = transformDestinationValue(srcValue, srcValPattern, destPath, destValuePattern)
