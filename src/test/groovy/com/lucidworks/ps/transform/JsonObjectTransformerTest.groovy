@@ -24,7 +24,7 @@ class JsonObjectTransformerTest extends Specification {
                     clistOfMaps: [[cSubmap1: ['one', 'two']], [cSubMap2: ['three', 'four']]],
                     oneSubLeaf : 'Simple leaf',
                     id         : 'LWF_test',
-                    created    : '2020-01-01',
+                    updated    : '2020-01-01',
             ],
             two         : ['one', 'two', 'three',],
             threeTopLeaf: 'Simple leaf',
@@ -130,14 +130,41 @@ class JsonObjectTransformerTest extends Specification {
         destMap.one.id == 'Acme_test'
     }
 
+    def "copy-rule transform with special characters"() {
+        given:
+        String newValue = 'base3.1'
+        def rules = [
+                copy: [
+                        [from    : '${b3-1}',
+                         to: newValue],
+                ],
+        ]
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        Map destMap = transformer.destinationObject
+        String expectedResultPath = '/one/bSubMap/b3list/1'
+
+        when:
+        def results = transformer.transform(rules)
+
+        then:
+        results instanceof Map
+        results.copyResults[0].keySet()[0] == expectedResultPath
+        ((Map)results.copyResults[0]).values()[0] == newValue
+        destMap.one.bSubMap.b3list[1] == newValue
+    }
+
+
     /**
      * todo -- implement set rules, currently just a placeholder...
      * @return
      */
+/*
     def "regex set-rule transform test"() {
         given:
         def rules = [
-                set: [destinationPath: /.*DC_Large/],
+                set: [
+                        [destinationPath: /.*DC_Large/],
+                ]
         ]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
         Map destMap = transformer.destinationObject
@@ -149,6 +176,7 @@ class JsonObjectTransformerTest extends Specification {
         destMap.id == 'Acme_Commerce'
         destMap.one.id == 'Acme_test'
     }
+*/
 
     def "remove-rule should remove items based on rules"() {
         given:
@@ -201,20 +229,32 @@ class JsonObjectTransformerTest extends Specification {
         given:
         def rules = [
                 remove: [
-                        [pathPattern: /.*(\/updates\/).*/, valuePattern: '.*'],
-                        [pathPattern: /.*(\/createdAt\/).*/, valuePattern: '.*'],
-                        [pathPattern: /.*/, valuePattern: '10000'],
+                        [pathPattern: ~/.*(created|updated)/],
+//                        [pathPattern: ~/(created|updated)/],
+                        [valuePattern: ~'b-(one|two)'],
+//                        [pathPattern: /.*(\/created\/).*/, valuePattern: '.*'],
+//                        [pathPattern: /.*/, valuePattern: '10000'],
                 ],
         ]
         Map destMap = srcMap.clone()
+        String createdStr = destMap.created
+        assert createdStr.contains('2022')          // confirm we start with one of the values we are going to remove
+        assert destMap.one.bSubMap.b1 > ''
+        assert destMap.one.bSubMap.keySet().toList() == ['b1', 'b2', 'b3list']
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, destMap)
+//        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
 
         when:
         def results = transformer.transform(rules)
 
         then:
-        destMap.id == 'Acme_Commerce'
-        destMap.one.id == 'Acme_test'
+        destMap.id == 'LWF_Commerce'
+        destMap.one.id == 'LWF_test'
+        destMap.one.bSubMap.b1 == null
+        destMap.created == null
+        destMap.one.updated == null
+        destMap.one.bSubMap.keySet().toList() == ['b3list']
+
     }
 
     def "orderIndexKeysDecreasing should sort flatPaths with collection index items in reverse order"() {
