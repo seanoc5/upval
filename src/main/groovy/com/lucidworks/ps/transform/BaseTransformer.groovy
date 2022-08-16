@@ -86,14 +86,14 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    abstract List<Map<String, Object>> performSetRules(def rules)
+    abstract List<Map<String, Object>> performSetRules(List<Map> rules)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract List<Map<String, Object>> performRemoveRules(def rules)
+    abstract List<Map<String, Object>> performRemoveRules(List<Map> rules)
 
     /**
      * process single 'copy' rules
