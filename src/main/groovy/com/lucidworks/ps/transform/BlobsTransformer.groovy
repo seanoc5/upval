@@ -230,7 +230,7 @@ class BlobsTransformer extends BaseTransformer {
     }
 
     @Override
-    List<Map<String, Object>> performSetRules(Object rules) {
+    List<Map<String, Object>> performSetRules(List<Map> rules) {
 //        return super.performSetRules(rules)
         List results = []
         rules.each { def rule ->
@@ -241,7 +241,7 @@ class BlobsTransformer extends BaseTransformer {
         return results
     }
 
-    static public final int charPreA = 64
+//    static public final int charPreA = 64
     /**
      * remove nodes based on rules
      * @param removeRules
@@ -249,7 +249,7 @@ class BlobsTransformer extends BaseTransformer {
      * Note: we assume JsonObject.orderIndexKeysDecreasing is necessary to void trying to remove successive collection elements, and have collection indexes change in the process (if we work highest index to lowest, are we safe???)
      */
     @Override
-    List<Map<String, Object>> performRemoveRules(def removeRules) {
+    List<Map<String, Object>> performRemoveRules(List<Map> removeRules) {
         List results = []
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
