@@ -98,14 +98,14 @@ class JsonObject {
                     if(match) {
                         log.info "\t\t String path compare: $path == $pathPattern ?? ${match}"
                     } else {
-                        log.debug "\t\t String path compare: $path == $pathPattern ?? ${match}"
+                        log.debug "\t\t NO MATCH: $path == $pathPattern ?? ${match}"
                     }
                 } else {
                     match = (path ==~ pathPattern)
                     if(match) {
-                        log.info "\t\t Regex path compare: $path ==~ $pathPattern ?? ${match}"
+                        log.info "\t\tRegex path compare: '$path' ==~ '$pathPattern' :: match=${match}"
                     } else {
-                        log.debug "\t\t Regex pathcompare: $path ==~ $pathPattern ?? ${match}"
+                        log.debug "\t\tNO MATCH: $path ==~ $pathPattern ?? ${match}"
                     }
                 }
                 return match
@@ -116,7 +116,7 @@ class JsonObject {
                 log.info "Tried getting matchingPaths via getObjectNodeValue($pathPattern): $matchingPaths"
             }
             if(matchingPaths) {
-                log.info "\t\tfound (${matchingPaths.size()}) paths matching pathpattern: $pathPattern"
+                log.info "\t\tfound (${matchingPaths.size()}) paths matching pathpattern: $pathPattern -> ${matchingPaths}"
             } else {
                 log.info "\t\tNo paths found matching path pattern: $pathPattern"
             }
@@ -159,9 +159,9 @@ class JsonObject {
                 } else {
                     match = (val ==~ valuePattern)
                     if(match) {
-                        log.info "\t\t Regex value compare: $val ==~ $valuePattern ?? ${match}"
+                        log.info "\t\tMATCH) Regex value compare: $val ==~ $valuePattern :: match=${match}"
                     } else {
-                        log.debug "\t\t Regex value compare: $val ==~ $valuePattern ?? ${match}"
+                        log.debug "\t\tNO MATCH) Regex value compare: $val ==~ $valuePattern :: match=${match}"
                     }
                 }
                 return match
