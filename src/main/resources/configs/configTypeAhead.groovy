@@ -5,6 +5,15 @@ baseId = "${appName}_$taName"
 DELETE_EXISTING = true
 
 
+transform {
+    copy = [
+            [sourcePath     : '.*', sourceItemPattern: 'LWF_',
+             destinationPath: '', destinationExpression: 'Acme_'],
+    ]
+
+
+}
+
 blobs {
     serviceLib {
         type = 'file'
@@ -56,9 +65,9 @@ dataSources {
 }
 
 queryPipelines {
-signalsHistory {
+    signalsHistory {
 
-}
+    }
 }
 queryProfiles {
 
@@ -76,10 +85,10 @@ features {
     // todo -- enable signals on sidecar coll
 }
 
-tasks{
+tasks {
 
 }
 
-sparkJobs{
+sparkJobs {
 
 }
