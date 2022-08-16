@@ -291,8 +291,9 @@ class JsonObject {
      * @return the same valToSet param (as a success check), or null if failed???
      *
      * todo -- fix missing hierarchies -- currently returning each created segment flatly -- not correct
+     * todo - check non-string values to set (no unintended casting to strings etc
      */
-    static String setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
+    static Object setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
         def result
         log.debug "$depth) We are at the leafNode (seg: $currentSegment) in path($path) to set the value ($valToSet) in element ($element)..."
         if (element instanceof List) {
