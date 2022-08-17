@@ -37,6 +37,19 @@ class JsonObject {
         flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
     }
 
+    /**
+     * convenience constructor explicitly with file
+     * @param srcFile
+     * @param separator
+     */
+    JsonObject(File srcFile, String separator = DEFAULT_SEPARATOR) {
+        JsonSlurper slurper = new JsonSlurper()
+        slurpedItems = slurper.parse(srcFile)
+        this.separator = separator
+        flatPathMap = flattenWithLeafObject(slurpedItems, 0, separator)
+    }
+
+
     JsonObject(Map sourceMap, String separator = DEFAULT_SEPARATOR) {
 //            log.info "We seem to have constructor with source arg (${source.getClass().simpleName}) pointing to source ($source), so use slurper.parse()... "
         slurpedItems = sourceMap
@@ -147,16 +160,17 @@ class JsonObject {
                             log.debug "\t\tvaluePattern ($valuePattern) started with an equals, so we removed that, and doing an exact match against value(${v}): $match"
                         }
                     } else {
-                        // checking regex pattern (not string above)
+                        // checking String.contains (not full match)
                         match = (v.contains(valuePattern))
                         if(match) {
-                            log.info "\t\tValue:(${v}) contains valuePattern:($valuePattern)? -> $match"
+                            log.info "\t\tValue:(${v}) CONTAINS valuePattern:($valuePattern) => path:$path"
                         } else {
                             log.debug "\t\tValue:(${v}) DOES NOT CONTAIN valuePattern:($valuePattern)? -> $match"
                         }
                     }
 
                 } else {
+                    // checking regex pattern (not string above)
                     match = (val ==~ valuePattern)
                     if(match) {
                         log.info "\t\tMATCH) Regex value compare: $val ==~ $valuePattern :: match=${match}"

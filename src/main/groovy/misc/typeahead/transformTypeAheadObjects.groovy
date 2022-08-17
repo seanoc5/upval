@@ -3,9 +3,11 @@ package misc.typeahead
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.TransformArgParser
+import com.lucidworks.ps.transform.JsonObject
 import groovy.cli.picocli.OptionAccessor
 import groovy.transform.Field
 import org.apache.log4j.Logger
+
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -33,20 +35,37 @@ ConfigObject config = configSlurper.parse(configUrl)
 log.info "ConfigSlurper using: $configUrl"
 log.debug "ConfigObject: $config"
 
+// ------------------ Get source object -------------------
+File srcFile = new File(options.source)
+JsonObject jsonObject = new JsonObject(srcFile)
+Map<String, Object> varPaths = jsonObject.findItems('', '$')
+log.info "Variable paths: $varPaths"
 
 // ------------------ Fusion Client -------------------
 FusionClient fusionClient
-if(options.fusionUrl) {
+if (options.fusionUrl) {
     fusionClient = new FusionClient(options)
     log.info "Created Fusion client: $fusionClient"
 }
+
 // ------------------ Export directory -------------------
 def exportDir
-if(options.exportDir){
+if (options.exportDir) {
     exportDir = Helper.getOrMakeDirectory(options.exportDir)
     log.info "Using export directory: $exportDir"
 }
-
-
+File outFile = new File(exportDir, 'variables.csv')
+outFile.withWriter { BufferedWriter writer ->
+    varPaths.each { String path, String val ->
+        def vars = val.findAll{ v ->
+            v =~ /\$\{[^}]+}/
+        }
+        String s = vars.collect{
+            it[0][0]
+        }
+        writer.writeLine("${path},${s}")
+    }
+}
+log.info "Write path-variables to file: ${outFile.absolutePath}"
 log.info "Done...?"
 
