@@ -15,7 +15,7 @@ import spock.lang.Specification
  */
 class JsonObjectTransformerTest extends Specification {
     static final Logger log = Logger.getLogger(this.class.name);
-    static final Map srcMap = [
+     Map srcMap = [
             id          : 'LWF_Commerce',
             created     : '2022-07-15',
             one         : [
@@ -60,7 +60,8 @@ class JsonObjectTransformerTest extends Specification {
 
     }
 
-    def "copy-rule basic copy test"() {
+    // todo -- remove this? or change JsonObjectTransformer constructor so single source creates a blank destination
+    def "copy-rule basic copy long labels and implied destination"() {
         given:
         def rules = [copy: [[sourcePath: '.*', sourceItemPattern: 'LWF.*'],],]
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap, srcMap)
@@ -110,6 +111,8 @@ class JsonObjectTransformerTest extends Specification {
 
     def "copy-rule string replace transform test"() {
         given:
+        // check instance vars, ensure previous test (when run altogether) does not pollute this test... srcMap reset between features
+        assert srcMap.id =='LWF_Commerce'
         def rules = [
                 copy: [
                         [sourcePath           : '.*',
@@ -199,7 +202,7 @@ class JsonObjectTransformerTest extends Specification {
 
 
     /**
-     * todo -- implement remove rules, currently just a placeholder...
+     * todo -- fix removing entry, not just
      * @return
      */
     def "remove-rule should remove item based on simple rule"() {

@@ -79,21 +79,24 @@ abstract class BaseTransformer {
      * @param rules
      * @return
      */
-    abstract List<Map<String, Object>> performCopyRules(List<Map> rules)
+    abstract List<Map<String, Object>> performCopyRules(List rules)
+//    abstract List<Map<String, Object>> performCopyRules(List<Map> rules)
 
     /**
      * process all of the given 'sest' rules
      * @param rules
      * @return
      */
-    abstract List<Map<String, Object>> performSetRules(List<Map> rules)
+    abstract List<Map<String, Object>> performSetRules(List rules)
+//    abstract List<Map<String, Object>> performSetRules(List<Map> rules)
 
     /**
      * process all of the given 'remove' rules
      * @param rules
      * @return
      */
-    abstract List<Map<String, Object>> performRemoveRules(List<Map> rules)
+    abstract List<Map<String, Object>> performRemoveRules(List rules)
+//    abstract List<Map<String, Object>> performRemoveRules(List<Map> rules)
 
     /**
      * process single 'copy' rules

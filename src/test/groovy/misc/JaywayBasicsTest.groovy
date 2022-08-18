@@ -97,7 +97,8 @@ class JaywayBasicsTest extends Specification {
 
     }
 
-    def "jayway transform TA objects"(){
+    // todo -- can't find a way to match "any" element with a given value, value selector seems to need a 'thing' to look in, no ?(@.*...) or similar
+    def "jayway transform TA objects"() {
         given:
         JsonSlurper slurper = new JsonSlurper()
         URL url = getClass().getResource('/components/ta-objects.json')
@@ -112,19 +113,67 @@ class JaywayBasicsTest extends Specification {
         when:
         Map objects = objectsMap.objects
         def varObjects = jsonObject.findItems('', '$')
-        varObjects.each {key, val ->
+        varObjects.each { key, val ->
             println("key: $key -> $val")
         }
 
         then:
         objectsMap.keySet().size() == 3
         objectsMap.objects
+    }
 
+
+    def "delete entries simple"() {
+        given:
+        JsonContext jsonContext = JsonPath.parse(src)
+        Map objectsMap = jsonContext.json()
+        String jayPathUpdates = '$..updates'
+        assert objectsMap.updates != null
+
+
+        when:
+        def preDelete = jsonContext.read(jayPathUpdates)
+        def deleteUpdatesResult = jsonContext.delete(jayPathUpdates)
+        def postDelete = jsonContext.read(jayPathUpdates)
+
+        then:
+        preDelete instanceof Collection
+        preDelete.size() == 1
+        preDelete[0].size() == 2
+        objectsMap.updates == null
+        postDelete instanceof Collection
+        postDelete.size() == 0
 
     }
 
 
-    public static String src = '''
+/*
+    def "delete entries complex paths"() {
+        given:
+        JsonContext jsonContext = JsonPath.parse(src)
+        Map objectsMap = jsonContext.json()
+        String jayPathUpdates = '$..updates'
+        assert objectsMap.updates != null
+
+
+        when:
+        def preDelete = jsonContext.read(jayPathUpdates)
+        def deleteUpdatesResult = jsonContext.delete(jayPathUpdates)
+        def postDelete = jsonContext.read(jayPathUpdates)
+
+        then:
+        preDelete instanceof Collection
+        preDelete.size() == 1
+        preDelete[0].size() == 2
+        objectsMap.updates == null
+        postDelete instanceof Collection
+        postDelete.size() == 0
+
+    }
+*/
+
+    /*public static*/
+    String src = '''
 {
   "id": "sample-s3-id",
   "created": "2021-04-21T19:04:31.111Z",
@@ -148,7 +197,7 @@ class JaywayBasicsTest extends Specification {
       "timestamp": "2022-02-08T18:36:17.933Z"
     },
     {
-      "userId": "ashumway",
+      "userId": "admin",
       "timestamp": "2022-02-08T18:36:17.940Z"
     }
   ]

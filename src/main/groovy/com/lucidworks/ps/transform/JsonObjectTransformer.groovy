@@ -1,5 +1,8 @@
 package com.lucidworks.ps.transform
 
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.internal.JsonContext
+
 import java.util.regex.Pattern
 
 /**
@@ -18,20 +21,20 @@ class JsonObjectTransformer extends BaseTransformer {
      * @param pathSeparator
      */
     JsonObjectTransformer(Object source, Map<String, Object> destination = null, String pathSeparator = '/') {
-        if (checkSourceDestinationTypesAreValid(source, destination)) {
-            this.sourceObject = source
-            if (destination) {
-                destinationObject = destination
-            } else {
-                // todo -- refactoring to force destination map, can probably remove this check at some point...?
-                destinationObject = source
-                log.warn "No destination/template object given in constructor, using source as destination (i.e. inplace updating)"
-            }
+        this.sourceObject = source
+        if (destination) {
+            destinationObject = destination
+        } else {
+            // todo -- refactoring to force destination map, can probably remove this check at some point...?
+            destinationObject = source
+            log.warn "No destination/template object given in constructor, using source as destination (i.e. inplace updating)"
+        }
 
+//        if (checkSourceDestinationTypesAreValid(source, destination)) {
             this.separator = separator
             // get the flattened paths of the source and dest json objects, for the transform to use below
             srcFlatpaths = JsonObject.flattenWithLeafObject(source)
-            JsonObject srcJsonObject = new JsonObject(source)
+//            JsonObject srcJsonObject = new JsonObject(source)
 //            srcFlatpaths = srcJsonObject.flattenWithObjects()
 
 //            def ksFoo = destination.keySet()
@@ -40,11 +43,11 @@ class JsonObjectTransformer extends BaseTransformer {
 //            destFlatpaths = destJsonObject.flattenWithObjects()
             destFlatpaths = JsonObject.flattenWithLeafObject(destinationObject)
 
-        } else {
-            String msg = "Source and destination are not both valid, throwing error"
-            log.warn msg
-            throw new IllegalArgumentException(msg)
-        }
+//        } else {
+//            String msg = "Source and destination are not both valid, throwing error"
+//            log.warn msg
+//            throw new IllegalArgumentException(msg)
+//        }
     }
 
     /**
@@ -67,11 +70,11 @@ class JsonObjectTransformer extends BaseTransformer {
             matchingPaths = flatpathItems.findAll { String path, Object val ->
                 path ==~ pathPattern
             }
-            log.info "\t\tpathPattern($pathPattern) matched: $matchingPaths"
+            log.debug "\t\tpathPattern($pathPattern) matched: $matchingPaths"
         }
 
         if (valuePattern) {
-            log.info "\t\tWe have a valuePattern to further filter: $valuePattern"
+            log.debug "\t\tWe have a valuePattern to further filter: $valuePattern"
 
             matchingFlatPaths = flatpathItems.subMap(matchingPaths.keySet()).findAll { String itemPath, def itemValue ->
                 boolean valMatches = false
@@ -86,7 +89,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 }
                 return valMatches
             }
-            log.info "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
+            log.debug "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
 
         } else {
             log.debug "No value pattern to match, so return subset of all matched paths"
@@ -110,7 +113,7 @@ class JsonObjectTransformer extends BaseTransformer {
      * @return results??
      */
     @Override
-    List<Map<String, Object>> performCopyRules(List<Map> copyRules) {
+    List<Map<String, Object>> performCopyRules(List copyRules) {
         log.info "Rules: $copyRules"
         List<Map> results = []
         copyRules.each { def copyRule ->
@@ -185,7 +188,7 @@ class JsonObjectTransformer extends BaseTransformer {
             case TX_STRING_REPLACE:
                 // todo -- should this be different functionality from regex replace??
                 String quoted = Pattern.quote(srcPattern)
-                if(quoted != srcPattern) {
+                if (quoted != srcPattern) {
                     log.info "Escaping/quoting srcPattern:($srcPattern) => $quoted"
                     destValue = ((String) srcValue).replaceAll(quoted, destValuePattern)
                 } else {
@@ -271,7 +274,7 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
     @Override
-    List<Map<String, Object>> performSetRules(List<Map> rules) {
+    List<Map<String, Object>> performSetRules(List rules) {
         List results = []
         rules.each { Map rule ->
             log.info "\t\tset rule: $rule"
@@ -293,23 +296,35 @@ class JsonObjectTransformer extends BaseTransformer {
      * Note: we assume JsonObject.orderIndexKeysDecreasing is necessary to void trying to remove successive collection elements, and have collection indexes change in the process (if we work highest index to lowest, are we safe???)
      */
     @Override
-    List<Map<String, Object>> performRemoveRules(List<Map> removeRules) {
+    List<Map<String, Object>> performRemoveRules(List removeRules) {
         List results = []
+        // Jayway syntax (probably default, no need for map style delete or set)
+        JsonContext destContext = JsonPath.parse(destObject)
+        // home-grown map-style rule operations (perhaps only useful for copy/transform)
         def destObject = new JsonObject(this.destinationObject)
+
         // todo -- revisit/refactor, this is a quick hack to get 'full' map, including non-leaf nodes....
-        removeRules.each { Map<String, Object> rule ->
-            log.info "Remove rule: $rule"
-            // these pattern variables can be String or Regex Pattern
-            def pathPattern = rule.pathPattern
-            def valuePattern = rule.valuePattern
-            Map<String, Object> matchingPaths = null
-            matchingPaths = destObject.findItems(pathPattern, valuePattern)
-            // matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
-            // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
-            Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
-            sortedKeys.each { String path ->
-                def rslt = doRemove(path)
-                results << rslt
+        removeRules.each { def rule ->
+            if(rule instance Map) {
+                log.info "Remove rule (map-style): $rule"
+                // these pattern variables can be String or Regex Pattern
+                def pathPattern = rule.pathPattern
+                def valuePattern = rule.valuePattern
+                Map<String, Object> matchingPaths = null
+                matchingPaths = destObject.findItems(pathPattern, valuePattern)
+                // matchingPaths = findAllItemsMatching(pathPattern, valuePattern, this.destFlatpaths)
+                // todo -- revisit removal logic and any missed gothca's in removing things, especially collection elements
+                Set sortedKeys = JsonObject.orderIndexKeysDecreasing(matchingPaths)
+                sortedKeys.each { String path ->
+                    def rslt = doRemove(path)
+                    results << rslt
+                }
+            } else if(rule instanceof String && (String)rule.startsWith('$')){
+                log.info "Remove rule (JayWay syntax): $rule"
+                def result = destContext.delete(rule)
+                results << [jaywayPath:rule]
+            } else {
+                log.warn "Unknown rule type/syntax: $rule  (not UpVal Map-based, not JayWay...???)"
             }
 
         }

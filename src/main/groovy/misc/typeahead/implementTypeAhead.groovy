@@ -1,12 +1,12 @@
 package misc.typeahead
 
+import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionClientArgParser
+import com.lucidworks.ps.transform.JsonObject
+import com.lucidworks.ps.transform.JsonObjectTransformer
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
-
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @author :    sean
@@ -18,6 +18,7 @@ final Logger log = Logger.getLogger(this.class.name);
 
 log.info "Starting ${this.class.name} with args: ${args}..."
 
+// ------------------ Configuration -------------------
 OptionAccessor options = FusionClientArgParser.parse(this.class.name, args)
 URL configUrl = getClass().getResource(options.config)
 
@@ -32,35 +33,46 @@ if (taName) {
 configSlurper.setBinding(bindingMap)
 ConfigObject config = configSlurper.parse(configUrl)
 log.info "Config: $config"
-Map taCollectionDef = config.objects.collections.typeahead
+log.debug "ConfigObject: $config"
 
-// ------------- FUSION CLIENT --------------------
-FusionClient fusionClient = new FusionClient(options)
+Map rules = config.transform
+log.info "Transform rules: $rules"
+
+// ------------------ Get source object -------------------
+File srcFile = new File(options.source)
+JsonObject jsonObject = new JsonObject(srcFile)
+
+// ------------------ Transform -------------------
+JsonObjectTransformer transformer = new JsonObjectTransformer(jsonObject)
+def results = transformer.transform(rules)
+log.info "Results: $results"
 
 
-// ------------- Package collections --------------------
-def existingCollections = fusionClient.getCollections(appName)
-config.collections.each {String label, def collectionDef ->
-    def taCollection = existingCollections.find { it.id == taName }
-    if (taCollection) {
-        log.warn "Collection: $taName already exists, not recreating : ${taCollection}"
-    } else {
-        log.info "Process component collection in app: $appName -- collection def: $taCollectionDef"
-        log.debug "Component collection definition: $taCollectionDef"
-        Map paramsMap=[solrParams: taCollectionDef.solrParams]
-        fusionClient.createCollection(taName, paramsMap, appName, false)
+// ------------------ Fusion Client -------------------
+FusionClient fusionClient
+if (options.fusionUrl) {
+    fusionClient = new FusionClient(options)
+    log.info "Created Fusion client: $fusionClient"
+}
+
+// ------------------ Export directory -------------------
+def exportDir
+if (options.exportDir) {
+    exportDir = Helper.getOrMakeDirectory(options.exportDir)
+    log.info "Using export directory: $exportDir"
+}
+File outFile = new File(exportDir, 'variables.csv')
+outFile.withWriter { BufferedWriter writer ->
+    varPaths.each { String path, String val ->
+        def vars = val.findAll { v ->
+            v =~ /\$\{[^}]+}/
+        }
+        String s = vars.collect {
+            it[0][0]
+        }
+        writer.writeLine("${path},${s}")
     }
 }
-
-config.blobs.each { String key, Object val ->
-    String path = val.path
-    String src = val.source
-    Path blobFile = Paths.get(src)
-    log.info "blob $key"
-    String type = val.type
-    def blobUpdate = fusionClient.blobUpload(appName, path, type, blobFile)
-    log.info "result: $blobUpdate"
-}
-
-
+log.info "Write path-variables to file: ${outFile.absolutePath}"
 log.info "Done...?"
+

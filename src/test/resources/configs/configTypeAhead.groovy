@@ -18,8 +18,6 @@ transform {
 //            [from: '\${foundry.destination.APP}', to: "${appName}"],
 //            [from: '\${foundry.destination.COLLECTION}', to: "${taName}"],
     ]
-
-
 }
 
 blobs {

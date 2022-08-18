@@ -109,7 +109,7 @@ class JsonObject {
                 if (pathPattern instanceof String) {
                     match = path.contains(pathPattern)
                     if(match) {
-                        log.info "\t\t String path compare: $path == $pathPattern ?? ${match}"
+                        log.debug "\t\t String path compare: $path == $pathPattern ?? ${match}"
                     } else {
                         log.debug "\t\t NO MATCH: $path == $pathPattern ?? ${match}"
                     }

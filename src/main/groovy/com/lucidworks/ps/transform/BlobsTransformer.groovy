@@ -71,7 +71,7 @@ class BlobsTransformer extends BaseTransformer {
                 }
                 return valMatches
             }
-            log.info "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
+            log.debug "\t\tpathPattern:$pathPattern :: valuePattern: $valuePattern => Filtered ${matchingPaths.size()} matching paths to ${matchingFlatPaths.size()} matches by value matching, matches: $matchingFlatPaths"
 
         } else {
             Set matchingPathKeys = matchingPaths.keySet()
@@ -94,7 +94,7 @@ class BlobsTransformer extends BaseTransformer {
      * @return results??
      */
     @Override
-    List<Map<String, Object>> performCopyRules(List<Map> copyRules) {
+    List<Map<String, Object>> performCopyRules(List copyRules) {
         log.info "Rules: $copyRules"
         List<Map> results = []
         copyRules.each { def copyRule ->
@@ -230,7 +230,7 @@ class BlobsTransformer extends BaseTransformer {
     }
 
     @Override
-    List<Map<String, Object>> performSetRules(List<Map> rules) {
+    List<Map<String, Object>> performSetRules(List rules) {
 //        return super.performSetRules(rules)
         List results = []
         rules.each { def rule ->
@@ -249,7 +249,7 @@ class BlobsTransformer extends BaseTransformer {
      * Note: we assume JsonObject.orderIndexKeysDecreasing is necessary to void trying to remove successive collection elements, and have collection indexes change in the process (if we work highest index to lowest, are we safe???)
      */
     @Override
-    List<Map<String, Object>> performRemoveRules(List<Map> removeRules) {
+    List<Map<String, Object>> performRemoveRules(List removeRules) {
         List results = []
         removeRules.each { Map<String, Object> rule ->
             log.info "Remove rule: $rule"
