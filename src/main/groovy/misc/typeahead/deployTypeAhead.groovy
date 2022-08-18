@@ -71,6 +71,11 @@ public void deployBlobs(FusionClient fusionClient, ConfigObject config, String a
 // ------------------ Collections -------------------
 deployCollections(fusionClient, appName, config, taName)
 
+// ------------- DataSources --------------------
+deployDataSources(fusionClient, appName, config)
+
+
+
 public void deployCollections(FusionClient fusionClient, String appName, ConfigObject config) {
     def existingCollections = fusionClient.getCollections(appName)
     if (existingCollections) {
@@ -88,8 +93,6 @@ public void deployCollections(FusionClient fusionClient, String appName, ConfigO
         }
     }
 }
-// ------------- DataSources --------------------
-deployDataSources(fusionClient, appName, config)
 
 public void deployDataSources(FusionClient fusionClient, String appName, ConfigObject config) {
     def existingDatasources = fusionClient.getDataSources(appName)

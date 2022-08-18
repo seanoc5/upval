@@ -128,7 +128,7 @@ class JsonObjectTransformer extends BaseTransformer {
 
             log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'clone of source'} -- transform: ${srcValPattern ?: 'none'}"
             Map<String, Object> srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
-            log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern"
+            log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern" + srcPaths.collect{"\n\t\t${it.key}"}
 
             srcPaths.each { String flatPath, def srcValue ->
                 Map<String, Object> destPaths = null
@@ -157,10 +157,10 @@ class JsonObjectTransformer extends BaseTransformer {
         return results
     }
 
-/**
- * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
- * @param srcValue
- */
+    /**
+     * take the source value (possibly with sourcePattern and destPattern), and crceate the output value
+     * @param srcValue
+     */
     def transformDestinationValue(def srcValue, def srcPattern, def destPath, def destValuePattern) {
         String destValue = null
         String transformType = getTransformType(srcValue, srcPattern, destPath, destValuePattern)

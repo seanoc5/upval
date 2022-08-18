@@ -6,23 +6,25 @@ DELETE_EXISTING = true
 version: 'taTest 0.1'
 
 transform {
-    remove = [
-            '$..updates',
-            '$..properties',
-    ]
-
     copy = [
+            [from: '${foundry.destination.APP}', to: "${appName}"],
+            [from: '${foundry.destination.COLLECTION}', to: "${taName}"],
+            [from: '${foundry.FEATURE_NAME}', to: "${taName}"],
+
             [from: '${foundry.typeahead.ZKHOST}', to: 'myzk-0.myzk-headless:2181,myzk-1.myzk-headless:2181,myzk-2.myzk-headless:2181'],
             [from: '${foundry.destination.SIGNALS_AGGR_COLL}', to: "${appName}_signals_aggr"],
-            [from: '${foundry.FEATURE_NAME}', to: "${taName}"],
             [from: '${foundry.typeahead.TYPE_FIELD_1}', to: 'category, flattenedCategoryPath_s, categoryUrl_s, categoryImageUrl_s'],
             [from: '${foundry.typeahead.TYPE_FIELD_2}', to: 'brand, flattenedbrandPath_s, brandUrl_s, brandImageUrl_s '],
             [from: '${foundry.typeahead.TYPE_FIELD_3}', to: 'query_orig_s'],
             [from: '${foundry.typeahead.TYPE_FIELD_4}', to: 'author_s'],
             [from: '${foundry.typeahead.TYPE_FIELD_5}', to: 'department_t'],
-            [from: '${foundry.destination.APP}', to: "${appName}"],
-            [from: '${foundry.destination.COLLECTION}', to: "${taName}"],
     ]
+
+    remove = [
+            '$..updates',
+            '$..properties',
+    ]
+
 }
 
 
