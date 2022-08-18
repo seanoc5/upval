@@ -1,7 +1,7 @@
 // name of side-car collection, and blob folder, part of other element names
 taName = "${taName ?: 'typeahead'}"
 appName = "$appName"
-baseId = "${appName}_$taName"
+baseId = "${appName}_${taName}"
 DELETE_EXISTING = true
 version: 'taTest 0.1'
 

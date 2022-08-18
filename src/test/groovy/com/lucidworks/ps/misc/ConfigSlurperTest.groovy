@@ -119,26 +119,6 @@ def getProtocol(){
 
     }
 
-    def "should load rules from TA config file with configslurper"() {
-        given:
-        URL configUrl = getClass().getResource('/configs/configTA.groovy')
-        File config = new File(configUrl.toURI())
-        ConfigSlurper configSlurper = new ConfigSlurper()
-
-
-        when:
-        ConfigObject cfgObject = configSlurper.parse(configUrl)
-        Map rules = cfgObject.rules
-        Map copyRule0 = rules.copy[0]
-
-        then:
-        rules instanceof Map
-        rules.copy instanceof List
-        copyRule0 instanceof Map
-        copyRule0.keySet().toList() == ['sourcePath', 'sourceItemPattern', 'destinationExpression', ]
-
-    }
-
 
     def "should load typeahead rules from config file with configslurper"() {
         given:
@@ -163,6 +143,9 @@ def getProtocol(){
     def "should perform dynamic evalation in configslurper parse"(){
         given:
         URL configUrl = getClass().getResource('/configs/simpleConfig.groovy')
+        URL simpleObjects = getClass().getResource('/components/simpleObjects.json')
+        File so = new File(simpleObjects.toURI())
+        println "Simple objects: ${so.absolutePath} -- ${so.exists()}"
         ConfigSlurper configSlurper = new ConfigSlurper()
 
         when:
