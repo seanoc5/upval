@@ -1,0 +1,9 @@
+{
+   "objects": {
+     "collections": [
+       {
+         "id": "${baseId}"
+       }
+     ]
+   }
+}
