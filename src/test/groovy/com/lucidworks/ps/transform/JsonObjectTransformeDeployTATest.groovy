@@ -15,6 +15,32 @@ import spock.lang.Specification
  * @ deprecated ?? revisit to see if there is anything current/useful here...
  */
 class JsonObjectTransformeDeployTATest extends Specification {
+    def "ta-objects quick test"() {
+        given:
+        Map rules = [copy: [
+                [from: 'foundry.typeahead.ZKHOST', to: 'myzk-0.myzk-headless:2181,myzk-1.myzk-headless:2181,myzk-2.myzk-headless:2181'],
+//                [from: ~/($\{)?foundry.destination.SIGNALS_AGGR_COLL}?/, to: "${appName}_signals_aggr"],
+//                [from: ~/($\{)?foundry.FEATURE_NAME}/, to: "${taName}"],
+        ]
+        ]
+
+        URL url = getClass().getResource('/components/ta-objects.json')
+        Map objectsMap = new JsonSlurper().parse(url)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap)
+
+        when:
+        def results = transformer.transform(rules)
+
+
+        then:
+        results instanceof Map
+        results.copyResults instanceof List
+        results.copyResults.size() == 3
+
+
+    }
+
+
     def "should transform TypeAhead sample objects"() {
         given:
         URL configUrl = getClass().getResource('/configs/configTypeAhead.groovy')
@@ -58,37 +84,4 @@ class JsonObjectTransformeDeployTATest extends Specification {
 
     }
 
-    def "should rename DC_Large objects.json items"() {
-        given:
-        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
-        Map objectsMap = Application.getObjectsJsonMap(appZip)
-        Map destMap = objectsMap.clone()
-        assert destMap == null
-        // todo -- do we need to do something for groovy lazymaps? seems they are empty until accessed? try simple keyseet access here to get a good clone...?
-        Set srcKeys = objectsMap.keySet()
-        destMap = objectsMap.clone()
-        assert destMap.keySet().toArray() == ['objects', 'properties', 'metadata']
-        JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap, destMap)
-        def rules = [copy: [
-                [sourcePath           : '.*',
-                 sourceItemPattern    : '~DC_Large',
-                 destinationExpression: 'Acme_DigiCommerce'],
-        ],]
-
-        when:
-        def updatedObjects = transformer.transform(rules)
-
-        then:
-        updatedObjects instanceof Map
-    }
-
-//    def "should transform app export"(){
-//        given:
-//        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
-//        Application app = new Application(appZip)
-//
-//        when:
-//
-//
-//    }
 }
