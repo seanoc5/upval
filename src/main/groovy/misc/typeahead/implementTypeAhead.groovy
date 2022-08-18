@@ -3,11 +3,10 @@ package misc.typeahead
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionClientArgParser
-import com.lucidworks.ps.transform.JsonObject
 import com.lucidworks.ps.transform.JsonObjectTransformer
 import groovy.cli.picocli.OptionAccessor
+import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -40,10 +39,13 @@ log.info "Transform rules: $rules"
 
 // ------------------ Get source object -------------------
 File srcFile = new File(options.source)
-JsonObject jsonObject = new JsonObject(srcFile)
+Map objectsMap = new JsonSlurper().parse(srcFile)
+// todo -- allow transformer to accept JsonObject
+//JsonObject jsonObject = new JsonObject(srcFile)
 
 // ------------------ Transform -------------------
-JsonObjectTransformer transformer = new JsonObjectTransformer(jsonObject)
+//JsonObjectTransformer transformer = new JsonObjectTransformer(jsonObject)
+JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap)
 def results = transformer.transform(rules)
 log.info "Results: $results"
 

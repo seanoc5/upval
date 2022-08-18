@@ -3,7 +3,7 @@ taName = "${taName ?: 'typeahead'}"
 appName = "$appName"
 baseId = "${appName}_$taName"
 DELETE_EXISTING = true
-
+version: 'taTest 0.1'
 
 transform {
     remove = [

@@ -189,7 +189,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 // todo -- should this be different functionality from regex replace??
                 String quoted = Pattern.quote(srcPattern)
                 if (quoted != srcPattern) {
-                    log.info "Escaping/quoting srcPattern:($srcPattern) => $quoted"
+                    log.info "\t\t\t\tEscaping/quoting srcPattern:($srcPattern) => $quoted"
                     destValue = ((String) srcValue).replaceAll(quoted, destValuePattern)
                 } else {
                     destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
@@ -299,13 +299,13 @@ class JsonObjectTransformer extends BaseTransformer {
     List<Map<String, Object>> performRemoveRules(List removeRules) {
         List results = []
         // Jayway syntax (probably default, no need for map style delete or set)
-        JsonContext destContext = JsonPath.parse(destObject)
+        JsonContext destContext = JsonPath.parse(destinationObject)
         // home-grown map-style rule operations (perhaps only useful for copy/transform)
         def destObject = new JsonObject(this.destinationObject)
 
         // todo -- revisit/refactor, this is a quick hack to get 'full' map, including non-leaf nodes....
         removeRules.each { def rule ->
-            if(rule instance Map) {
+            if(rule instanceof Map) {
                 log.info "Remove rule (map-style): $rule"
                 // these pattern variables can be String or Regex Pattern
                 def pathPattern = rule.pathPattern

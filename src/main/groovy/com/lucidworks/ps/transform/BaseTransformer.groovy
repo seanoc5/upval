@@ -63,6 +63,7 @@ abstract class BaseTransformer {
             log.info "No SET rules, skipping..."
         }
 
+        // leave rules.remove as last by default (can override): to allow destMap to be blank, copy in bulk, then remove certain items
         if (rules.remove) {
             results.removeResults = performRemoveRules(rules.remove)
             log.info "REMOVE (${rules.remove}) -> results: ${results.removeResults?.size()}"
