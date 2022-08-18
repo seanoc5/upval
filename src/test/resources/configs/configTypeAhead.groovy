@@ -1,9 +1,17 @@
+import groovy.json.JsonSlurper
+
 // name of side-car collection, and blob folder, part of other element names
 taName = "${taName ?: 'myTypeahead'}"
-appName = "$appName"
+appName = "${appName ?: 'defaultAppName'}"
 baseId = "${appName}_$taName"
 DELETE_EXISTING = false
+objectsUrl = getClass().getResource('/')
+fooFile = new File(objectsUrl.toURI())
+println(fooFile.absolutePath)
 
+sourceObjects = new File('/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json')
+objects = new JsonSlurper().parse(sourceObjects.toURL())
+println(objects)
 
 transform {
     copy = [
@@ -37,6 +45,14 @@ blobs {
         source = '/typeahead/Typeahead_inclusion_list.csv'
     }
     //{{furl}}/api/blobs/lib/index/FusionServiceLib.js
+}
+
+
+test {
+    foo = "Testing eval: ${baseId}"
+    mydate = new Date()
+//    println "TEST evalation: $baseId -- ${test.objects}"
+
 }
 
 collections {

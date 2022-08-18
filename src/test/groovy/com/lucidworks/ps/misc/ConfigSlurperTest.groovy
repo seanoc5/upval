@@ -160,6 +160,18 @@ def getProtocol(){
         ta.id == "${config.appName}_${config.taName}"
     }
 
+    def "should perform dynamic evalation in configslurper parse"(){
+        given:
+        URL configUrl = getClass().getResource('/configs/simpleConfig.groovy')
+        ConfigSlurper configSlurper = new ConfigSlurper()
+
+        when:
+        def cfg = configSlurper.parse(configUrl)
+
+        then:
+        cfg.test != null
+
+    }
 
 //    def "test syntax for arrays"(){
 //

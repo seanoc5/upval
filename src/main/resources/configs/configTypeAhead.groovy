@@ -5,6 +5,7 @@ baseId = "${appName}_$taName"
 DELETE_EXISTING = true
 version: 'taTest 0.1'
 
+
 transform {
     copy = [
             [from: '${foundry.destination.APP}', to: "${appName}"],
@@ -27,6 +28,9 @@ transform {
 
 }
 
+template {
+    objectsJson: '/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json'
+}
 
 blobs {
     serviceLib {
