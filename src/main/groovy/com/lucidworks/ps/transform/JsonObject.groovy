@@ -336,7 +336,9 @@ class JsonObject {
         } else if (element instanceof Map) {
             log.info "\t\t\t\tSet leafNode MAP key($currentSegment : ${element.key}) to value ($valToSet)"
             log.debug "\t\t\t\tSet leafNode MAP key($currentSegment) to value ($valToSet) in parent map($element)"
-            element[currentSegment] = valToSet
+            // not sure if I am tracking correctly, testing different key ('key') rather than 'currentSegment'
+            element.value = valToSet
+//            element[currentSegment] = valToSet
             // todo -- what makes sense for method return? testing approach of returning valToSet (srcMap should be updated in place)
             result = valToSet
         } else if (element instanceof String || element instanceof Integer) {

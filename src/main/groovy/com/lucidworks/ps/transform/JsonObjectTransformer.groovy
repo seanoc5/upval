@@ -141,10 +141,10 @@ class JsonObjectTransformer extends BaseTransformer {
                 }
                 def destValue = transformDestinationValue(srcValue, srcValPattern, destPath, destValuePattern)
                 if (destValue == srcValue) {
-                    log.info "\t\t$flatPath) destination value and source value are the same: $srcValue"
+                    log.debug "\t\t$flatPath) destination value and source value are the same: $srcValue"
                 } else {
 //                    log.debug "\t\ttransformDestinationValue yielded a destination($destValue) different from source:($srcValue)"
-                    log.info "\t\tdo copy source path:($flatPath) with value($srcValue) to destination paths($destPaths) and dest value: $destValue "
+                    log.debug "\t\tdo copy source path:($flatPath) with value($srcValue) to destination paths($destPaths) and dest value: $destValue "
                 }
                 destPaths.each { String dpath, Object origValue ->
                     def result = doCopy(destValue, dpath)
@@ -189,7 +189,7 @@ class JsonObjectTransformer extends BaseTransformer {
                 // todo -- should this be different functionality from regex replace??
                 String quoted = Pattern.quote(srcPattern)
                 if (quoted != srcPattern) {
-                    log.info "\t\t\t\tEscaping/quoting srcPattern:($srcPattern) => $quoted"
+                    log.debug "\t\t\t\tEscaping/quoting srcPattern:($srcPattern) => $quoted"
                     destValue = ((String) srcValue).replaceAll(quoted, destValuePattern)
                 } else {
                     destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
@@ -269,7 +269,7 @@ class JsonObjectTransformer extends BaseTransformer {
             log.info "No source or dest pattern, just perform a simple value copy"
             txType = TX_STRAIGHT_COPY
         }
-        log.info "\t\tTX type ($txType) from SourcePattern:(${srcPattern}) DestPattern: ${destPattern}..."
+        log.debug "\t\tTX type ($txType) from SourcePattern:(${srcPattern}) DestPattern: ${destPattern}..."
         return txType
     }
 
@@ -320,11 +320,21 @@ class JsonObjectTransformer extends BaseTransformer {
                     results << rslt
                 }
             } else if(rule instanceof String && (String)rule.startsWith('$')){
-                log.info "Remove rule (JayWay syntax): $rule"
-                def result = destContext.delete(rule)
-                results << [jaywayPath:rule]
+                def preDelete = destContext.read(rule)
+                Map result = [:]
+                if(preDelete) {
+                    log.info "Remove rule (jayway syntax): $rule -- matches before delete: $preDelete"
+                    def postDeleteContext = destContext.delete(rule)
+                    result = [jaywayPath: rule, predelete:preDelete]
+                } else {
+                    log.info "Remove rule (jayway syntax): $rule -- NO MATCHES -- no delete"
+                    result = [jaywayPath: rule, status:'nothing to delete']
+                }
+                results << result
             } else {
-                log.warn "Unknown rule type/syntax: $rule  (not UpVal Map-based, not JayWay...???)"
+                String msg = "Unknown rule type/syntax: $rule  (not UpVal Map-based, not JayWay...???)"
+                log.warn msg
+                results << [jaywayPath: rule, status:msg]
             }
 
         }
