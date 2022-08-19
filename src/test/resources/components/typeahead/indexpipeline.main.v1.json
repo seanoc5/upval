@@ -1,0 +1,112 @@
+{
+   "id": "${APP}_${FEATURE_NAME}_IPL",
+   "stages": [
+      {
+         "id": "b3736ea6-c8a8-4180-950a-1c5f47a80f49",
+         "ref": "lib/index/FusionServiceLib.js",
+         "type": "managed-js-index",
+         "skip": false,
+         "label": "MJS: load FusionServices.js",
+         "secretSourceStageId": "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
+      },
+      {
+         "id": "f6724c11-2e15-4184-ae70-b762ab87ef85",
+         "translationMappings": [
+            {
+               "source": "Suggestion",
+               "target": "value_s",
+               "operation": "move"
+            },
+            {
+               "source": "Weight",
+               "target": "signal_count",
+               "operation": "move"
+            }
+         ],
+         "retentionMappings": [],
+         "updateMappings": [],
+         "unmappedRule": {
+            "keep": true,
+            "delete": false,
+            "fieldToMoveValuesTo": "",
+            "fieldToCopyValuesTo": "",
+            "valueToAddToUnmappedFields": "",
+            "valueToSetOnUnmappedFields": ""
+         },
+         "reservedFieldsMappingAllowed": false,
+         "type": "field-mapping",
+         "skip": false,
+         "label": "Field Mapping for Inclusion List Suggestions",
+         "secretSourceStageId": "f6724c11-2e15-4184-ae70-b762ab87ef85"
+      },
+      {
+         "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
+         "script": "(function() {\n  'use strict';\n  var FusionServiceLib;\n\n  var Pattern = java.util.regex.Pattern;\n  var Matcher = java.util.regex.Matcher;\n\n  var VALUE_FIELD = \"value_s\";\n  var TYPE_FIELD = \"ta_type\";\n  var EXCLUDE_BLOB = \"${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv\";\n\n  //Global to hold the NSFW words\n  var exclusionList;\n\n\n  return function (doc, ctx) {\n    if (doc.getId() == null || doc.getFirstField(TYPE_FIELD) == null) {\n      return doc;\n    }\n\n    if (!doc.getFirstField(TYPE_FIELD).getValue().toString() == \"entity\" ){\n      return doc;\n    }\n\n    var exclude = false;\n    \n    // Load in lucidworks.ps FusionService library\n    if (null == FusionServiceLib) {\n      FusionServiceLib = ctx.FusionServiceLib;\n    }\n    \n    if(doc.hasField(VALUE_FIELD))\n    {\n      if(!exclusionList)\n      {\n        var response = FusionServiceLib.getStringBlob(EXCLUDE_BLOB);\n          if(response){\n            exclusionList = response.trim().split(\"\\n\");\n          }\n      }\n\n      var field = doc.getFirstField(VALUE_FIELD);\n      var val = field.getValue().toString();\n      \n\n      for(var i = 0; i < exclusionList.length && !exclude; i++)\n      {\n        var line = exclusionList[i];\n        var offset = line.indexOf(';');\n        if(offset > 0){\n          line = line.substr(0,offset);\n        }     \n\n        //Regex: If profane word/phrase matches an individual word in value, remove\n        //Match: apple profane-word orange\n        //No match: appleprofane-wordorange\n        var pattern = Pattern.compile(\"(?<!\\\\w)\" + line + \"(?!\\\\w)\", Pattern.CASE_INSENSITIVE);\n        var matcher = pattern.matcher(val);\n\n        exclude = matcher.find();\n      }\n    }\n\n    if(exclude)\n    {\n      return;\n    }\n    else{\n      return doc;\n    }\n}\n\n\n\n\n})();\n\n\n\n",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Exclude Docs with Unwanted Terms",
+         "condition": "true\n/**\n * Loads in full-list-of-bad-words_csv located in the blob store\n * For each phrase/word in the bad word lists, see if it exists in the value_s field or if the entire word is the value_s field\n * Removes the entire document if matched\n * \n * Does not run on entity type documents\n */",
+         "secretSourceStageId": "525fbd2f-a010-45cd-aadb-e223c994d8e4"
+      },
+      {
+         "id": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9",
+         "script": "var clickThreshold = 100;\n\nfunction (doc) {\n  if (doc.getFirstFieldValue('signal_count_i') >= clickThreshold) {\n    return doc;\n  }\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Frequency Threshold Filter",
+         "condition": "doc.hasField('signal_count_i')\n/* Checks the number of signals generated for each term\n * from the aggregated signal data and removes those\n * below a specified threshold. The threshold is defined\n * by global var threshold\n */",
+         "secretSourceStageId": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9"
+      },
+      {
+         "id": "d19efb4f-7543-46f4-80e8-0982da546b25",
+         "script": "var numericCharsThreshold = 0.75; // in percentage\n\nfunction numericCharactersFilter(doc) {\n  if (doc.hasField(\"value_s\")) {\n    var query = doc.getFirstFieldValue(\"value_s\");\n    var numericChars = query.match(/[0-9]/g);\n    if (!numericChars || (numericChars.length / query.length) < numericCharsThreshold) {\n      return doc;\n    }\n  }\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Numeric Characters Filter",
+         "condition": "true\n/* Checks the percentage of numeric characters in the\n * completion term and removes those over a set\n * threshold. The threshold is defined by global var\n * threshold and is expressed as a percentage in\n * decimal form.\n */",
+         "secretSourceStageId": "d19efb4f-7543-46f4-80e8-0982da546b25"
+      },
+      {
+         "id": "ce395120-943a-4126-a526-b27dbb91815f",
+         "script": "function normalizeText(doc) {\n    if (doc.hasField('value_s')) {\n        var term = doc.getFirstFieldValue('value_s');\n\n        term = term.replace(/[`~!@#$^*()|+:,<>\\{\\}\\[\\]\\\\\\/]/gi, ' ');\n\n        term = term.toLowerCase().trim();\n\n        // Collapse multiple white spaces between words into one space\n        term = term.replace(/\\s\\s+/g, ' ');\n\n        // Remove leading dot \n        term = term.replace(/^\\./, '');\n\n        doc.setField('value_s', term);\n\n        return doc;\n    }\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Normalize Text",
+         "condition": "true\n/* Lowercases terms and trims leading and trailing\n * whitespace. Any future changes to how suggestions\n * are displayed should also go here\n */",
+         "secretSourceStageId": "ce395120-943a-4126-a526-b27dbb91815f"
+      },
+      {
+         "id": "904e1951-1b06-4621-899f-18d51003c30a",
+         "script": "var maxLength = 4;\n\nfunction (doc) {\n  if (doc.getFirstFieldValue(\"value_s\").split(\" \").length <= maxLength) {\n    return doc;\n  }\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Suggestion Term Length Filter",
+         "condition": "true\n/* Checks the number of words in a suggestion and\n * removes those over a specified threshold. The\n * threshold is set by global var threshold\n  */",
+         "secretSourceStageId": "904e1951-1b06-4621-899f-18d51003c30a"
+      },
+      {
+         "id": "f4efc0df-d74d-447c-81e0-090ac453c8e4",
+         "script": "function (doc, ctx) {\n  doc.setField('ta_type', 'history');\n  doc.setField('id', 'history_' + doc.getFirstFieldValue(\"value_s\").replaceAll(' ', '_'));\n  return doc;\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Add ID and Type Fields",
+         "condition": "doc.hasField('signal_count_i')\n/* Adds the ta_type and idfield to history documents\n */",
+         "secretSourceStageId": "f4efc0df-d74d-447c-81e0-090ac453c8e4"
+      },
+      {
+         "id": "25dcf47d-5c2a-48ad-88f2-66863e0ac678",
+         "enforceSchema": true,
+         "fieldsList": true,
+         "dateFormats": [],
+         "params": [],
+         "bufferDocsForSolr": true,
+         "allowBlacklistedRequestParameters": false,
+         "type": "solr-index",
+         "skip": false,
+         "secretSourceStageId": "25dcf47d-5c2a-48ad-88f2-66863e0ac678"
+      }
+   ],
+   "properties": {
+      "secretSourcePipelineId": "${APP}_${FEATURE_NAME}_IPL"
+   }
+}

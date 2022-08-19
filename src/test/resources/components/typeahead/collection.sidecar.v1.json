@@ -1,0 +1,14 @@
+{
+   "id": "${APP}_${FEATURE_NAME}",
+   "createdAt": "2021-02-11T22:10:02.772Z",
+   "searchClusterId": "default",
+   "commitWithin": 10000,
+   "solrParams": {
+      "name": "${APP}_${FEATURE_NAME}",
+      "numShards": 1,
+      "replicationFactor": 2,
+      "maxShardsPerNode": 2
+   },
+   "type": "DATA",
+   "metadata": {}
+}
