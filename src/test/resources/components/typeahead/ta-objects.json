@@ -2,12 +2,12 @@
    "objects": {
       "collections": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "id": "${APP}_${FEATURE_NAME}",
             "createdAt": "2021-02-11T22:10:02.772Z",
             "searchClusterId": "default",
             "commitWithin": 10000,
             "solrParams": {
-               "name": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "name": "${APP}_${FEATURE_NAME}",
                "numShards": 1,
                "replicationFactor": 2,
                "maxShardsPerNode": 2
@@ -18,7 +18,7 @@
       ],
       "indexPipelines": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "id": "${APP}_${FEATURE_NAME}_IPL",
             "stages": [
                {
                   "id": "b3736ea6-c8a8-4180-950a-1c5f47a80f49",
@@ -60,7 +60,7 @@
                },
                {
                   "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
-                  "script": "(function() {\n  'use strict';\n  var FusionServiceLib;\n\n  var Pattern = java.util.regex.Pattern;\n  var Matcher = java.util.regex.Matcher;\n\n  var VALUE_FIELD = \"value_s\";\n  var TYPE_FIELD = \"ta_type\";\n  var EXCLUDE_BLOB = \"${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv\";\n\n  //Global to hold the NSFW words\n  var exclusionList;\n\n\n  return function (doc, ctx) {\n    if (doc.getId() == null || doc.getFirstField(TYPE_FIELD) == null) {\n      return doc;\n    }\n\n    if (!doc.getFirstField(TYPE_FIELD).getValue().toString() == \"entity\" ){\n      return doc;\n    }\n\n    var exclude = false;\n    \n    // Load in lucidworks.ps FusionService library\n    if (null == FusionServiceLib) {\n      FusionServiceLib = ctx.FusionServiceLib;\n    }\n    \n    if(doc.hasField(VALUE_FIELD))\n    {\n      if(!exclusionList)\n      {\n        var response = FusionServiceLib.getStringBlob(EXCLUDE_BLOB);\n          if(response){\n            exclusionList = response.trim().split(\"\\n\");\n          }\n      }\n\n      var field = doc.getFirstField(VALUE_FIELD);\n      var val = field.getValue().toString();\n      \n\n      for(var i = 0; i < exclusionList.length && !exclude; i++)\n      {\n        var line = exclusionList[i];\n        var offset = line.indexOf(';');\n        if(offset > 0){\n          line = line.substr(0,offset);\n        }     \n\n        //Regex: If profane word/phrase matches an individual word in value, remove\n        //Match: apple profane-word orange\n        //No match: appleprofane-wordorange\n        var pattern = Pattern.compile(\"(?<!\\\\w)\" + line + \"(?!\\\\w)\", Pattern.CASE_INSENSITIVE);\n        var matcher = pattern.matcher(val);\n\n        exclude = matcher.find();\n      }\n    }\n\n    if(exclude)\n    {\n      return;\n    }\n    else{\n      return doc;\n    }\n}\n\n\n\n\n})();\n\n\n\n",
+                  "script": "(function() {\n  'use strict';\n  var FusionServiceLib;\n\n  var Pattern = java.util.regex.Pattern;\n  var Matcher = java.util.regex.Matcher;\n\n  var VALUE_FIELD = \"value_s\";\n  var TYPE_FIELD = \"ta_type\";\n  var EXCLUDE_BLOB = \"${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv\";\n\n  //Global to hold the NSFW words\n  var exclusionList;\n\n\n  return function (doc, ctx) {\n    if (doc.getId() == null || doc.getFirstField(TYPE_FIELD) == null) {\n      return doc;\n    }\n\n    if (!doc.getFirstField(TYPE_FIELD).getValue().toString() == \"entity\" ){\n      return doc;\n    }\n\n    var exclude = false;\n    \n    // Load in lucidworks.ps FusionService library\n    if (null == FusionServiceLib) {\n      FusionServiceLib = ctx.FusionServiceLib;\n    }\n    \n    if(doc.hasField(VALUE_FIELD))\n    {\n      if(!exclusionList)\n      {\n        var response = FusionServiceLib.getStringBlob(EXCLUDE_BLOB);\n          if(response){\n            exclusionList = response.trim().split(\"\\n\");\n          }\n      }\n\n      var field = doc.getFirstField(VALUE_FIELD);\n      var val = field.getValue().toString();\n      \n\n      for(var i = 0; i < exclusionList.length && !exclude; i++)\n      {\n        var line = exclusionList[i];\n        var offset = line.indexOf(';');\n        if(offset > 0){\n          line = line.substr(0,offset);\n        }     \n\n        //Regex: If profane word/phrase matches an individual word in value, remove\n        //Match: apple profane-word orange\n        //No match: appleprofane-wordorange\n        var pattern = Pattern.compile(\"(?<!\\\\w)\" + line + \"(?!\\\\w)\", Pattern.CASE_INSENSITIVE);\n        var matcher = pattern.matcher(val);\n\n        exclude = matcher.find();\n      }\n    }\n\n    if(exclude)\n    {\n      return;\n    }\n    else{\n      return doc;\n    }\n}\n\n\n\n\n})();\n\n\n\n",
                   "type": "javascript-index",
                   "skip": false,
                   "label": "Exclude Docs with Unwanted Terms",
@@ -126,13 +126,13 @@
                }
             ],
             "properties": {
-               "secretSourcePipelineId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL"
+               "secretSourcePipelineId": "${APP}_${FEATURE_NAME}_IPL"
             }
          }
       ],
       "queryPipelines": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "id": "${APP}_${FEATURE_NAME}_QPL",
             "stages": [
                {
                   "id": "ece2b7eb-2916-4aff-91f2-8664563c825b",
@@ -141,7 +141,7 @@
                   "type": "javascript-query",
                   "skip": false,
                   "label": "Only Return Entity Documents",
-                  "condition": "request.hasParam(\"entityOnly\") && request.getFirstParam(\"entityOnly\").equals(\"true\");\n// This stage is used to the make the results only entity documents. The ${foundry.destination.APP}_TYPEAHEAD_DC_entity_QPF will send a entityOnly=true",
+                  "condition": "request.hasParam(\"entityOnly\") && request.getFirstParam(\"entityOnly\").equals(\"true\");\n// This stage is used to the make the results only entity documents. The ${APP}_TYPEAHEAD_DC_entity_QPF will send a entityOnly=true",
                   "secretSourceStageId": "ece2b7eb-2916-4aff-91f2-8664563c825b"
                },
                {
@@ -151,7 +151,7 @@
                   "type": "javascript-query",
                   "skip": false,
                   "label": "Only Return History Documents",
-                  "condition": "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n// This stage is used to the make the results only history documents. The ${foundry.destination.APP}_TYPEAHEAD_DC_history_QPF will send a parameter historyOnly=true",
+                  "condition": "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n// This stage is used to the make the results only history documents. The ${APP}_TYPEAHEAD_DC_history_QPF will send a parameter historyOnly=true",
                   "secretSourceStageId": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff"
                },
                {
@@ -352,21 +352,21 @@
             ],
             "properties": {
                "supportedMode": "all",
-               "secretSourcePipelineId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL"
+               "secretSourcePipelineId": "${APP}_${FEATURE_NAME}_QPL"
             }
          }
       ],
       "features": {
-         "${foundry.destination.APP}_${foundry.FEATURE_NAME}": [
+         "${APP}_${FEATURE_NAME}": [
             {
                "name": "partitionByTime",
-               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "collectionId": "${APP}_${FEATURE_NAME}",
                "params": {},
                "enabled": false
             },
             {
                "name": "recommendations",
-               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "collectionId": "${APP}_${FEATURE_NAME}",
                "params": {
                   "idField": "id",
                   "itemsForItem": true,
@@ -379,13 +379,13 @@
             },
             {
                "name": "searchLogs",
-               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "collectionId": "${APP}_${FEATURE_NAME}",
                "params": {},
                "enabled": false
             },
             {
                "name": "signals",
-               "collectionId": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+               "collectionId": "${APP}_${FEATURE_NAME}",
                "params": {},
                "enabled": true
             }
@@ -393,19 +393,19 @@
       },
       "queryProfiles": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPF",
-            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "id": "${APP}_${FEATURE_NAME}_QPF",
+            "queryPipeline": "${APP}_${FEATURE_NAME}_QPL",
             "searchHandler": "select",
             "searchMode": "all",
-            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "collection": "${APP}_${FEATURE_NAME}",
             "additionalProperties": {}
          },
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_entity_QPF",
-            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "id": "${APP}_${FEATURE_NAME}_entity_QPF",
+            "queryPipeline": "${APP}_${FEATURE_NAME}_QPL",
             "searchHandler": "select",
             "searchMode": "all",
-            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "collection": "${APP}_${FEATURE_NAME}",
             "additionalProperties": {},
             "params": [
                {
@@ -416,11 +416,11 @@
             ]
          },
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_history_QPF",
-            "queryPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_QPL",
+            "id": "${APP}_${FEATURE_NAME}_history_QPF",
+            "queryPipeline": "${APP}_${FEATURE_NAME}_QPL",
             "searchHandler": "select",
             "searchMode": "all",
-            "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "collection": "${APP}_${FEATURE_NAME}",
             "additionalProperties": {},
             "params": [
                {
@@ -434,9 +434,9 @@
       "tasks": [
          {
             "type": "rest-call",
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_docs_cull",
+            "id": "${APP}_${FEATURE_NAME}_docs_cull",
             "callParams": {
-               "uri": "solr://${foundry.destination.APP}_${foundry.FEATURE_NAME}/update",
+               "uri": "solr://${APP}_${FEATURE_NAME}/update",
                "method": "post",
                "queryParams": {},
                "headers": {},
@@ -446,7 +446,7 @@
       ],
       "sparkJobs": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_clicks_load",
+            "id": "${APP}_${FEATURE_NAME}_clicks_load",
             "cacheAfterRead": false,
             "continueAfterFailure": false,
             "defineFieldsUsingInputSchema": true,
@@ -456,26 +456,26 @@
             "readOptions": [
                {
                   "key": "collection",
-                  "value": "${foundry.destination.SIGNALS_AGGR_COLL}"
+                  "value": "${SIGNALS_AGGR_COLL}"
                },
                {
                   "key": "zkHost",
-                  "value": "${foundry.typeahead.ZKHOST}"
+                  "value": "${ZKHOST}"
                }
             ],
             "clearDatasource": false,
-            "outputIndexPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "outputIndexPipeline": "${APP}_${FEATURE_NAME}_IPL",
             "type": "parallel-bulk-loader",
-            "outputCollection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}"
+            "outputCollection": "${APP}_${FEATURE_NAME}"
          },
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_entity_load",
+            "id": "${APP}_${FEATURE_NAME}_entity_load",
             "cacheAfterRead": false,
             "atomicUpdates": false,
             "format": "solr",
-            "outputIndexPipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "outputIndexPipeline": "${APP}_${FEATURE_NAME}_IPL",
             "type": "parallel-bulk-loader",
-            "outputCollection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
+            "outputCollection": "${APP}_${FEATURE_NAME}",
       "transformScala" : "import com.lucidworks.spark.util.SolrSupport\nimport java.time.LocalDateTime\nimport java.time.format.DateTimeFormatter\nimport java.time.ZoneOffset\nimport org.apache.spark.sql.types.{\n    StructType, StructField, StringType}\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.Column\nimport scala.util.control._\n\n\n// main PBL transform\ndef transform(inputDF: Dataset[Row]) : Dataset[Row] = {\n    println(\"---BEGIN TYPE-BASED DOCUMENT LOAD---\")\n\n    var outputDF = spark.emptyDataFrame\n\n    var counter = 1\n    var currentTypeField =  \"\"\n    val loop = new Breaks;\n    // Loop through spark settings for the Type fields which should be in spark.typeField_* format\n    loop.breakable {\n        do {\n            var boolCheck = false\n            try\n            {\n                currentTypeField = sc.getConf.get(\"spark.typeField_\" + counter)\n                counter += 1\n            }\n            catch\n            { \n                case x: NoSuchElementException => \n                { \n                    println(\"End of type field arguments.\")\n                    boolCheck = true\n                }\n            }\n            if(boolCheck){ loop.break }\n\n            println(\"CURRENT TYPE: \" + currentTypeField)\n            //Type fields should be in format: {type name}, {value field}, [{Any other additional fields to pull into the suggestion document separated by \", \"}]\n            val typeFieldArray = currentTypeField.split(\",\").map(_.trim)\n            var fieldArray: Array[Column] = new Array[Column](typeFieldArray.length + 1)\n\n            //Field names wrapped in ` to escape characters like .\n            var typeName = typeFieldArray(0)\n            var valueField = \"`\" + typeFieldArray(1) + \"`\"\n            //Define columns\n            var idCol = regexp_replace(concat(lit(typeName + \"_\"),col(valueField)),\"\\\\s+\",\"\").as(\"id\")\n            var valueCol = col(valueField).as(\"value_s\")\n            var typeCol = lit(typeName).as(\"type\")\n\n            fieldArray(0) = idCol\n            fieldArray(1) =  valueCol            \n            fieldArray(2) =  typeCol\n\n            //Add all other additional fields\n            for(fieldIndex <- 2 until typeFieldArray.length){\n                var additionalField = typeFieldArray(fieldIndex)\n                fieldArray(fieldIndex+1) = col(\"`\" + additionalField + \"`\").as(additionalField)\n            }\n\n\n            //Handle optional fields and build documents for the current type name\n            var currentDF = spark.emptyDataFrame\n            currentDF = inputDF.select(fieldArray: _*).distinct()\n\n            //combine the current type dataframe with the final output dataframe\n            val cols1 = outputDF.columns.toSet\n            val cols2 = currentDF.columns.toSet\n            val total = cols1 ++ cols2 // union\n\n            def expr(myCols: Set[String], allCols: Set[String]) = {\n                allCols.toList.map(x => x match {\n                    case x if myCols.contains(x) => col(x)\n                    case _ => lit(null).as(x)\n                })\n            }\n\n            outputDF = outputDF.select(expr(cols1, total):_*).union(currentDF.select(expr(cols2, total):_*))\n            println(outputDF.head())\n        }\n        while(currentTypeField != null)\n    }\n\n    println(\"---END TYPE-BASED DOCUMENT LOAD---\")\n    println(outputDF.count() + \" DOCUMENTS WRITTEN\")\n\n    outputDF.withColumn(\"indexed_date\", lit(LocalDateTime.now(ZoneOffset.UTC)+\"Z\"))\n    .withColumn(\"ta_type\", lit(\"entity\"))\n}",
             "sparkConfig" : [ {
                "key" : "spark.sql.caseSensitive",
@@ -501,11 +501,11 @@
             "readOptions": [
                {
                   "key": "collection",
-                  "value": "${foundry.destination.COLLECTION}"
+                  "value": "${COLLECTION}"
                },
                {
                   "key": "zkHost",
-                  "value": "${foundry.typeahead.ZKHOST}"
+                  "value": "${ZKHOST}"
                }
             ],
             "clearDatasource": true
@@ -513,9 +513,9 @@
       ],
       "blobs": [
          {
-            "id": "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
-            "path": "/${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
-            "dir": "/${foundry.FEATURE_NAME}",
+            "id": "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+            "path": "/${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+            "dir": "/${FEATURE_NAME}",
             "filename": "Typeahead_inclusion_list.csv",
             "contentType": "text/csv",
             "size": 110,
@@ -527,9 +527,9 @@
             }
          },
          {
-            "id": "${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
-            "path": "/${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
-            "dir": "/${foundry.FEATURE_NAME}",
+            "id": "${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+            "path": "/${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+            "dir": "/${FEATURE_NAME}",
             "filename": "full-list-of-bad-words_csv-file_2018_07_30.csv",
             "contentType": "text/csv",
             "size": 26846,
@@ -557,16 +557,16 @@
       ],
       "dataSources": [
          {
-            "id": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_inclusion_list",
+            "id": "${APP}_${FEATURE_NAME}_inclusion_list",
             "created": "2021-04-26T23:25:09.167Z",
             "modified": "2021-04-26T23:25:09.167Z",
             "connector": "lucid.fileupload",
             "type": "fileupload",
-            "pipeline": "${foundry.destination.APP}_${foundry.FEATURE_NAME}_IPL",
+            "pipeline": "${APP}_${FEATURE_NAME}_IPL",
             "parserId": "_system",
             "properties": {
-               "collection": "${foundry.destination.APP}_${foundry.FEATURE_NAME}",
-               "fileId": "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+               "collection": "${APP}_${FEATURE_NAME}",
+               "fileId": "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
                "mediaType": "text/csv"
             }
          }
@@ -581,7 +581,7 @@
    },
    "properties": [
       {
-         "id": "foundry.typeahead.ZKHOST",
+         "id": "ZKHOST",
          "schema": {
             "type": "string",
             "title": "ZKHOST",
@@ -590,7 +590,7 @@
          }
       },
       {
-         "id": "foundry.destination.SIGNALS_AGGR_COLL",
+         "id": "SIGNALS_AGGR_COLL",
          "schema": {
             "type": "string",
             "title": "SIGNALS_AGGR_COLL",
@@ -599,7 +599,7 @@
          }
       },
       {
-         "id": "foundry.FEATURE_NAME",
+         "id": "FEATURE_NAME",
          "schema": {
             "type": "string",
             "title": "FEATURE_NAME",
@@ -608,7 +608,7 @@
          }
       },
       {
-         "id": "foundry.typeahead.TYPE_FIELD_1",
+         "id": "TYPE_FIELD_1",
          "schema": {
             "type": "string",
             "title": "TYPE_FIELD_1",
@@ -617,7 +617,7 @@
          }
       },
       {
-         "id": "foundry.typeahead.TYPE_FIELD_2",
+         "id": "TYPE_FIELD_2",
          "schema": {
             "type": "string",
             "title": "TYPE_FIELD_2",
@@ -626,7 +626,7 @@
          }
       },
       {
-         "id": "foundry.typeahead.TYPE_FIELD_3",
+         "id": "TYPE_FIELD_3",
          "schema": {
             "type": "string",
             "title": "TYPE_FIELD_3",
@@ -635,7 +635,7 @@
          }
       },
       {
-         "id": "foundry.typeahead.TYPE_FIELD_4",
+         "id": "TYPE_FIELD_4",
          "schema": {
             "type": "string",
             "title": "TYPE_FIELD_4",
@@ -644,7 +644,7 @@
          }
       },
       {
-         "id": "foundry.typeahead.TYPE_FIELD_5",
+         "id": "TYPE_FIELD_5",
          "schema": {
             "type": "string",
             "title": "TYPE_FIELD_5",
@@ -653,7 +653,7 @@
          }
       },
       {
-         "id": "foundry.destination.APP",
+         "id": "APP",
          "schema": {
             "type": "string",
             "title": "APP",
@@ -662,7 +662,7 @@
          }
       },
       {
-         "id": "foundry.destination.COLLECTION",
+         "id": "COLLECTION",
          "schema": {
             "type": "string",
             "title": "COLLECTION",
