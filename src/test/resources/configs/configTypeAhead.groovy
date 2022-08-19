@@ -4,10 +4,7 @@ import groovy.json.JsonSlurper
 taName = "${taName ?: 'myTypeahead'}"
 appName = "${appName ?: 'defaultAppName'}"
 baseId = "${appName}_$taName"
-DELETE_EXISTING = false
-objectsUrl = getClass().getResource('/')
-fooFile = new File(objectsUrl.toURI())
-println(fooFile.absolutePath)
+
 
 sourceObjects = new File('/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json')
 objects = new JsonSlurper().parse(sourceObjects.toURL())
