@@ -1,16 +1,16 @@
 {
-   "id": "${APP}_${FEATURE_NAME}_IPL",
+   "id": "${baseId}_IPL",
    "stages": [
       {
-         "id": "b3736ea6-c8a8-4180-950a-1c5f47a80f49",
+         "id": "${baseId}_IPL_MJS_load",
          "ref": "lib/index/FusionServiceLib.js",
          "type": "managed-js-index",
          "skip": false,
          "label": "MJS: load FusionServices.js",
-         "secretSourceStageId": "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
+         "secretSourceStageId": "${baseId}_IPL_MJS_load"
       },
       {
-         "id": "f6724c11-2e15-4184-ae70-b762ab87ef85",
+         "id": "${baseId}_IPL_FM_sug_wt",
          "translationMappings": [
             {
                "source": "Suggestion",
@@ -37,11 +37,11 @@
          "type": "field-mapping",
          "skip": false,
          "label": "Field Mapping for Inclusion List Suggestions",
-         "secretSourceStageId": "f6724c11-2e15-4184-ae70-b762ab87ef85"
+         "secretSourceStageId": "${baseId}_IPL_FM_sug_wt"
       },
       {
          "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
-         "script": "(function() {\n  'use strict';\n  var FusionServiceLib;\n\n  var Pattern = java.util.regex.Pattern;\n  var Matcher = java.util.regex.Matcher;\n\n  var VALUE_FIELD = \"value_s\";\n  var TYPE_FIELD = \"ta_type\";\n  var EXCLUDE_BLOB = \"${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv\";\n\n  //Global to hold the NSFW words\n  var exclusionList;\n\n\n  return function (doc, ctx) {\n    if (doc.getId() == null || doc.getFirstField(TYPE_FIELD) == null) {\n      return doc;\n    }\n\n    if (!doc.getFirstField(TYPE_FIELD).getValue().toString() == \"entity\" ){\n      return doc;\n    }\n\n    var exclude = false;\n    \n    // Load in lucidworks.ps FusionService library\n    if (null == FusionServiceLib) {\n      FusionServiceLib = ctx.FusionServiceLib;\n    }\n    \n    if(doc.hasField(VALUE_FIELD))\n    {\n      if(!exclusionList)\n      {\n        var response = FusionServiceLib.getStringBlob(EXCLUDE_BLOB);\n          if(response){\n            exclusionList = response.trim().split(\"\\n\");\n          }\n      }\n\n      var field = doc.getFirstField(VALUE_FIELD);\n      var val = field.getValue().toString();\n      \n\n      for(var i = 0; i < exclusionList.length && !exclude; i++)\n      {\n        var line = exclusionList[i];\n        var offset = line.indexOf(';');\n        if(offset > 0){\n          line = line.substr(0,offset);\n        }     \n\n        //Regex: If profane word/phrase matches an individual word in value, remove\n        //Match: apple profane-word orange\n        //No match: appleprofane-wordorange\n        var pattern = Pattern.compile(\"(?<!\\\\w)\" + line + \"(?!\\\\w)\", Pattern.CASE_INSENSITIVE);\n        var matcher = pattern.matcher(val);\n\n        exclude = matcher.find();\n      }\n    }\n\n    if(exclude)\n    {\n      return;\n    }\n    else{\n      return doc;\n    }\n}\n\n\n\n\n})();\n\n\n\n",
+         "script": "${jsUnwantedTerms}",
          "type": "javascript-index",
          "skip": false,
          "label": "Exclude Docs with Unwanted Terms",

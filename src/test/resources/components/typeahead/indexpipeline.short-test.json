@@ -1,0 +1,55 @@
+{
+  "id": "${baseId}_IPL",
+  "stages": [
+    {
+      "id": "${baseId}_IPL_MJS_load",
+      "ref": "lib/index/FusionServiceLib.js",
+      "type": "managed-js-index",
+      "skip": false,
+      "label": "MJS: load FusionServices.js",
+      "secretSourceStageId": "${baseId}_IPL_MJS_load"
+    },
+    {
+      "id": "${baseId}_IPL_FM_sug_wt",
+      "translationMappings": [
+        {
+          "source": "Suggestion",
+          "target": "value_s",
+          "operation": "move"
+        },
+        {
+          "source": "Weight",
+          "target": "signal_count",
+          "operation": "move"
+        }
+      ],
+      "retentionMappings": [],
+      "updateMappings": [],
+      "unmappedRule": {
+        "keep": true,
+        "delete": false,
+        "fieldToMoveValuesTo": "",
+        "fieldToCopyValuesTo": "",
+        "valueToAddToUnmappedFields": "",
+        "valueToSetOnUnmappedFields": ""
+      },
+      "reservedFieldsMappingAllowed": false,
+      "type": "field-mapping",
+      "skip": false,
+      "label": "Field Mapping for Inclusion List Suggestions",
+      "secretSourceStageId": "${baseId}_IPL_FM_sug_wt"
+    },
+    {
+      "id": "${baseId}_IPL_JS_unwanted",
+      "script": "${jsUnwantedTerms}",
+      "type": "javascript-index",
+      "skip": false,
+      "label": "Exclude Docs with Unwanted Terms",
+      "condition": "true\n/**\n * Loads in full-list-of-bad-words_csv located in the blob store\n * For each phrase/word in the bad word lists, see if it exists in the value_s field or if the entire word is the value_s field\n * Removes the entire document if matched\n * \n * Does not run on entity type documents\n */",
+      "secretSourceStageId": "${baseId}_IPL_JS_unwanted"
+    }
+  ],
+  "properties": {
+    "secretSourcePipelineId": "${APP}_${FEATURE_NAME}_IPL"
+  }
+}
