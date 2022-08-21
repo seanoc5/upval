@@ -67,5 +67,27 @@ class StringTemplateExperiments extends Specification {
 
     }
 
+    def "stringtemplate index short and config from file"() {
+        given:
+        ConfigSlurper configSlurper = new ConfigSlurper()
+        ConfigObject config = configSlurper.parse(getClass().getResource('/configs/configTypeAheadStringTemplate.groovy'))
+
+//        File simpleObjectsFile = new File(getClass().getResource('/components/typeahead/indexpipeline.short-test.json'))
+//        String srcString = simpleObjectsFile.text
+
+        when:
+        def objectsJson = config.objectsJson
+        def output = config.output
+        def map = config.map
+        String baseId = config.variables.baseId
+        def jsStage = map.stages.find{it.id == "${baseId}_IPL_JS_unwanted"}
+        String jsCode = jsStage.script
+        String id = map.id
+
+        then:
+        jsCode instanceof String        // not an array of Strings
+        baseId+'_IPL' == id
+
+    }
 
 }
