@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 // ------------------ Variables to configure deplotment -------------------
 FEATURE_NAME = "TAFeature"
 APP = "MyApp"
@@ -31,6 +33,8 @@ objects {
             type = 'DATA'
             metadata = []
         }
+        otherColl= new JsonSlurper().parse(getClass().getResource('/pipelines/indexPipeline.1.json'))
+
     }
 
 
