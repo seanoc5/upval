@@ -87,7 +87,7 @@
                },
                {
                   "id": "ce395120-943a-4126-a526-b27dbb91815f",
-                  "script": "function normalizeText(doc) {\n    if (doc.hasField('value_s')) {\n        var term = doc.getFirstFieldValue('value_s');\n\n        term = term.replace(/[`~!@#$^*()|+:,<>\\{\\}\\[\\]\\\\\\/]/gi, ' ');\n\n        term = term.toLowerCase().trim();\n\n        // Collapse multiple white spaces between words into one space\n        term = term.replace(/\\s\\s+/g, ' ');\n\n        // Remove leading dot \n        term = term.replace(/^\\./, '');\n\n        doc.setField('value_s', term);\n\n        return doc;\n    }\n}",
+                  "script": "function normalizeText(doc) {\n    if (doc.hasField('value_s')) {\n        var term = doc.getFirstFieldValue('value_s');\n\n        term = term.replace(${regexNormalize}, ' ');\n\n        term = term.toLowerCase().trim();\n\n        // Collapse multiple white spaces between words into one space\n        term = term.replace(/\\s\\s+/g, ' ');\n\n        // Remove leading dot \n        term = term.replace(/^\\./, '');\n\n        doc.setField('value_s', term);\n\n        return doc;\n    }\n}",
                   "type": "javascript-index",
                   "skip": false,
                   "label": "Normalize Text",

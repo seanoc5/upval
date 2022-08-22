@@ -1,6 +1,7 @@
 package misc
 
-
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.internal.JsonContext
 import spock.lang.Specification
 
 /**
@@ -29,21 +30,23 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
         sideCollection.id == config.variables.baseId        // transformed by configslurper
     }
 
+
     def "jayway transform with configslurper"() {
         given:
         ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/configTypeAheadJayway.groovy'))
-        def jaywayTransforms = config.transforms
+        Map objects = config.objects
+        JsonContext jsonContext = JsonPath.parse(objects)
+//        def jaywayTransforms = config.transforms
+        def updates = jsonContext.read('$..updates')
 
         when:
-        def sideCollection = config.objects.collections.sidecar
-        def mainIdxp= config.objects.indexPipelines.main
-        def signalsQryp= config.objects.queryPipelines.signalsHistory
+        jsonContext.set('$.dataSources.fileUpload.id', 'my-test-id')
+        jsonContext.delete('$..updates')
+        def postTransformUpdates = jsonContext.read('$..updates')
 
         then:
-        config instanceof ConfigObject
-        mainIdxp instanceof Map
-        mainIdxp.id == '${baseId}_IPL'      // not transformed (yet), still has placeholder var
-        sideCollection.id == config.variables.baseId        // transformed by configslurper
+        objects.dataSources.fileUpload.id == 'my-test-id'
+        postTransformUpdates.size() ==0
     }
 
 

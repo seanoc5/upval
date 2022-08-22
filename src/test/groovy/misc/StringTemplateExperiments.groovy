@@ -7,19 +7,21 @@ class StringTemplateExperiments extends Specification {
 
     def "stringtemplate simple from string"() {
         given:
-        String stringFromDatabase = 'Hello ${name}! -- $q should not be interpreted (perhaps escaped?) '
+        String stringFromDatabase = 'Hello ${name}! -- \\$q should not be interpreted (perhaps escaped?)'
         String name = 'world'
 
         when:
         def engine = new groovy.text.SimpleTemplateEngine()
 
         then:
-        'Hello world!' == engine.createTemplate(stringFromDatabase).make([name: name]).toString()
+        'Hello world! -- $q should not be interpreted (perhaps escaped?)' == engine.createTemplate(stringFromDatabase).make([name: name]).toString()
     }
 
     def "stringtemplate simple from file"() {
         given:
-        Map variablesMap = [baseId: 'MyApp_MyTaName', 'foo.bar': "myFooBar"]
+        String app = 'myTAApp'
+        String feature = 'TAFeature'
+        Map variablesMap = [baseId: "${app}_${feature}",  APP:app, FEATURE_NAME:feature]
         URL simpleObjects = getClass().getResource('/components/simpleObjects.json')
         File simpleObjectsFile = new File(simpleObjects.toURI())
         String srcString = simpleObjectsFile.text
@@ -30,7 +32,7 @@ class StringTemplateExperiments extends Specification {
         Map map = new JsonSlurper().parseText(output)
 
         then:
-        baseId == map.objects.collections[0].id
+        variablesMap.baseId == map.objects.collections[0].id
 
     }
 
@@ -79,6 +81,40 @@ class StringTemplateExperiments extends Specification {
         def objectsJson = config.objectsJson
         def output = config.output
         def map = config.map
+        String baseId = config.variables.baseId
+        def jsStage = map.stages.find{it.id == "${baseId}_IPL_JS_unwanted"}
+        String jsCode = jsStage.script
+        String id = map.id
+
+        then:
+        jsCode instanceof String        // not an array of Strings
+        baseId+'_IPL' == id
+
+    }
+
+
+    def "stringtemplate ta-objects and config from file"() {
+        given:
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        ConfigSlurper configSlurper = new ConfigSlurper()
+        ConfigObject config = configSlurper.parse(getClass().getResource('/configs/configTypeAheadStringTemplate.groovy'))
+
+        File taObjectsFile = new File(getClass().getResource('/components/typeahead/ta-objects.json').toURI())
+        String srcString = taObjectsFile.text
+        Map foo = jsonSlurper.parseText(srcString)
+
+        def engine = new groovy.text.SimpleTemplateEngine()
+        String output = engine.createTemplate(srcString).make(config.variables).toString()
+        Map map = jsonSlurper.parseText(output)
+        List collections = map.objects.collections
+        List indexPipelines = map.objects.indexPipelines
+        List queryPipelines = map.objects.queryPipelines
+
+
+        when:
+        def objectsJson = config.objectsJson
+        def output2 = config.output
+        def map2 = config.map
         String baseId = config.variables.baseId
         def jsStage = map.stages.find{it.id == "${baseId}_IPL_JS_unwanted"}
         String jsCode = jsStage.script

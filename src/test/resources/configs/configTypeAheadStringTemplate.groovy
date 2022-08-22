@@ -14,14 +14,14 @@ variables {
 //    TYPE_FIELD_5= "TYPE_FIELD_5"
     baseId = "${APP}_${FEATURE_NAME}"
     jsSource = new File('src/test/resources/components/typeahead/excludeUnwantedTerms.js').text
-    println "${JsonObject.escapeSource(jsSource)}"
-//    jsUnwantedTerms = JsonObject.escapeSource(jsSource)
+//    println "${JsonObject.escapeSource(jsSource)}"
+    jsUnwantedTerms = JsonObject.escapeSource(jsSource)
 
-    jsUnwantedTerms = """
-function (doc){
-    return doc;
-}
-"""
+    jsSource = """ function (doc){ return doc; } """
+    regexNormalize = 'regex-here'
+//    regexNormalize = '/[`~!@#$^*()|+:,<>\{\}\[\]\/]/gi'
+    q = '$q'
+
 }
 //testFile = new File('.')
 //println("Running from: ${testFile.absolutePath}")
