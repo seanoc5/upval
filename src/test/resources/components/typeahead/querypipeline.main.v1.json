@@ -1,5 +1,5 @@
 {
-  "id": "${APP}_${FEATURE_NAME}_QPL",
+  "id": "${baseId}_QPL",
   "stages": [
     {
       "id": "ece2b7eb-2916-4aff-91f2-8664563c825b",
@@ -219,6 +219,6 @@
   ],
   "properties": {
     "supportedMode": "all",
-    "secretSourcePipelineId": "${APP}_${FEATURE_NAME}_QPL"
+    "secretSourcePipelineId": "${baseId}_QPL"
   }
 }

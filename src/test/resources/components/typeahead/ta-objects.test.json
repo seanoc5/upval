@@ -59,15 +59,6 @@
                   "secretSourceStageId": "f6724c11-2e15-4184-ae70-b762ab87ef85"
                },
                {
-                  "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
-                  "script": "${jsUnwantedTerms}",
-                  "type": "javascript-index",
-                  "skip": false,
-                  "label": "Exclude Docs with Unwanted Terms",
-                  "condition": "true\n/**\n * Loads in full-list-of-bad-words_csv located in the blob store\n * For each phrase/word in the bad word lists, see if it exists in the value_s field or if the entire word is the value_s field\n * Removes the entire document if matched\n * \n * Does not run on entity type documents\n */",
-                  "secretSourceStageId": "525fbd2f-a010-45cd-aadb-e223c994d8e4"
-               },
-               {
                   "id": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9",
                   "script": "var clickThreshold = 100;\n\nfunction (doc) {\n  if (doc.getFirstFieldValue('signal_count_i') >= clickThreshold) {\n    return doc;\n  }\n}",
                   "type": "javascript-index",

@@ -20,8 +20,8 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
         when:
         ConfigObject config = configSlurper.parse(cfgLocation)
         def sideCollection = config.objects.collections.sidecar
-        def mainIdxp= config.objects.indexPipelines.main
-        def signalsQryp= config.objects.queryPipelines.signalsHistory
+        def mainIdxp = config.objects.indexPipelines.main
+        def signalsQryp = config.objects.queryPipelines.signalsHistory
 
         then:
         config instanceof ConfigObject
@@ -35,6 +35,24 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
         given:
         ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/configTypeAheadJayway.groovy'))
         Map objects = config.objects
+
+        Map variables = [
+                FEATURE_NAME     : FEATURE_NAME,
+                APP              : APP,
+                COLLECTION       : COLLECTION,
+                ZKHOST           : ZKHOST,
+                SIGNALS_AGGR_COLL: SIGNALS_AGGR_COLL,
+                TYPE_FIELD_1     : TYPE_FIELD_1,
+                TYPE_FIELD_2     : TYPE_FIELD_2,
+                numShards        : numShards,
+                replicationFactor: replicationFactor,
+                maxShardsPerNode : maxShardsPerNode,
+                baseId           : baseId,
+        ]
+        // String template for the externally sourced pipelines
+        String output = new groovy.text.SimpleTemplateEngine().createTemplate(config.indexJson.text).make(variables).toString()
+
+
         JsonContext jsonContext = JsonPath.parse(objects)
 //        def jaywayTransforms = config.transforms
         def updates = jsonContext.read('$..updates')
@@ -46,9 +64,31 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
 
         then:
         objects.dataSources.fileUpload.id == 'my-test-id'
-        postTransformUpdates.size() ==0
+        postTransformUpdates.size() == 0
+        objects.queryProfiles.size() == 3
     }
 
+
+    def "jayway transform with configslurper typeAheadPackage"() {
+        given:
+        ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/typeAheadPackage.groovy'))
+        Map objects = config.objects
+
+
+        JsonContext jsonContext = JsonPath.parse(objects)
+        def updates = jsonContext.read('$..updates')
+
+        when:
+        jsonContext.set('$.dataSources[0].id', 'my-test-id')
+        jsonContext.delete('$..updates')
+        jsonContext.set('$.indexPipelines[0].id', 'myjaywayId')
+        def postTransformUpdates = jsonContext.read('$..updates')
+
+        then:
+        objects.dataSources.fileUpload.id == 'my-test-id'
+        postTransformUpdates.size() == 0
+        objects.queryProfiles.size() == 3
+    }
 
 
 }

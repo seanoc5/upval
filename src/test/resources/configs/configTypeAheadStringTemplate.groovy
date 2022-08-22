@@ -1,5 +1,4 @@
 import com.lucidworks.ps.transform.JsonObject
-import groovy.json.JsonSlurper
 
 variables {
     FEATURE_NAME = "MyTypeAhead"
@@ -27,6 +26,8 @@ variables {
 //println("Running from: ${testFile.absolutePath}")
 //println "Variables: ${variables.collect{"\n\t\t$it"}}"
 
-indexJson = new File('src/test/resources/components/typeahead/indexpipeline.short-test.json').text
-output = new groovy.text.SimpleTemplateEngine().createTemplate(indexJson).make(variables).toString()
-map = new JsonSlurper().parseText(output)
+//indexJson = new File('src/test/resources/components/typeahead/indexpipeline.short-test.json').text
+indexJson = new File('src/test/resources/components/typeahead/ta-objects.test.json')
+println indexJson.absolutePath + " exists? " + indexJson.exists()
+//output = new groovy.text.SimpleTemplateEngine().createTemplate(indexJson.text).make(variables).toString()
+//map = new JsonSlurper().parseText(output)

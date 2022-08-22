@@ -78,9 +78,15 @@ class StringTemplateExperiments extends Specification {
 //        String srcString = simpleObjectsFile.text
 
         when:
+        String output = new groovy.text.SimpleTemplateEngine().createTemplate(config.indexJson.text).make(config.variables).toString()
+        File outFile = new File('/tmp/ta-compiled.objects.json')
+        outFile.text = output
+
+        Map map = new JsonSlurper().parseText(output)
+
         def objectsJson = config.objectsJson
-        def output = config.output
-        def map = config.map
+//        def output = config.output
+//        def map = config.map
         String baseId = config.variables.baseId
         def jsStage = map.stages.find{it.id == "${baseId}_IPL_JS_unwanted"}
         String jsCode = jsStage.script
