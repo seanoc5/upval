@@ -3,21 +3,25 @@ package configs
 import com.jayway.jsonpath.JsonPath
 import groovy.json.JsonSlurper
 
-//variables {
-FEATURE_NAME = "MyTypeAhead"
-APP = "MyApp"
+// --------------------- variables defined below ----------------------
+FEATURE_NAME = "${featureName ?: 'MyTypeAhead'}"            // Allow Config setBinding to pass in variable 'featureName' or edit the string value 'MyTypeAhead'
+APP = "${appName ?: 'MyApp'}"                               // allow config set binding (from commandline) or edit 'MyApp' accordingly
 COLLECTION = "MyAppColl"
 ZKHOST = "myzk-0.myzk-headless=2181,myzk-1.myzk-headless=2181,myzk-2.myzk-headless=2181"
 SIGNALS_AGGR_COLL = "MyAppColl_signals_aggr"
 TYPE_FIELD_1 = 'brand, flattenedbrandPath_s, brandUrl_s, brandImageUrl_s '
 TYPE_FIELD_2 = "title, mytitle_s, doc_url_s, icon_url_s"
-numShards = 1
+//TYPE_FIELD_3 = "uncomment and adjust here, and down below if wanted"
+//TYPE_FIELD_4 = "uncomment and adjust here, and down below if wanted"
+//TYPE_FIELD_5 = "uncomment and adjust here, and down below if wanted"
+numShards = 1                                               // created these variables to "highlight" they are worth reviewing and adjusting as desired
 replicationFactor = 2
 maxShardsPerNode = 1
 
-baseId = "${APP}_${FEATURE_NAME}"
-//}
+baseId = "${APP}_${FEATURE_NAME}"                           // created shortcut since this is so common in source package
+// --------------------- variables defined above ----------------------
 
+// --------------------- template for objects.json below ---------------------
 objects {
     queryPipelines = [
             // load an external file (most common approach...?
@@ -106,6 +110,7 @@ objects {
                     ]
             ]
     ]
+
     tasks = [
             [
                     "type"      : "rest-call",
@@ -116,6 +121,51 @@ objects {
                             "entity": "<root><delete><query>ta_type:history AND (last_updated_tdt:[* TO NOW-10MINUTES] OR (*:* AND -last_updated_tdt:[* TO *]))</query></delete><commit/></root>"
                     ],
             ]
+    ]
+
+    blobs= [
+       [
+          "id": "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+          "path": "/${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+          "dir": "/${FEATURE_NAME}",
+          "filename": "Typeahead_inclusion_list.csv",
+          "contentType": "text/csv",
+          "size": 110,
+          "modifiedTime": "2021-06-07T23:43:24.148Z",
+          "version": 1701953566565990400,
+          "md5": "49e87771204fca511c26852fb229b6e5",
+          "metadata": [
+             "resourceType": "file"
+          ]
+       ],
+       [
+          "id": "${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+          "path": "/${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+          "dir": "/${FEATURE_NAME}",
+          "filename": "full-list-of-bad-words_csv-file_2018_07_30.csv",
+          "contentType": "text/csv",
+          "size": 26846,
+          "modifiedTime": "2021-06-07T23:43:24.437Z",
+          "version": 1701953566867980288,
+          "md5": "58592b144f5584625942a1f617d2761f",
+          "metadata": [
+             "resourceType": "file"
+          ]
+       ],
+       [
+          "id": "lib/index/FusionServiceLib.js",
+          "path": "/lib/index/FusionServiceLib.js",
+          "dir": "/lib/index",
+          "filename": "FusionServiceLib.js",
+          "contentType": "text/javascript",
+          "size": 9866,
+          "modifiedTime": "2021-06-11T17:58:12.025Z",
+          "version": 1702294236196503552,
+          "md5": "231d5da713875ea1b94c88638810a974",
+          "metadata": [
+             "resourceType": "file:js-index"
+          ]
+       ]
     ]
 
     sparkJobs = [
@@ -151,6 +201,7 @@ objects {
                             ["key": "spark.typeField_1", "value": "${TYPE_FIELD_1}"],
                             ["key": "spark.typeField_2", "value": "${TYPE_FIELD_2}"],
 /*
+// uncomment here and above as desired
                                                      [
                                                              "key"  : "spark.typeField_3",
                                                              "value": "${TYPE_FIELD_3}"
@@ -194,7 +245,7 @@ metadata {
 //transformations done here via config slurper evaluation
 // use jayway context to manipulate `objects` built via configuration above
 jsonContext = JsonPath.parse(objects)
-// clean up unwanted things
+// clean up unwanted things (optional: shows how to call jayway in the config file)
 jsonContext.delete('$..updates')
 
 // set(replace) customized names for various elements based on variables above
@@ -202,7 +253,7 @@ jsonContext.delete('$..updates')
 //jsonContext.set('$.dataSources.fileUpload.id', baseId)
 //jsonContext.set('$.dataSources.fileUpload.properties.collection', baseId)
 
-
+/*
 transforms {
     all {
         delete = [
@@ -213,10 +264,6 @@ transforms {
         ]
     }
 }
-
-
-//indexJson = new File('src/test/resources/components/typeahead/indexpipeline.short-test.json').text
-//output = new groovy.text.SimpleTemplateEngine().createTemplate(indexJson).make(variables).toString()
-//map = new JsonSlurper().parseText(output)
+*/
 
 
