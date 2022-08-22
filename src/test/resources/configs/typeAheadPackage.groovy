@@ -2,6 +2,8 @@ package configs
 
 import com.jayway.jsonpath.JsonPath
 import com.lucidworks.ps.transform.JsonObject
+import groovy.json.JsonSlurper
+
 // --------------------- variables defined below ----------------------
 FEATURE_NAME = "${featureName ?: 'MyTypeAhead'}"            // Allow Config setBinding to pass in variable 'featureName' or edit the string value 'MyTypeAhead'
 APP = "MyApp"                               // allow config set binding (from commandline) or edit 'MyApp' accordingly
@@ -21,7 +23,8 @@ q = '$q'                                                    // quick hack to avo
 
 idxpTemplate = new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json').text
 jsUnwantedTerms = JsonObject.escapeSource(new File('./src/test/resources/components/typeahead/excludeUnwantedTerms.js').text)
-idxp = new groovy.text.SimpleTemplateEngine().createTemplate(idxpTemplate).make([APP: APP, baseId: baseId, jsUnwantedTerms:jsUnwantedTerms]).toString()
+idxpJson = new groovy.text.SimpleTemplateEngine().createTemplate(idxpTemplate).make([APP: APP, baseId: baseId, jsUnwantedTerms:jsUnwantedTerms]).toString()
+idxp = new JsonSlurper().parseText(idxpJson)
 
 qrypTemplate = new File('./src/test/resources/components/typeahead/querypipeline.main.v1.json').text
 qryp = new groovy.text.SimpleTemplateEngine().createTemplate(qrypTemplate).make([APP: APP, baseId: baseId, q:q]).toString()
@@ -34,13 +37,13 @@ objects {
     queryPipelines = [
             // load an external file (most common approach...?
 //            new JsonSlurper().parse(new File('./src/test/resources/components/typeahead/querypipeline.main.v1.json'))
-//            new JsonSlurper().parseText(qryp)
+            new JsonSlurper().parseText(qryp)
     ]
 
     indexPipelines = [
             // load external file defining pipeline (will need variable substition)
 //            new JsonSlurper().parse(new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json'))
-//            new JsonSlurper().parseText(idxp)
+            idxp
 
     ]
 
@@ -258,7 +261,7 @@ metadata {
 // use jayway context to manipulate `objects` built via configuration above
 jsonContext = JsonPath.parse(objects)
 // clean up unwanted things (optional: shows how to call jayway in the config file)
-jsonContext.delete('$..updates')
+//jsonContext.delete('$..updates')          // commented out transform here for testing, but could (should?) enable transforms like this in the config file...
 //jsonContext.set('$..')
 
 // set(replace) customized names for various elements based on variables above

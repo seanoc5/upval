@@ -198,7 +198,7 @@
       "secretSourceStageId": "71e7f340-2dc3-41c8-8330-d2991d87e363"
     },
     {
-      "id": "3ea61720-eb40-4bfc-be00-e4f2db6868fd",
+      "id": "stg_${baseId}_solrq",
       "httpMethod": "POST",
       "allowFederatedSearch": false,
       "preferredReplicaType": "pull",
@@ -220,5 +220,20 @@
   "properties": {
     "supportedMode": "all",
     "secretSourcePipelineId": "${baseId}_QPL"
-  }
+  },
+  "updates": [
+    {
+      "userId": "admin",
+      "timestamp": "2021-04-14T06:28:02.447Z"
+    },
+    {
+      "userId": "ashumway",
+      "timestamp": "2021-12-16T19:22:31.713Z"
+    },
+    {
+      "userId": "ashumway",
+      "timestamp": "2022-03-17T18:45:56.613Z"
+    }
+  ]
+
 }

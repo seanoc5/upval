@@ -47,7 +47,8 @@ URL configUrl = cfgFile.toURI().toURL()
 log.info "ConfigSlurper using: $configUrl"
 ConfigObject config = configSlurper.parse(configUrl)
 log.debug "ConfigObject: $config"
-
+Map objects = config.objects
+def indexPipelines = objects.indexPipelines
 
 // ------------------ Fusion Client -------------------
 //FusionClient fusionClient = new FusionClient(options)
@@ -80,7 +81,9 @@ public void deployBlobs(FusionClient fusionClient, ConfigObject config, String a
     }
 }
 String outPath = options.exportDir
-if(!outPath){
+if(outPath) {
+    log.info "Using exportDir: $outPath"
+} else {
     log.warn "Could not find exportDir in options, defaulting to './'  "
     outPath = './'
 }

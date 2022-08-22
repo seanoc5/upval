@@ -2,6 +2,8 @@ package misc
 
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.internal.JsonContext
+import com.lucidworks.ps.transform.JsonObject
+import groovy.json.JsonSlurper
 import spock.lang.Specification
 
 /**
@@ -69,6 +71,7 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
     }
 
 
+
     def "jayway transform with configslurper typeAheadPackage"() {
         given:
         ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/typeAheadPackage.groovy'))
@@ -80,14 +83,75 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
 
         when:
         jsonContext.set('$.dataSources[0].id', 'my-test-id')
-        jsonContext.delete('$..updates')
-        jsonContext.set('$.indexPipelines[0].id', 'myjaywayId')
-        def postTransformUpdates = jsonContext.read('$..updates')
+//        jsonContext.delete('$..updates')
+//        jsonContext.set('$.indexPipelines[0].id', 'myjaywayId')
+        jsonContext.set('$.queryPipelines[0].id', 'myjaywayId')
+//        def postTransformUpdates = jsonContext.read('$..updates')
 
         then:
-        objects.dataSources.fileUpload.id == 'my-test-id'
-        postTransformUpdates.size() == 0
+        objects.dataSources[0].id == 'my-test-id'
+//        postTransformUpdates.size() == 0
         objects.queryProfiles.size() == 3
+    }
+
+
+    // todo -- figure out how to not evaluate multi-line elements (like js, and js conditions)
+    def "test not evaluating strings"() {
+        given:
+        String a = "line \${one}\\\\nline two"
+        String b = 'line ${one}\\\\nline two'
+        String c = '''line ${one}\\\\nline two'''
+        groovy.text.SimpleTemplateEngine ste =  new groovy.text.SimpleTemplateEngine()
+
+        when:
+        String aa = ste.createTemplate(a).make([one:'one']).toString()
+        String bb = ste.createTemplate(b).make([one:'one']).toString()
+        def bblines = bb.readLines()
+        String cc = ste.createTemplate(c).make([one:'one']).toString()
+        def cclines = cc.readLines()
+
+        then:
+        aa instanceof String
+        aa.readLines().size() == 2          // this is desired parsing/eval
+        b.readLines().size() == 1           // unparsed, stays as one line
+        c.readLines().size() == 1           // tunparsed, stays as one line
+
+        bblines.size() == 1          // this is desired parsing/eval - but not working (yet)
+        cclines.size() == 1          // this is desired parsing/eval - but not working (yet)
+    }
+
+    def "parse indexpipeline externalized file"() {
+        given:
+        String idxpTemplate = new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json').text
+        String jsUnwantedTerms = JsonObject.escapeSource(new File('./src/test/resources/components/typeahead/excludeUnwantedTerms.js').text)
+        String idxpJson = new groovy.text.SimpleTemplateEngine().createTemplate(idxpTemplate).make([APP: 'MyApp', baseId: 'MyApp_Typeahead', jsUnwantedTerms:jsUnwantedTerms]).toString()
+//        File temp = new File("/Users/Sean/work/temp.json")
+//        temp.text = idxpJson
+        // todo -- work out proper escaping -- currently terms.replace() have been removed for convenience...
+        def idxp = new JsonSlurper().parseText(idxpJson)
+
+        ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/typeAheadPackage.groovy'))
+        Map objects = config.objects
+
+
+        JsonContext jsonContext = JsonPath.parse(objects)
+        def pretransformUpdates = jsonContext.read('$..updates')
+
+        when:
+        jsonContext.set('$.dataSources[0].id', 'my-test-id')
+        jsonContext.delete('$..updates')
+        def posttransformUpdates = jsonContext.read('$..updates')
+
+//        jsonContext.set('$.indexPipelines[0].id', 'myjaywayId')
+        jsonContext.set('$.queryPipelines[0].id', 'myjaywayId')
+//        def postTransformUpdates = jsonContext.read('$..updates')
+
+        then:
+        objects.dataSources[0].id == 'my-test-id'
+//        postTransformUpdates.size() == 0
+        objects.queryProfiles.size() == 3
+        pretransformUpdates.size() == 3
+        posttransformUpdates.size() == 0
     }
 
 
