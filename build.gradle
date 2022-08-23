@@ -14,9 +14,10 @@ plugins {
 }
 
 application {
-    mainClass = "migrateFusionApp"
+    mainClass = "com.lucidworks.ps.deploy.deployPackage"
 }
-task runScript(type: JavaExec) {
+
+task deployTypeAhead(type: JavaExec) {
     description 'Run TypeAhead Package Groovy script'
 
     // Set main property to name of Groovy script class.
@@ -25,10 +26,11 @@ task runScript(type: JavaExec) {
     // Set classpath for running the Groovy script.
     classpath = sourceSets.main.runtimeClasspath
 
-    if (project.hasProperty('custom')) {
-        // Pass command-line argument to script.
-        args project.getProperty('custom')
-    }
+    args "-c/Users/sean/work/lucidworks/upval/src/main/resources/typeahead/typeAheadPackage.groovy"
+//    if (project.hasProperty('custom')) {
+//        // Pass command-line argument to script.
+//        args project.getProperty('custom')
+//    }
 }
 repositories {
     mavenCentral()
