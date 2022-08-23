@@ -1,0 +1,14 @@
+{
+            "id": "${APP}_${FEATURE_NAME}_inclusion_list",
+            "created": "2021-04-26T23:25:09.167Z",
+            "modified": "2021-04-26T23:25:09.167Z",
+            "connector": "lucid.fileupload",
+            "type": "fileupload",
+            "pipeline": "${APP}_${FEATURE_NAME}_IPL",
+            "parserId": "_system",
+            "properties": {
+               "collection": "${APP}_${FEATURE_NAME}",
+               "fileId": "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+               "mediaType": "text/csv"
+            }
+         }

@@ -4,90 +4,70 @@ import com.jayway.jsonpath.JsonPath
 import com.lucidworks.ps.transform.JsonObject
 import groovy.json.JsonSlurper
 
-// --------------------- variables defined below ----------------------
-FEATURE_NAME = "${featureName ?: 'MyTypeAhead'}"            // Allow Config setBinding to pass in variable 'featureName' or edit the string value 'MyTypeAhead'
-APP = "MyApp"                               // allow config set binding (from commandline) or edit 'MyApp' accordingly
-COLLECTION = "MyAppColl"
-ZKHOST = "myzk-0.myzk-headless=2181,myzk-1.myzk-headless=2181,myzk-2.myzk-headless=2181"
-SIGNALS_AGGR_COLL = "MyAppColl_signals_aggr"
-TYPE_FIELD_1 = 'brand, flattenedbrandPath_s, brandUrl_s, brandImageUrl_s '
-TYPE_FIELD_2 = "title, mytitle_s, doc_url_s, icon_url_s"
-//TYPE_FIELD_3 = "uncomment and adjust here, and down below if wanted"
-//TYPE_FIELD_4 = "uncomment and adjust here, and down below if wanted"
-//TYPE_FIELD_5 = "uncomment and adjust here, and down below if wanted"
-numShards = 1                                               // created these variables to "highlight" they are worth reviewing and adjusting as desired
-replicationFactor = 2
-maxShardsPerNode = 1
-baseId = "${APP}_${FEATURE_NAME}"                           // created shortcut since this is so common in source package
-q = '$q'                                                    // quick hack to avoid escaping `$q`
-
-// pulling in external templates and 'making' them here, for inclusion below
-idxpTemplate = new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json').text
-jsUnwantedTerms = JsonObject.escapeSource(new File('./src/test/resources/components/typeahead/excludeUnwantedTerms.js').text)
-idxp = new groovy.text.SimpleTemplateEngine().createTemplate(idxpTemplate).make([APP: APP, baseId: baseId, jsUnwantedTerms:jsUnwantedTerms]).toString()
-
-qrypTemplate = new File('./src/test/resources/components/typeahead/querypipeline.main.v1.json').text
-qryp = new groovy.text.SimpleTemplateEngine().createTemplate(qrypTemplate).make([APP: APP, baseId: baseId, q:q]).toString()
-
+// --------------------- variables defined below :: customize most/all of these variables ----------------------
+variables {
+    FEATURE_NAME = 'ExtTA'
+    APP = "ExtApp"
+    COLLECTION = APP
+    ZKHOST = "myzk-0.myzk-headless=2181,myzk-1.myzk-headless=2181,myzk-2.myzk-headless=2181"
+    SIGNALS_AGGR_COLL = "${APP}_signals_aggr"
+    TYPE_FIELD_1 = 'brand, flattenedbrandPath_s, brandUrl_s, brandImageUrl_s '
+    TYPE_FIELD_2 = "title, mytitle_s, doc_url_s, icon_url_s"
+    numShards = 1
+    // created these variables to "highlight" they are worth reviewing and adjusting as desired
+    replicationFactor = 2
+    maxShardsPerNode = 1
+    baseId = "${APP}_${FEATURE_NAME}"                           // created shortcut since this is so common in source package
+    q = '$q'                                                    // quick hack to avoid escaping `$q`
+}
 // --------------------- variables defined above ----------------------
 
+
+// ------------------ Helper utils -------------------
 // helper variable to streamline converting json text into Object, called below on template outputs
 slurper = new JsonSlurper()
+engine = new groovy.text.SimpleTemplateEngine()
+
+
+// ------------------ Templates work below  -------------------
+templateDir = new File('./src/test/resources/components/typeahead')
+
+// one-liner approach with URL rather than file
+collection = engine.createTemplate(new URL('file:./src/test/resources/components/typeahead/collection.sidecar.v1.json')).make(variables).toString()
+
+// less shorthand, create file, and then perform templating
+qrypTemplate = new File(templateDir, 'querypipeline.main.v1.json').text
+qryp = engine.createTemplate(qrypTemplate).make(variables).toString()
+
+// semi-advanced: define 'jsUnwantedTerms' as the escaped javascript from a file, then templatize that into the indexpipeline source :: todo -- check variable expansion in js
+jsUnwantedTerms = JsonObject.escapeSource(new File(templateDir,'excludeUnwantedTerms.js').text)             // load long javascript, escape it, any then template it in to the index pipeline
+idxpTemplate = new File(templateDir,'/indexpipeline.main.v1.json').text
+idxp = engine.createTemplate(idxpTemplate).make(variables).toString()
+
+dsrc = engine.createTemplate(new File(templateDir, 'datasource.fileupload.v1.json')).make(variables).toString()
+
+// this should be a list of maps, so slightly different from single map objects referenced above ^^^
+blbs = engine.createTemplate(new File(templateDir, 'blobs.various-ta.v1.json')).make(variables).toString()
+
 
 // --------------------- template for objects.json below ---------------------
 objects {
+    // these are arrays of maps, square brackets in groovy can be List [a,b,c] or Map [foo: 'a', bar: 'b', bizz:'c'], slurper converts qryp template output (String) into a JsonObject (Maps and Collections combined)
     queryPipelines = [
-            // include an external file (most common approach...? loaded above
-            slurper.parseText(qryp)
+            slurper.parseText(qryp)         // this should be a map of the one query pipeline, added inside an array
     ]
 
-    indexPipelines = [
-            slurper.parseText(idxp)
-            // this approach works, but misses the template processing
-            // new JsonSlurper().parse(new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json'))
-            // new JsonSlurper().parseText(idxp)
+    // shorthand version of multi-line def above
+    indexPipelines = [slurper.parseText(idxp)]
 
-    ]
+    collections = [slurper.parseText(collection)]
 
-    collections = [
-            // define the object here, an alternative to loading an 'external' file...
-            [
-                    id             : "${baseId}",
-                    searchClusterId: 'default',
-                    commitWithin   : 10000,
-                    solrParams     : [
-                            name             : "${baseId}",
-                            numShards        : numShards,
-                            replicationFactor: replicationFactor,
-                            maxShardsPerNode : maxShardsPerNode,
-                    ],
-                    type           : 'DATA',
-                    metadata       : [],
-                    updates        : [
-                            [userid: 'foo', timestamp: 'testtime'],
-                            [userid: 'foo', timestamp: 'testtime'],
-                    ],
-            ]
-    ]
+    dataSources = [slurper.parseText(dsrc)]
 
+    // slightly different formatting/approach, template is a list of blob maps, showing how we can handle that type of templating here
+    blobs = slurper.parseText(blbs)
 
-    dataSources = [
-            [
-                    id        : "${variables.baseId}_inclusion_list",
-                    connector : "lucid.fileupload",
-                    type      : "fileupload",
-                    pipeline  : "${variables.baseId}_IPL",
-                    parserId  : "_system",
-                    properties: [
-                            collection: "${variables.taName}",
-                            fileId    : "${variables.taName}/Typeahead_inclusion_list.csv",
-                            mediaType : "text/csv",
-                    ]
-
-            ]
-    ]
-
-
+    // defining the remaining elements "in-line", these could easily be externalized as well, leaving here for reference
     features = [
             ["name": "partitionByTime", "collectionId": "${baseId}", "params": {}, "enabled": false],
             ["name": "signals", "collectionId": "${baseId}", "params": {}, "enabled": true]
@@ -140,50 +120,7 @@ objects {
             ]
     ]
 
-    blobs = [
-            [
-                    "id"          : "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
-                    "path"        : "/${FEATURE_NAME}/Typeahead_inclusion_list.csv",
-                    "dir"         : "/${FEATURE_NAME}",
-                    "filename"    : "Typeahead_inclusion_list.csv",
-                    "contentType" : "text/csv",
-                    "size"        : 110,
-                    "modifiedTime": "2021-06-07T23:43:24.148Z",
-                    "version"     : 1701953566565990400,
-                    "md5"         : "49e87771204fca511c26852fb229b6e5",
-                    "metadata"    : [
-                            "resourceType": "file"
-                    ]
-            ],
-            [
-                    "id"          : "${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
-                    "path"        : "/${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
-                    "dir"         : "/${FEATURE_NAME}",
-                    "filename"    : "full-list-of-bad-words_csv-file_2018_07_30.csv",
-                    "contentType" : "text/csv",
-                    "size"        : 26846,
-                    "modifiedTime": "2021-06-07T23:43:24.437Z",
-                    "version"     : 1701953566867980288,
-                    "md5"         : "58592b144f5584625942a1f617d2761f",
-                    "metadata"    : [
-                            "resourceType": "file"
-                    ]
-            ],
-            [
-                    "id"          : "lib/index/FusionServiceLib.js",
-                    "path"        : "/lib/index/FusionServiceLib.js",
-                    "dir"         : "/lib/index",
-                    "filename"    : "FusionServiceLib.js",
-                    "contentType" : "text/javascript",
-                    "size"        : 9866,
-                    "modifiedTime": "2021-06-11T17:58:12.025Z",
-                    "version"     : 1702294236196503552,
-                    "md5"         : "231d5da713875ea1b94c88638810a974",
-                    "metadata"    : [
-                            "resourceType": "file:js-index"
-                    ]
-            ]
-    ]
+
 
     sparkJobs = [
             [
@@ -263,8 +200,8 @@ metadata {
 // use jayway context to manipulate `objects` built via configuration above
 jsonContext = JsonPath.parse(objects)
 // clean up unwanted things (optional: shows how to call jayway in the config file)
-jsonContext.delete('$..updates')
-//jsonContext.set('$..')
+//jsonContext.delete('$..updates')
+jsonContext.set('$.datasources[0].id', 'myfoo')
 
 // set(replace) customized names for various elements based on variables above
 // Package developer "knows" what things need to be set, these rules are customizable, but represent "typical" changes

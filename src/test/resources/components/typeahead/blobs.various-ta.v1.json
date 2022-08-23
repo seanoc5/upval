@@ -1,0 +1,44 @@
+[
+  {
+    "id": "${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+    "path": "/${FEATURE_NAME}/Typeahead_inclusion_list.csv",
+    "dir": "/${FEATURE_NAME}",
+    "filename": "Typeahead_inclusion_list.csv",
+    "contentType": "text/csv",
+    "size": 110,
+    "modifiedTime": "2021-06-07T23:43:24.148Z",
+    "version": 1701953566565990400,
+    "md5": "49e87771204fca511c26852fb229b6e5",
+    "metadata": {
+      "resourceType": "file"
+    }
+  },
+  {
+    "id": "${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+    "path": "/${FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+    "dir": "/${FEATURE_NAME}",
+    "filename": "full-list-of-bad-words_csv-file_2018_07_30.csv",
+    "contentType": "text/csv",
+    "size": 26846,
+    "modifiedTime": "2021-06-07T23:43:24.437Z",
+    "version": 1701953566867980288,
+    "md5": "58592b144f5584625942a1f617d2761f",
+    "metadata": {
+      "resourceType": "file"
+    }
+  },
+  {
+    "id": "lib/index/FusionServiceLib.js",
+    "path": "/lib/index/FusionServiceLib.js",
+    "dir": "/lib/index",
+    "filename": "FusionServiceLib.js",
+    "contentType": "text/javascript",
+    "size": 9866,
+    "modifiedTime": "2021-06-11T17:58:12.025Z",
+    "version": 1702294236196503552,
+    "md5": "231d5da713875ea1b94c88638810a974",
+    "metadata": {
+      "resourceType": "file:js-index"
+    }
+  }
+]
