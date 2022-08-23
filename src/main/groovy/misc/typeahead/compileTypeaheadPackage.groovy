@@ -51,12 +51,30 @@ Map objects = config.objects
 def indexPipelines = objects.indexPipelines
 
 // ------------------ Fusion Client -------------------
-//FusionClient fusionClient = new FusionClient(options)
+FusionClient fusionClient = new FusionClient(options)
 
 
 // ------------------ Blobs -------------------
-//deployBlobs(fusionClient, config, appName)
+deployBlobs(fusionClient, config, appName)
 
+String outPath = options.exportDir
+if(outPath) {
+    log.info "Using exportDir: $outPath"
+} else {
+    log.warn "Could not find exportDir in options, defaulting to './'  "
+    outPath = './'
+}
+File outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
+File outFile = new File(outDir, "TA-${config.APP}.objects.json")
+String json = JsonOutput.toJson(config.objects)
+outFile.text = JsonOutput.prettyPrint(json)
+log.info "Wrote objects.json to: ${outFile.absolutePath}"
+
+log.info "Done...?"
+
+
+
+// -------------------- Functions ---------------------
 public void deployBlobs(FusionClient fusionClient, ConfigObject config, String appName) {
     def existingBlobs
     FusionResponseWrapper frw = fusionClient.getBlobs()
@@ -80,17 +98,3 @@ public void deployBlobs(FusionClient fusionClient, ConfigObject config, String a
         }
     }
 }
-String outPath = options.exportDir
-if(outPath) {
-    log.info "Using exportDir: $outPath"
-} else {
-    log.warn "Could not find exportDir in options, defaulting to './'  "
-    outPath = './'
-}
-File outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
-File outFile = new File(outDir, "TA-${config.APP}.objects.json")
-String json = JsonOutput.toJson(config.objects)
-outFile.text = JsonOutput.prettyPrint(json)
-log.info "Wrote objects.json to: ${outFile.absolutePath}"
-
-log.info "Done...?"
