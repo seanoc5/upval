@@ -1,0 +1,126 @@
+{
+   "id": "${baseId}_IPL",
+   "stages": [
+      {
+         "id": "${baseId}_IPL_MJS_load",
+         "ref": "lib/index/FusionServiceLib.js",
+         "type": "managed-js-index",
+         "skip": false,
+         "label": "MJS: load FusionServices.js",
+         "secretSourceStageId": "${baseId}_IPL_MJS_load"
+      },
+      {
+         "id": "${baseId}_IPL_FM_sug_wt",
+         "translationMappings": [
+            {
+               "source": "Suggestion",
+               "target": "value_s",
+               "operation": "move"
+            },
+            {
+               "source": "Weight",
+               "target": "signal_count",
+               "operation": "move"
+            }
+         ],
+         "retentionMappings": [],
+         "updateMappings": [],
+         "unmappedRule": {
+            "keep": true,
+            "delete": false,
+            "fieldToMoveValuesTo": "",
+            "fieldToCopyValuesTo": "",
+            "valueToAddToUnmappedFields": "",
+            "valueToSetOnUnmappedFields": ""
+         },
+         "reservedFieldsMappingAllowed": false,
+         "type": "field-mapping",
+         "skip": false,
+         "label": "Field Mapping for Inclusion List Suggestions",
+         "secretSourceStageId": "${baseId}_IPL_FM_sug_wt"
+      },
+      {
+         "id": "525fbd2f-a010-45cd-aadb-e223c994d8e4",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Exclude Docs with Unwanted Terms",
+         "condition": "true\\n/**\\n * Loads in full-list-of-bad-words_csv located in the blob store\\n * For each phrase/word in the bad word lists, see if it exists in the value_s field or if the entire word is the value_s field\\n * Removes the entire document if matched\\n * \\n * Does not run on entity type documents\\n */",
+         "secretSourceStageId": "525fbd2f-a010-45cd-aadb-e223c994d8e4"
+      },
+      {
+         "id": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9",
+         "script": "var clickThreshold = 100;\\n\\nfunction (doc) {\\n  if (doc.getFirstFieldValue('signal_count_i') >= clickThreshold) {\\n    return doc;\\n  }\\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Frequency Threshold Filter",
+         "condition": "doc.hasField('signal_count_i')\\n/* Checks the number of signals generated for each term\\n * from the aggregated signal data and removes those\\n * below a specified threshold. The threshold is defined\\n * by global var threshold\\n */",
+         "secretSourceStageId": "2d85cbdc-f6b8-42c3-b20d-3cec7be995e9"
+      },
+      {
+         "id": "d19efb4f-7543-46f4-80e8-0982da546b25",
+         "script": "var numericCharsThreshold = 0.75; // in percentage\\n\\nfunction numericCharactersFilter(doc) {\\n  if (doc.hasField(\"value_s\")) {\\n    var query = doc.getFirstFieldValue(\"value_s\");\\n    var numericChars = query.match(/[0-9]/g);\\n    if (!numericChars || (numericChars.length / query.length) < numericCharsThreshold) {\\n      return doc;\\n    }\\n  }\\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Numeric Characters Filter",
+         "condition": "true\\n/* Checks the percentage of numeric characters in the\\n * completion term and removes those over a set\\n * threshold. The threshold is defined by global var\\n * threshold and is expressed as a percentage in\\n * decimal form.\\n */",
+         "secretSourceStageId": "d19efb4f-7543-46f4-80e8-0982da546b25"
+      },
+      {
+         "id": "ce395120-943a-4126-a526-b27dbb91815f",
+         "script": "function normalizeText(doc) {\\n    if (doc.hasField('value_s')) {\\n        var term = doc.getFirstFieldValue('value_s');\\n\\n          term = term.toLowerCase().trim();\\n\\n        // Collapse multiple white spaces between words into one space\\n        // Remove leading dot \\n        doc.setField('value_s', term);\\n\\n        return doc;\\n    }\\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Normalize Text",
+         "condition": "true\\n/* Lowercases terms and trims leading and trailing\\n * whitespace. Any future changes to how suggestions\\n * are displayed should also go here\\n */",
+         "secretSourceStageId": "ce395120-943a-4126-a526-b27dbb91815f"
+      },
+      {
+         "id": "904e1951-1b06-4621-899f-18d51003c30a",
+         "script": "var maxLength = 4;\\n\\nfunction (doc) {\\n  if (doc.getFirstFieldValue(\"value_s\").split(\" \").length <= maxLength) {\\n    return doc;\\n  }\\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Suggestion Term Length Filter",
+         "condition": "true\\n/* Checks the number of words in a suggestion and\\n * removes those over a specified threshold. The\\n * threshold is set by global var threshold\\n  */",
+         "secretSourceStageId": "904e1951-1b06-4621-899f-18d51003c30a"
+      },
+      {
+         "id": "f4efc0df-d74d-447c-81e0-090ac453c8e4",
+         "script": "function (doc, ctx) {\\n  doc.setField('ta_type', 'history');\\n  doc.setField('id', 'history_' + doc.getFirstFieldValue(\"value_s\").replaceAll(' ', '_'));\\n  return doc;\\n}",
+         "type": "javascript-index",
+         "skip": false,
+         "label": "Add ID and Type Fields",
+         "condition": "doc.hasField('signal_count_i')\\n/* Adds the ta_type and idfield to history documents\\n */",
+         "secretSourceStageId": "f4efc0df-d74d-447c-81e0-090ac453c8e4"
+      },
+      {
+         "id": "25dcf47d-5c2a-48ad-88f2-66863e0ac678",
+         "enforceSchema": true,
+         "fieldsList": true,
+         "dateFormats": [],
+         "params": [],
+         "bufferDocsForSolr": true,
+         "allowBlacklistedRequestParameters": false,
+         "type": "solr-index",
+         "skip": false,
+         "secretSourceStageId": "25dcf47d-5c2a-48ad-88f2-66863e0ac678"
+      }
+   ],
+   "properties": {
+      "secretSourcePipelineId": "${baseId}_IPL"
+   },
+   "updates": [
+     {
+       "userId": "admin",
+       "timestamp": "2021-04-14T06:28:02.447Z"
+     },
+     {
+       "userId": "ashumway",
+       "timestamp": "2021-12-16T19:22:31.713Z"
+     },
+     {
+       "userId": "ashumway",
+       "timestamp": "2022-03-17T18:45:56.613Z"
+     }
+   ]
+
+}
