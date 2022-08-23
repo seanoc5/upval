@@ -25,7 +25,8 @@ log.info "Starting ${this.class.name} with args: ${args.findAll {!it.startsWith(
 
 // ------------------ Configuration -------------------
 OptionAccessor options = DeployArgParser.parse(this.class.name, args)
-File cfgFile = new File(options.config)
+String exportDir = options.exportDir
+File cfgFile = options.config
 if(cfgFile.exists()){
     log.info "Reading config file: ${cfgFile.absolutePath}"
 } else {
@@ -51,23 +52,24 @@ Map objects = config.objects
 def indexPipelines = objects.indexPipelines         // debugging, convenience variable to confirm a semi-arbitrary set of transformations
 
 // ------------------ Fusion Client -------------------
-FusionClient fusionClient = new FusionClient(options)           // create a connection to a running fusion if we want to do a 'live' update
-
-
-// ------------------ Blobs -------------------
-deployBlobs(fusionClient, config, appName)          // example of checking existing blobs, and add any that are missing
-// todo -- more code to 'deploy' all the various things (datasources, connector plugins, pipelines, jobs, collections...)
-
+if(options.fusionUrl) {
+    FusionClient fusionClient = new FusionClient(options)
+    // create a connection to a running fusion if we want to do a 'live' update
+    // ------------------ Blobs -------------------
+    deployBlobs(fusionClient, config, appName)          // example of checking existing blobs, and add any that are missing
+    // todo -- more code to 'deploy' all the various things (datasources, connector plugins, pipelines, jobs, collections...)
+} else {
+    log.info "No fusionUrl given, skipping live fusion setup/processing..."
+}
 
 // ------------------ EXPORT location -------------------
-String outPath = options.exportDir
-if(outPath) {
-    log.info "Using exportDir: $outPath"
+File outDir
+if(exportDir) {
+        outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
 } else {
     log.warn "Could not find exportDir in options, defaulting to './'  "
-    outPath = './'
+    outDir = new File('./')
 }
-File outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
 File outFile = new File(outDir, "TA-${config.APP}.objects.json")
 String json = JsonOutput.toJson(config.objects)
 outFile.text = JsonOutput.prettyPrint(json)
