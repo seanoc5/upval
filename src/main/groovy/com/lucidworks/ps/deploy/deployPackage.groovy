@@ -65,7 +65,7 @@ if(options.fusionUrl) {
 // ------------------ EXPORT location -------------------
 File outDir
 if(exportDir) {
-        outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
+        outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(exportDir)
 } else {
     log.warn "Could not find exportDir in options, defaulting to './'  "
     outDir = new File('./')
