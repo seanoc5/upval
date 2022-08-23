@@ -16,7 +16,20 @@ plugins {
 application {
     mainClass = "migrateFusionApp"
 }
+task runScript(type: JavaExec) {
+    description 'Run TypeAhead Package Groovy script'
 
+    // Set main property to name of Groovy script class.
+    main = 'com.lucidworks.ps.deploy.deployPackage'
+
+    // Set classpath for running the Groovy script.
+    classpath = sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty('custom')) {
+        // Pass command-line argument to script.
+        args project.getProperty('custom')
+    }
+}
 repositories {
     mavenCentral()
 }
@@ -52,7 +65,7 @@ dependencies {
     implementation 'javax.json:javax.json-api:1.1.4'
 
     // https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
-    // todo -- revisit version 2.4.0 vs 2.7.0, the latter seems to clash with solr jayway, and 
+    // todo -- revisit version 2.4.0 vs 2.7.0, the latter seems to clash with solr jayway, and
     implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
 
