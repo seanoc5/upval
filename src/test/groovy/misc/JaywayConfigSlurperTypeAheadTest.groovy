@@ -94,6 +94,23 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
         objects.queryProfiles.size() == 3
     }
 
+    def "transform with configslurper typeAheadPackage externalized"() {
+        given:
+        ConfigObject config = new ConfigSlurper().parse(getClass().getResource('/configs/typeAheadPackageExternalized.groovy'))
+        Map objects = config.objects
+
+        when:
+        def idxp = objects.indexPipelines
+        def qryp = objects.queryPipelines
+        def coll = objects.collections
+        def blobs = objects.blobs
+
+        then:
+        objects.dataSources[0].id == 'my-test-id'
+//        postTransformUpdates.size() == 0
+        objects.queryProfiles.size() == 3
+    }
+
 
     // todo -- figure out how to not evaluate multi-line elements (like js, and js conditions)
     def "test not evaluating strings"() {
