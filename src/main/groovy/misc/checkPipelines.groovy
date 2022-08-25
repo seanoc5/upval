@@ -5,6 +5,8 @@ import com.lucidworks.ps.clients.ExportedAppArgParser
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.model.fusion.Javascript
 import groovy.cli.picocli.OptionAccessor
+import groovy.io.FileType
+import org.apache.commons.io.FilenameUtils
 import org.apache.log4j.Logger
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.impl.HttpSolrClient
@@ -21,24 +23,6 @@ log.info "start script ${this.class.name}..."
 
 //FusionClient fusionClient = new FusionClient(options)
 
-File srcFile = new File(options.source)
-if(srcFile && srcFile.canRead()){
-    log.info "Source file: ${srcFile.absoluteFile}"
-}
-
-Application application = new Application(srcFile)
-Map fusionParsedMap = application.exportedObjectsSourceMap
-
-//Map<String, Map<String, Object>> idxp = application.indexPipelines.pipelines.collectEntries {k, v -> v.each {it. = 'index'; return [k, v] }
-//Map<String, Map<String, Object>> idxStages = application.indexPipelines.pipelineStagesMap
-
-Map<String, List<Javascript>> idxJsStages = application.indexPipelines.javascriptStages
-//Map<String, Map<String, Object>> qryStages = application.queryPipelines.pipelineStagesMap
-Map<String, List<Javascript>> qryJsStages = application.queryPipelines.javascriptStages
-//def qstgTypeGrouped = qryp.values()*.stages*.type.flatten().groupBy {it}
-
-File exportDir = Helper.getOrMakeDirectory(options.exportDir)
-def allJSStages = idxJsStages + qryJsStages
 
 String host = 'newmac'
 int port = 8983
@@ -48,29 +32,41 @@ String baseUrl = "http://$host:$port/solr/$collection"
 SolrClient solrClient = new HttpSolrClient.Builder(baseUrl).build();
 log.info "Created solr client (to index directly to solr with url: '$baseUrl') -- solrClient: $solrClient"
 
-List< SolrInputDocument> sidList = []
-allJSStages.each { String key, List<Javascript> jsList ->
-    jsList.each { Javascript jsStage ->
-        String label = jsStage.label
-        File f = new File(exportDir, label + ".js")
-        f.text = jsStage.script
-        log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
-        SolrInputDocument sid = jsStage.toSolrInputDocument()
-        sid.addField('_lw_data_source_s', this.class.name)
-        sidList << sid
-    }
+File srcFolder = new File(options.source)
+if (srcFolder && srcFolder.canRead() && srcFolder.isDirectory()) {
+    log.info "Source Folder: ${srcFolder.absoluteFile}"
+} else {
+    throw new IllegalArgumentException("Source option (${options.source}) not a folder, this script expects to check a folder full of fusion app exports")
 }
 
-UpdateResponse resp = solrClient.add(sidList, 1000)
-log.info "Sent (${sidList.size()}) solr docs (JS STages) to solr, response: $resp"
-log.info "First solr doc (for debugging/reference): ${sidList[0]}"
+File exportDir = Helper.getOrMakeDirectory(options.exportDir)
 
+srcFolder.eachFileMatch(FileType.FILES, ~/.*\.zip/) { File appFile ->
+    String fileBaseName = FilenameUtils.getBaseName(appFile.toString())
+    log.info "App File (${fileBaseName}): $appFile"
 
-//log.info "Index pipeline stage types:\n" + indexStageTypes.collect { String key, def val -> "${val.size()} :: $key" }.join('\n')
-//File indexOutFile = new File("index.javascript.js")
-//indexOutFile.text = ''      // clear contents (if any)
-//def jsIndexTypes = ['javascript-index', 'managed-js-index']
-//
-//jsIndexTypes.each { String stageType ->
-//    List<Map<String, Object>> checkStages = indexStageTypes[stageType]
-//}
+    Application application = new Application(appFile)
+    Map<String, List<Javascript>> idxJsStages = application.indexPipelines.javascriptStages
+    Map<String, List<Javascript>> qryJsStages = application.queryPipelines.javascriptStages
+
+    def allJSStages = idxJsStages + qryJsStages
+
+    File appExportDir = new File(exportDir, fileBaseName)
+    Helper.getOrMakeDirectory(appExportDir)
+
+    List<SolrInputDocument> sidList = []
+    allJSStages.each { String key, List<Javascript> jsList ->
+        jsList.each { Javascript jsStage ->
+            String label = jsStage.label
+            File f = new File(exportDir, label + ".js")
+            f.text = jsStage.script
+            log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
+            SolrInputDocument sid = jsStage.toSolrInputDocument()
+            sid.addField('_lw_data_source_s', this.class.name)
+            sidList << sid
+        }
+    }
+
+    UpdateResponse resp = solrClient.add(sidList, 1000)
+    log.info "$appFile) Sent (${sidList.size()}) solr docs (JS STages) to solr, response: $resp"
+}
