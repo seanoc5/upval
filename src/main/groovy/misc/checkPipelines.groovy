@@ -46,6 +46,7 @@ String collection = 'lucy'
 String baseUrl = "http://$host:$port/solr/$collection"
 //SolrClient solrClient = new HttpSolrClient(baseUrl)
 SolrClient solrClient = new HttpSolrClient.Builder(baseUrl).build();
+log.info "Created solr client (to index directly to solr with url: '$baseUrl') -- solrClient: $solrClient"
 
 List< SolrInputDocument> sidList = []
 allJSStages.each { String key, List<Javascript> jsList ->
@@ -55,12 +56,14 @@ allJSStages.each { String key, List<Javascript> jsList ->
         f.text = jsStage.script
         log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
         SolrInputDocument sid = jsStage.toSolrInputDocument()
+        sid.addField('_lw_data_source_s', this.class.name)
         sidList << sid
     }
 }
 
 UpdateResponse resp = solrClient.add(sidList, 1000)
 log.info "Sent (${sidList.size()}) solr docs (JS STages) to solr, response: $resp"
+log.info "First solr doc (for debugging/reference): ${sidList[0]}"
 
 
 //log.info "Index pipeline stage types:\n" + indexStageTypes.collect { String key, def val -> "${val.size()} :: $key" }.join('\n')
