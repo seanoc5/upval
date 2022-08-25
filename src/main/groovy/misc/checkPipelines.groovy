@@ -9,6 +9,7 @@ import groovy.io.FileType
 import org.apache.commons.io.FilenameUtils
 import org.apache.log4j.Logger
 import org.apache.solr.client.solrj.SolrClient
+import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.response.UpdateResponse
 import org.apache.solr.common.SolrInputDocument
@@ -31,6 +32,8 @@ String baseUrl = "http://$host:$port/solr/$collection"
 //SolrClient solrClient = new HttpSolrClient(baseUrl)
 SolrClient solrClient = new HttpSolrClient.Builder(baseUrl).build();
 log.info "Created solr client (to index directly to solr with url: '$baseUrl') -- solrClient: $solrClient"
+SolrQuery sq = new SolrQuery('*:*')
+def respTest = solrClient.query(sq)
 
 File srcFolder = new File(options.source)
 if (srcFolder && srcFolder.canRead() && srcFolder.isDirectory()) {
@@ -43,30 +46,40 @@ File exportDir = Helper.getOrMakeDirectory(options.exportDir)
 
 srcFolder.eachFileMatch(FileType.FILES, ~/.*\.zip/) { File appFile ->
     String fileBaseName = FilenameUtils.getBaseName(appFile.toString())
-    log.info "App File (${fileBaseName}): $appFile"
-
     Application application = new Application(appFile)
-    Map<String, List<Javascript>> idxJsStages = application.indexPipelines.javascriptStages
-    Map<String, List<Javascript>> qryJsStages = application.queryPipelines.javascriptStages
 
-    def allJSStages = idxJsStages + qryJsStages
+    log.info "App File (${fileBaseName}): $appFile"
+    String appLabel = "${fileBaseName}.${application.appName}"
+    if (application && application.indexPipelines) {
+        Map<String, List<Javascript>> idxJsStages = application.indexPipelines.javascriptStages
+        Map<String, List<Javascript>> qryJsStages = application.queryPipelines.javascriptStages
 
-    File appExportDir = new File(exportDir, fileBaseName)
-    Helper.getOrMakeDirectory(appExportDir)
+        def allJSStages = idxJsStages + qryJsStages
 
-    List<SolrInputDocument> sidList = []
-    allJSStages.each { String key, List<Javascript> jsList ->
-        jsList.each { Javascript jsStage ->
-            String label = jsStage.label
-            File f = new File(exportDir, label + ".js")
-            f.text = jsStage.script
-            log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
-            SolrInputDocument sid = jsStage.toSolrInputDocument()
-            sid.addField('_lw_data_source_s', this.class.name)
-            sidList << sid
+        File appExportDir = new File(exportDir, fileBaseName)
+        Helper.getOrMakeDirectory(appExportDir)
+
+        List<SolrInputDocument> sidList = []
+        allJSStages.each { String key, List<Javascript> jsList ->
+            jsList.each { Javascript jsStage ->
+                String label = jsStage.label
+                File f = new File(exportDir, label + ".js")
+                f.text = jsStage.script
+                log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
+                SolrInputDocument sid = jsStage.toSolrInputDocument()
+                sid.addField('_lw_data_source_s', this.class.name)
+                sid.addField('appName_txt', appLabel)
+                sidList << sid
+            }
         }
+        if (sidList) {
+            UpdateResponse resp = solrClient.add(sidList, 1000)
+            log.info "$appFile) Sent (${sidList.size()}) solr docs (JS STages) to solr, response: $resp"
+        } else {
+            log.warn "---------- NO JS Stages! ${appFile.absolutePath}"
+        }
+    } else {
+        log.warn "Not a valid Fusion app!!? ${appFile.absolutePath}"
     }
 
-    UpdateResponse resp = solrClient.add(sidList, 1000)
-    log.info "$appFile) Sent (${sidList.size()}) solr docs (JS STages) to solr, response: $resp"
 }
