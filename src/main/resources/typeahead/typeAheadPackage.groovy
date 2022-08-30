@@ -42,9 +42,7 @@ objects {
 
     indexPipelines = [
             // load external file defining pipeline (will need variable substition)
-//            new JsonSlurper().parse(new File('./src/test/resources/components/typeahead/indexpipeline.main.v1.json'))
             idxp
-
     ]
 
     collections = [

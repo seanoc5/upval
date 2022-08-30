@@ -1,4 +1,7 @@
 package configs
+
+import com.lucidworks.ps.clients.FusionClient
+
 /**
  * Configuration exploriring how to list components and transformations for packaging
  * Aug 30
@@ -14,15 +17,16 @@ source {
     user = "${userName ?: 'admin'}"
     password = "${password ?: 'password123'}"
     application = 'Components'
-    url = 'https://raw.githubusercontent.com/seanoc5/upval/master/src/main/resources/typeahead'
+    gitRepo = 'https://raw.githubusercontent.com/seanoc5/upval/master/src/main/resources/typeahead'
 }
 destination {
     version = "${version ?: '5.5.1'}"
 }
 
 slurper = new groovy.json.JsonSlurper()
-//idxpUrl = "${source.url}/indexpipeline.main.v1.json".toURL()
+idxpUrl = "${source.gitRepo}/indexpipeline.main.v1.json".toURL()
 idxpJson = idxpUrl.text
+fusionClient = new FusionClient(source.url, source.user, source.password, source.application )
 
 // --------------------- components/objects to grab, transform, and bundle ---------------------
 objects {
