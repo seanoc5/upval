@@ -63,7 +63,7 @@ srcFolder.eachFileMatch(FileType.FILES, ~/.*\.zip/) { File appFile ->
         allJSStages.each { String key, List<Javascript> jsList ->
             jsList.each { Javascript jsStage ->
                 String label = jsStage.label
-                File f = new File(exportDir, label + ".js")
+                File f = new File(appExportDir, label + ".js")
                 f.text = jsStage.script
                 log.info "$key) (${jsStage.lines.size()}) lines -> ${f.absolutePath}"
                 SolrInputDocument sid = jsStage.toSolrInputDocument()
