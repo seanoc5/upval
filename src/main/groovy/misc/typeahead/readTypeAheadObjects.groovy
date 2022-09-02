@@ -5,10 +5,9 @@ import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.log4j.Logger
 
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -26,7 +25,7 @@ File cfgFile = options.config
 //File cfgFile = new File(options.config)
 ConfigObject config = null
 ConfigSlurper configSlurper = new ConfigSlurper()
-configSlurper.setBinding([userName:options.user, password:options.password])
+configSlurper.setBinding([userName: options.user, password: options.password])
 if (cfgFile.exists()) {
     log.info "Reading config file: ${cfgFile.absolutePath}"
     config = configSlurper.parse(cfgFile.toURI().toURL())
@@ -46,7 +45,7 @@ FusionResponseWrapper responseWrapper = fusionClient.getQueryPipeline(appID, qry
 Map qryp = responseWrapper.parsedMap
 log.info "Query Pipeline: $qryp"
 
-Map pkgMap = [objects: config.objects, metadata: config.metadata, properties:config.properties]
+Map pkgMap = [objects: config.objects, metadata: config.metadata, properties: config.properties]
 String json = JsonOutput.prettyPrint(JsonOutput.toJson(config.objects))
 log.info "Objects: \n$json"
 
@@ -81,17 +80,60 @@ if (outPath) {
 File outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(outPath)
 File outFile = new File(outDir, "TA-sample.zip")
 
+ZipArchiveOutputStream archive = new ZipArchiveOutputStream(outFile.newOutputStream())
+config.files.each {String label, def fileSource ->
+    if(fileSource instanceof File) {
+        log.info "Add file: $label file to zip...,"
+    } else if(fileSource instanceof URL){
 
+    }
+
+//        ZipArchiveEntry entry_0 = new ZipArchiveEntry(, file.toString());
+/*
+        ZipArchiveEntry entry_1 = new ZipArchiveEntry(file, file.toString());
+        try (FileInputStream fis = new FileInputStream(file)) {
+            archive.putArchiveEntry(entry_1);
+            IOUtils.copy(fis, archive);
+            archive.closeArchiveEntry();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+*/
+}
+
+
+// Complete archive entry addition.
+archive.finish();
+
+/*
+Collection<File> filesToArchive = ...
+ArchiveOutputStream o =
+    for (File f : filesToArchive) {
+        // maybe skip directories for formats like AR that don't store directories
+        ArchiveEntry entry = o.createArchiveEntry(f, entryName(f));
+        // potentially add more flags to entry
+        o.putArchiveEntry(entry);
+        if (f.isFile()) {
+            try (InputStream i = Files.newInputStream(f.toPath())) {
+                IOUtils.copy(i, o);
+            }
+        }
+        o.closeArchiveEntry();
+    }
+    out.finish();
+}
+*/
+
+/*
 ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFile));
 ZipEntry e = new ZipEntry("objects.json");
 out.putNextEntry(e);
-
 byte[] data = json.getBytes();
 out.write(data, 0, data.length);
 //out.write();
 out.closeEntry();
-
 out.close();
+*/
 
 log.info "wrote file: ${outFile.absolutePath}"
 
