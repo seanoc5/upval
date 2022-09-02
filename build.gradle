@@ -61,6 +61,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
     implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.9.0'
     implementation 'commons-codec:commons-codec:1.15'
+    implementation "org.apache.commons:commons-compress:1.21"
+
 
     // https://mvnrepository.com/artifact/org.glassfish/javax.json
     implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
