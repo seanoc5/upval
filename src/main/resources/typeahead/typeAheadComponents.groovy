@@ -22,6 +22,8 @@ source {
 destination {
     version = "${version ?: '5.5.1'}"
 }
+// below is valid and parsable, if needing spaces in key name
+//destination.'help 3' = 'your help 3'
 
 slurper = new groovy.json.JsonSlurper()
 idxpUrl = "${source.gitRepo}/indexpipeline.main.v1.json".toURL()
@@ -79,6 +81,17 @@ metadata {
     fusionGuid = "d62d4466-a46e-4948-97b4-58597712cc7e"
 }
 
+blobs {
+    inclusionList {
+        source = new File('/Users/sean/work/lucidworks/upval/src/main/resources/typeahead/Typeahead_inclusion_list.csv')
+
+        unwantedTerms = new URL("${source.gitRepo}/excludeUnwantedTerms.js")
+    }
+}
+
+
+
+/*
 properties = [
         [
                 "id"    : "foundry.typeahead.ZKHOST",
@@ -171,5 +184,6 @@ properties = [
                 ]
         ]
 ]
+*/
 
 
