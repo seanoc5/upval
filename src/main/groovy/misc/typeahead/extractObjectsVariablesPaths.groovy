@@ -2,7 +2,7 @@ package misc.typeahead
 
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.clients.TransformArgParser
+import com.lucidworks.ps.config.TransformArgParser
 import com.lucidworks.ps.transform.JsonObject
 import groovy.cli.picocli.OptionAccessor
 import groovy.transform.Field

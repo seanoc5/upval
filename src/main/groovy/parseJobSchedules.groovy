@@ -1,6 +1,6 @@
 import com.lucidworks.ps.Helper
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.clients.FusionClientArgParser
+import com.lucidworks.ps.config.FusionClientArgParser
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonBuilder

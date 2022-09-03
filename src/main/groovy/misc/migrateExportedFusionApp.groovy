@@ -3,7 +3,7 @@ package misc
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
 import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
-import com.lucidworks.ps.clients.FusionClientArgParser
+import com.lucidworks.ps.config.FusionClientArgParser
 import groovy.cli.picocli.OptionAccessor
 import org.apache.log4j.Logger
 
