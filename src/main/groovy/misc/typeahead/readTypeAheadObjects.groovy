@@ -1,7 +1,6 @@
 package misc.typeahead
 
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.clients.FusionResponseWrapper
 import com.lucidworks.ps.config.DeployArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
@@ -43,16 +42,18 @@ if(config.fusionClient) {
 } else {
     fusionClient = new FusionClient(options)
 }
-String appID = 'Components'         // note: app name == Component_Packages, but we need to call appid
-//def qryPipelines = fusionClient.getQueryPipelines(appID)
-String qrypName = 'Components_TYPEAHEAD_DW_QPL_v4'
-FusionResponseWrapper responseWrapper = fusionClient.getQueryPipeline(qrypName, appID)
-Map qryp = responseWrapper.parsedMap
-log.info "Query Pipeline keys: ${qryp.keySet()}"
 
+def props = config.props
 Map pkgMap = [objects: config.objects, metadata: config.metadata, properties:config.properties]
+pkgMap.each { key, val ->
+    if (val instanceof Map) {
+        log.info "$key) map with keys: ${val.keySet()}"
+    } else if (val instanceof List) {
+        log.info "$key) list with size: ${val.size()}"
+    }
+}
 String json = JsonOutput.prettyPrint(JsonOutput.toJson(config.objects))
-log.info "Objects: \n$json"
+log.debug "Objects: \n$json"
 
 
 

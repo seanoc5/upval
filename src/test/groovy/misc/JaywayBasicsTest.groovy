@@ -27,7 +27,7 @@ class JaywayBasicsTest extends Specification {
     }
 
 
-    def "check jayway read more advanced"() {
+    def "jayway read more advanced"() {
         given:
         Map map = [leafa  : 'myleaf',
                    listb  : [
@@ -46,6 +46,7 @@ class JaywayBasicsTest extends Specification {
         def updates = JsonPath.read(map, '$..updates')
         def userIds = JsonPath.read(map, '$..updates[*].userId')
         def updateAdmin = JsonPath.read(map, '$..updates[?(@.userId=="admin")]')
+        def updateAdminTimeStamps = JsonPath.read(map, '$..updates[?(@.userId=="admin")].timestamp')        // always returns a list?
         def updatePos1 = JsonPath.read(map, '$..updates[1]')
         def fooVal = JsonPath.read(map, '$..*[?(@.*=="foo")]')
 
@@ -56,10 +57,11 @@ class JaywayBasicsTest extends Specification {
         userIds == ['admin', 'ashumway']
         updateAdmin.userId == ['admin']
         updatePos1.userId == ['ashumway']
+        updateAdminTimeStamps[0].startsWith('2021')
     }
 
 
-    def "check jayway read from json string"() {
+    def "jayway read from json string"() {
         given:
         Map map = new JsonSlurper().parseText(src)
         String srcPath = '$.properties.collection'

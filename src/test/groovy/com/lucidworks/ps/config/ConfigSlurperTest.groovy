@@ -156,7 +156,7 @@ def getProtocol(){
         URL configUrl = getClass().getResource('/configs/simpleConfig.groovy')
         URL simpleObjects = getClass().getResource('/components/simpleObjects.json')
         File so = new File(simpleObjects.toURI())
-        println "Simple objects: ${so.absolutePath} -- ${so.exists()}"
+//        println "Simple objects: ${so.absolutePath} -- ${so.exists()}"
         ConfigSlurper configSlurper = new ConfigSlurper()
 
         when:
@@ -164,6 +164,9 @@ def getProtocol(){
 
         then:
         cfg.test != null
+        cfg.test.foo =="Testing eval: defaultAppName_myTypeahead"
+        cfg.test.mydate instanceof Date
+
 
     }
 

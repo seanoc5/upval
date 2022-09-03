@@ -19,6 +19,7 @@ source {
 // ------------------- destination-specific settings -------------------
 destination {
     version = "${version ?: '5.5.1'}"
+    outputZipPath = "${exportDir: '.'}"            // todo -- decide on string or actual file...
 }
 
 
@@ -40,14 +41,14 @@ objects {
             fusionClient.getIndexPipeline('Components_TYPEAHEAD_DW_IPL_v4', source.application),
     ]
 
-    /*
+
     collections {
 
     }
 
-    dataSources {
-
-    }
+    dataSources = [
+//        fusionClient.getDataSource('Components_TYPEAHEAD_DW_IPL_v4', source.application),
+    ]
 
     features {
 
@@ -61,14 +62,50 @@ objects {
 
     }
 
-    blobs {
+    blobs = [
+            [
+                    "id"          : "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+                    "path"        : "/${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
+                    "dir"         : "/${foundry.FEATURE_NAME}",
+                    "filename"    : "Typeahead_inclusion_list.csv",
+                    "contentType" : "text/csv",
+                    "size"        : 110,
+                    "modifiedTime": "2021-06-07T23:43:24.148Z",
+                    "version"     : 1701953566565990400,
+                    "md5"         : "49e87771204fca511c26852fb229b6e5",
+                    "metadata"    : ["resourceType": "file"]
+            ],
+            [
+                    "id"          : "${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+                    "path"        : "/${foundry.FEATURE_NAME}/full-list-of-bad-words_csv-file_2018_07_30.csv",
+                    "dir"         : "/${foundry.FEATURE_NAME}",
+                    "filename"    : "full-list-of-bad-words_csv-file_2018_07_30.csv",
+                    "contentType" : "text/csv",
+                    "size"        : 26846,
+                    "modifiedTime": "2021-06-07T23:43:24.437Z",
+                    "version"     : 1701953566867980288,
+                    "md5"         : "58592b144f5584625942a1f617d2761f",
+                    "metadata"    : ["resourceType": "file"]
+            ],
+            [
+                    "id"          : "lib/index/FusionServiceLib.js",
+                    "path"        : "/lib/index/FusionServiceLib.js",
+                    "dir"         : "/lib/index",
+                    "filename"    : "FusionServiceLib.js",
+                    "contentType" : "text/javascript",
+                    "size"        : 9866,
+                    "modifiedTime": "2021-06-11T17:58:12.025Z",
+                    "version"     : 1702294236196503552,
+                    "md5"         : "231d5da713875ea1b94c88638810a974",
+                    "metadata"    : ["resourceType": "file:js-index"]
+            ]
+    ]
 
-    }
 
     sparkJobs {
 
     }
-*/
+
 }
 
 metadata {
@@ -88,8 +125,19 @@ blobs {
     }
 }
 
+propVariables {
+    ZKHOST {
+        path = '$..sparkJobs.readObtions[@key="zkHost"]'
+        title = 'ZK Connect String'
+        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
+    }
+    SIGNALS_AGGR_COLL {
+        path = '$..sparkJobs.readObtions[@key="collection"].value'
+        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
 
-/*
+    }
+}
+
 properties = [
         [
                 "id"    : "foundry.typeahead.ZKHOST",
@@ -109,81 +157,4 @@ properties = [
                         "hints"      : []
                 ]
         ],
-        [
-                "id"    : "foundry.FEATURE_NAME",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "FEATURE_NAME",
-                        "description": "FEATURE_NAME",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.typeahead.TYPE_FIELD_1",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "TYPE_FIELD_1",
-                        "description": "TYPE_FIELD_1",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.typeahead.TYPE_FIELD_2",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "TYPE_FIELD_2",
-                        "description": "TYPE_FIELD_2",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.typeahead.TYPE_FIELD_3",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "TYPE_FIELD_3",
-                        "description": "TYPE_FIELD_3",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.typeahead.TYPE_FIELD_4",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "TYPE_FIELD_4",
-                        "description": "TYPE_FIELD_4",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.typeahead.TYPE_FIELD_5",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "TYPE_FIELD_5",
-                        "description": "TYPE_FIELD_5",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.destination.APP",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "APP",
-                        "description": "APP",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.destination.COLLECTION",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "COLLECTION",
-                        "description": "COLLECTION",
-                        "hints"      : []
-                ]
-        ]
 ]
-*/
-
-
-// NOTE: below syntax is valid and parsable, if needing spaces in key name
-//destination.'help 3' = 'your help 3'
