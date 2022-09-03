@@ -23,7 +23,8 @@ File cfgFile = options.config
 //File cfgFile = new File(options.config)
 ConfigObject config = null
 ConfigSlurper configSlurper = new ConfigSlurper()
-configSlurper.setBinding([userName:options.user, password:options.password], )
+Map cliOptionsOverride = [userName:options.user, password:options.password, appName:options.appName]
+configSlurper.setBinding(cliOptionsOverride )
 if (cfgFile.exists()) {
     log.info "Reading config file: ${cfgFile.absolutePath}"
     config = configSlurper.parse(cfgFile.toURI().toURL())
@@ -45,9 +46,9 @@ if(config.fusionClient) {
 String appID = 'Components'         // note: app name == Component_Packages, but we need to call appid
 //def qryPipelines = fusionClient.getQueryPipelines(appID)
 String qrypName = 'Components_TYPEAHEAD_DW_QPL_v4'
-FusionResponseWrapper responseWrapper = fusionClient.getQueryPipeline(appID, qrypName)
+FusionResponseWrapper responseWrapper = fusionClient.getQueryPipeline(qrypName, appID)
 Map qryp = responseWrapper.parsedMap
-log.info "Query Pipeline: $qryp"
+log.info "Query Pipeline keys: ${qryp.keySet()}"
 
 Map pkgMap = [objects: config.objects, metadata: config.metadata, properties:config.properties]
 String json = JsonOutput.prettyPrint(JsonOutput.toJson(config.objects))
