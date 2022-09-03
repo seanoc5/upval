@@ -13,8 +13,6 @@ source {
     user = "${userName ?: 'admin'}"
     password = "${password ?: 'password123'}"
     application = "${appName ?: 'Components'}"
-    // todo - explore alternative of github or zip Export in place of running fusion
-    gitRepo = 'https://raw.githubusercontent.com/seanoc5/upval/master/src/main/resources/typeahead'
 }
 
 
@@ -26,23 +24,21 @@ destination {
 
 // ------------------- helper utils for config reading/processing -------------------
 slurper = new groovy.json.JsonSlurper()
-//idxpUrl = "${source.gitRepo}/indexpipeline.main.v1.json".toURL()      // example config of how to use an external ur
 // exampLe of config-is-code: create a working helper class to get configs directly from a running fusion (i.e. foundry)
 fusionClient = new FusionClient(source.url, source.user, source.password, source.application)
 
 
 // --------------------- components/objects to grab, transform, and bundle ---------------------
 objects {
-    queryPipelines {
-        // get 'main' user query pipeline from 'Components' app
-        mainUserQueryPipeline = 'Components_TYPEAHEAD_DW_QPL_v4'
-    }
+    // switch from 'typical' config syntax like "objects {..}" to setting
+    // a variable/leaf-node with standard groovy assignment (necessary to set a list rather than map)
+    queryPipelines = [
+            fusionClient.getQueryPipeline('Components_TYPEAHEAD_DW_QPL_v4', source.application),
+    ]
 
-    indexPipelines {
-        fileUploadPipeline = 'Components_TYPEAHEAD_DW_IPL_v4'
-
-        // testGithub = slurper.parse("${source.gitRepo}/indexpipeline.main.v1.json".toURL())  // testing getting json from url, slurping it, and including it in the config
-    }
+    indexPipelines = [
+            fusionClient.getIndexPipeline('Components_TYPEAHEAD_DW_IPL_v4', source.application),
+    ]
 
     /*
     collections {
@@ -85,10 +81,10 @@ metadata {
 
 blobs {
     inclusionCsv {
-        source = new File('/Users/sean/work/lucidworks/upval/src/main/resources/typeahead/Typeahead_inclusion_list.csv')
+//        source = new File('/Users/sean/work/lucidworks/upval/src/main/resources/typeahead/Typeahead_inclusion_list.csv')
     }
     unwantedTerms {
-        source = new URL("${source.gitRepo}/excludeUnwantedTerms.js")
+//        source = new URL("${source.gitRepo}/excludeUnwantedTerms.js")
     }
 }
 

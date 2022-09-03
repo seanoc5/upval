@@ -1,5 +1,10 @@
 package configs
 
+/**
+ * @deprecated oder approach, left here for reference
+ */
+
+
 import com.jayway.jsonpath.JsonPath
 import com.lucidworks.ps.transform.JsonObject
 import groovy.json.JsonSlurper

@@ -1,3 +1,6 @@
+/**
+ * @deprecated look at configTypeAheadDeploy
+ */
 // name of side-car collection, and blob folder, part of other element names
 taName = "${taName ?: 'typeahead'}"
 appName = "$appName"

@@ -1,4 +1,8 @@
 package configs     // todo -- do we need this package def? just intellij complaining about linting? any added value??
+/**
+ * @deprecated oder approach, left here for reference
+ */
+
 // general purpose config variables
 // require a configSlurper.setBinding(bindingMap) of [appName:'MyMainApplicationName'] -- or change config to not use setBinding variable from calling script
 appName = "$appName"
