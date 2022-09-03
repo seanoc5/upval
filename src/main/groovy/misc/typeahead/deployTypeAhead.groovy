@@ -1,6 +1,6 @@
 package misc.typeahead
 
-import com.lucidworks.ps.clients.DeployArgParser
+import com.lucidworks.ps.config.DeployArgParser
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
 import groovy.cli.picocli.OptionAccessor

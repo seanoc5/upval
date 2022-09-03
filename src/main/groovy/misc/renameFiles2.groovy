@@ -1,7 +1,7 @@
 package misc
 
 import com.lucidworks.ps.Helper
-import com.lucidworks.ps.clients.TransformArgParser
+import com.lucidworks.ps.config.TransformArgParser
 import com.lucidworks.ps.model.fusion.Application
 import groovy.cli.picocli.OptionAccessor
 import groovy.transform.Field

@@ -1,14 +1,21 @@
-package com.lucidworks.ps.misc
+package com.lucidworks.ps.config
 
+
+import groovy.cli.picocli.OptionAccessor
 import spock.lang.Specification
 
 /**
  * very experimental test to explore Groovy ConfigSlurper
- * @deprecated possibly revisit later...
  * @see ConfigSlurper
  */
 class ConfigSlurperTest extends Specification {
     String configString = '''
+fusionClient {
+    username = 'admin'
+    password = 'password123'
+    fusionUrl = 'https://test.lucidworks.com:6764'
+}
+
 dev {
     startLink = 'http://www.lucidworks.com:8764/api'
     foo = 'bar'
@@ -69,19 +76,20 @@ def getProtocol(){
 
     }
 
-    def "simple test config with override"() {
+    def "simple test config with setBinding"() {
         given:
         ConfigSlurper configSlurper = new ConfigSlurper()
+        String username = 'admin'
 //        println('What is your name?')
 //        def username = System.in.newReader().readLine()
 //        def username = System.console().readLine 'What is your name?'
-        configSlurper.setBinding([mykey:'myvalue', name:username])
+        configSlurper.setBinding([mykey:'myvalue', username:username])
 
         when:
         def config = configSlurper.parse(configString)
 
         then:
-        config.dev.foo == 'bar'
+        config.fusionClient.username == username
     }
 
     /**
@@ -94,9 +102,10 @@ def getProtocol(){
 
         when:
         def config = configSlurper.parse(configString)
+        URL fusionUrl = new URL(config.fusionClient.fusionUrl)
 
         then:
-        config.getProtocol == 'https'
+        fusionUrl.getProtocol() == 'https'
     }
 
     def "should load rules from config file with configslurper"() {
@@ -128,7 +137,9 @@ def getProtocol(){
 
 
         when:
-        ConfigObject config = configSlurper.parse(getClass().getResource('/configs/configTypeAhead.groovy'))
+        URL cfgSource = getClass().getResource('/configs/configTypeAhead.groovy')
+        println("Config source: $cfgSource")
+        ConfigObject config = configSlurper.parse(cfgSource)
         def ta = config.collections.typeahead
 
         then:
@@ -156,21 +167,22 @@ def getProtocol(){
 
     }
 
-//    def "test syntax for arrays"(){
-//
-//    }
 
-/*
-    def "merge JsonObject with ConfigObject"(){
+
+    def "merge ConfigObject with CliBuilder options"(){
         given:
-        Map m = [a:'one', b:[child1:'two', child2:'three']]
-ConfigObject config = new ConfigSlurper().parse(configString)
+        ConfigObject config = new ConfigSlurper().parse(configString)
+
+        String[] args = ['-c/tmp/imaginaryConfigFile.groovy', '-umyUser', '-pmyPassword']
+
 
         when:
-        def flatties = m.fla
+        OptionAccessor options = DeployArgParser.parse(this.class.name, args, config)
+
         then:
+        options.u
 
     }
-*/
+
 
 }

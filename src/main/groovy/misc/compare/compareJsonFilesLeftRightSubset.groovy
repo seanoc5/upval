@@ -1,7 +1,7 @@
 package misc.compare
 
 import com.lucidworks.ps.compare.CompareJsonObjectResults
-import com.lucidworks.ps.clients.BaseComparatorArgParser
+import com.lucidworks.ps.config.BaseComparatorArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonSlurper
 import org.apache.log4j.Logger

@@ -1,7 +1,7 @@
 package misc
 
 import com.lucidworks.ps.Helper
-import com.lucidworks.ps.clients.ExportedAppArgParser
+import com.lucidworks.ps.config.ExportedAppArgParser
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.model.fusion.Javascript
 import groovy.cli.picocli.OptionAccessor

@@ -28,9 +28,9 @@ transform {
 
 }
 
-template {
-    objectsJson: '/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json'
-}
+//template {
+//    objectsJson: '/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json'
+//}
 
 blobs {
     serviceLib {

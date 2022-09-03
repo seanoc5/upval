@@ -4,6 +4,7 @@ import groovy.json.JsonSlurper
 taName = "${taName ?: 'myTypeahead'}"
 appName = "${appName ?: 'defaultAppName'}"
 baseId = "${appName}_$taName"
+username = "${username ?: 'testUser'}"
 // can't seem to get access to /resources dynamically? only to /classes/...
 objectsUrl = getClass().getResource('/')
 fooFile = new File(objectsUrl.toURI())

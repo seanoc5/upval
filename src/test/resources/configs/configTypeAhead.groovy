@@ -5,10 +5,16 @@ taName = "${taName ?: 'myTypeahead'}"
 appName = "${appName ?: 'defaultAppName'}"
 baseId = "${appName}_$taName"
 
-
-sourceObjects = new File('/Users/sean/work/lucidworks/upval/src/test/resources/components/ta-objects.json')
-objects = new JsonSlurper().parse(sourceObjects.toURL())
-println(objects)
+// NOTE: this defaults to out/classes, not out/resources... cant't get  this to work at the moment
+//testUrl = this.getClass().getResource('/')
+//println "Test url: ${testUrl}"
+//relativeUrl = this.getClass().getResource('/components/ta-objects.json')
+//println "Relative url from config file: ${relativeUrl}"
+//sourceObjects = new File(relativeUrl.toURI())
+//println("${sourceObjects} -> ${sourceObjects.exists()}")
+//objects = new JsonSlurper().parse(getClass().getResource('/components/ta-objects.json'))
+//objects = new JsonSlurper().parse(sourceObjects.toURL())
+//println(objects)
 
 transform {
     copy = [
