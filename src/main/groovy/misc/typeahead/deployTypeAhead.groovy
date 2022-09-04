@@ -45,13 +45,12 @@ FusionClient fusionClient = new FusionClient(options)
 deployBlobs(fusionClient, config, appName)
 
 public void deployBlobs(FusionClient fusionClient, ConfigObject config, String appName) {
-    def existingBlobs
-    FusionResponseWrapper frw = fusionClient.getBlobs()
-    if (frw.wasSuccess()) {
-        existingBlobs = frw.parsedList
-    } else {
-        throw new IllegalArgumentException("Problem with call for blobs: $frw")
-    }
+    def existingBlobs = fusionClient.getBlobDefinitions()
+//    if (frw.wasSuccess()) {
+//        existingBlobs = frw.parsedList
+//    } else {
+//        throw new IllegalArgumentException("Problem with call for blobs: $frw")
+//    }
     config.blobs.each { String key, Object val ->
         def destinationBlob = existingBlobs.find { it.path == val.path }
         if (destinationBlob) {
