@@ -1,8 +1,7 @@
 package misc.typeahead
 
-import com.lucidworks.ps.config.DeployArgParser
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.clients.FusionResponseWrapper
+import com.lucidworks.ps.config.DeployArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
 import groovy.transform.Field
@@ -10,7 +9,6 @@ import org.apache.log4j.Logger
 
 import java.nio.file.Path
 import java.nio.file.Paths
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -76,14 +74,13 @@ log.info "Done...?"
 
 // -------------------- Functions ---------------------
 public void deployBlobs(FusionClient fusionClient, ConfigObject config, String appName) {
-    def existingBlobs
-    FusionResponseWrapper frw = fusionClient.getBlobs()
-    if (frw.wasSuccess()) {
-        existingBlobs = frw.parsedList
-    } else {
-        throw new IllegalArgumentException("Problem with call for blobs: $frw")
-    }
-    config.objects.blobs.each { String key, Object val ->
+    def existingBlobs = fusionClient.getBlobDefinitions()
+//    if (frw.wasSuccess()) {
+//        existingBlobs = frw.parsedList
+//    } else {
+//        throw new IllegalArgumentException("Problem with call for blobs: $frw")
+//    }
+    config.objects.getBlobDefinitions.each { String key, Object val ->
         def destinationBlob = existingBlobs.find { it.path == val.path }
         if (destinationBlob) {
             log.info "Destination blob already exists, not re-uploading: key: $key --blob:$val"
