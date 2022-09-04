@@ -1,8 +1,8 @@
 package com.lucidworks.ps.deploy
 
-import com.lucidworks.ps.config.DeployArgParser
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.clients.FusionResponseWrapper
+import com.lucidworks.ps.config.DeployArgParser
 import groovy.cli.picocli.OptionAccessor
 import groovy.json.JsonOutput
 import groovy.transform.Field
@@ -20,14 +20,14 @@ import java.nio.file.Paths
  */
 @Field
 final Logger log = Logger.getLogger(this.class.name)
-log.info "Starting ${this.class.name} with args: ${args.findAll {!it.startsWith('-p') }}..."
+log.info "Starting ${this.class.name} with args: ${args.findAll { !it.startsWith('-p') }}..."
 
 
 // ------------------ Configuration -------------------
 OptionAccessor options = DeployArgParser.parse(this.class.name, args)
 String exportDir = options.exportDir
 File cfgFile = options.config
-if(cfgFile.exists()){
+if (cfgFile.exists()) {
     log.info "Reading config file: ${cfgFile.absolutePath}"
 } else {
     String msg = "Can't find config file: ${cfgFile.absolutePath}!! throwing error..."
@@ -52,11 +52,12 @@ Map objects = config.objects
 def indexPipelines = objects.indexPipelines         // debugging, convenience variable to confirm a semi-arbitrary set of transformations
 
 // ------------------ Fusion Client -------------------
-if(options.fusionUrl) {
+if (options.fusionUrl) {
     FusionClient fusionClient = new FusionClient(options)
     // create a connection to a running fusion if we want to do a 'live' update
     // ------------------ Blobs -------------------
-    deployBlobs(fusionClient, config, appName)          // example of checking existing blobs, and add any that are missing
+    deployBlobs(fusionClient, config, appName)
+    // example of checking existing blobs, and add any that are missing
     // todo -- more code to 'deploy' all the various things (datasources, connector plugins, pipelines, jobs, collections...)
 } else {
     log.info "No fusionUrl given, skipping live fusion setup/processing..."
@@ -64,8 +65,8 @@ if(options.fusionUrl) {
 
 // ------------------ EXPORT location -------------------
 File outDir
-if(exportDir) {
-        outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(exportDir)
+if (exportDir) {
+    outDir = com.lucidworks.ps.Helper.getOrMakeDirectory(exportDir)
 } else {
     log.warn "Could not find exportDir in options, defaulting to './'  "
     outDir = new File('./')
@@ -78,17 +79,17 @@ log.info "Wrote objects.json to: ${outFile.absolutePath}"
 log.info "Done...?"
 
 
-
 // -------------------- Functions ---------------------
 public void deployBlobs(FusionClient fusionClient, ConfigObject config, String appName) {
-    def existingBlobs
-    FusionResponseWrapper frw = fusionClient.getBlobs()
+    def existingBlobs = fusionClient.getBlobDefinitions()
+    log.warn "untested coded here, switched getBlobs to return list, not FRW"
+    FusionResponseWrapper frw = fusionClient.responses[-1]      // hack! get better approach to retrieve relevant response (especially if multithreaded use of client)
     if (frw.wasSuccess()) {
         existingBlobs = frw.parsedList
     } else {
         throw new IllegalArgumentException("Problem with call for blobs: $frw")
     }
-    config.objects.blobs.each { String key, Object val ->
+    config.objects.getBlobDefinitions.each { String key, Object val ->
         def destinationBlob = existingBlobs.find { it.path == val.path }
         if (destinationBlob) {
             log.info "Destination blob already exists, not re-uploading: key: $key --blob:$val"
