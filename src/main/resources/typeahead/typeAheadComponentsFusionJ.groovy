@@ -63,6 +63,9 @@ objects {
     }
 
     blobs = [
+            fusionClient.getBlobDefinitions(source.application, 'file', ),
+/*
+            // hard coded version for reference
             [
                     "id"          : "${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
                     "path"        : "/${foundry.FEATURE_NAME}/Typeahead_inclusion_list.csv",
@@ -99,6 +102,8 @@ objects {
                     "md5"         : "231d5da713875ea1b94c88638810a974",
                     "metadata"    : ["resourceType": "file:js-index"]
             ]
+
+ */
     ]
 
 
