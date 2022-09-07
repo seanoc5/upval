@@ -27,7 +27,7 @@ def destJobs = fusionClient.getJobs(appName)
 def destSchedules = fusionClient.getJobSchedules(destJobs)
 def responses = fusionClient.getResponses()
 responses.each {
-    log.debug "Save Response? ${it.response}"
+    log.debug "Save Response? ${it.httpResponse}"
 }
 log.info "done...?"
 

@@ -22,6 +22,21 @@ destination {
     outputZipPath = "${exportDir: '.'}"            // todo -- decide on string or actual file...
 }
 
+// testing/experimenting: can we make this replace (or build) the 'properties' section in the objects (objects.json) below...?
+propVariables {
+    ZKHOST {
+        path = '$..sparkJobs.readObtions[@key="zkHost"]'
+        title = 'ZK Connect String'
+        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
+    }
+    SIGNALS_AGGR_COLL {
+        path = '$..sparkJobs.readObtions[@key="collection"].value'
+        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
+
+    }
+}
+
+
 
 // ------------------- helper utils for config reading/processing -------------------
 slurper = new groovy.json.JsonSlurper()
@@ -29,41 +44,44 @@ slurper = new groovy.json.JsonSlurper()
 fusionClient = new FusionClient(source.url, source.user, source.password, source.application)
 
 
-// --------------------- components/objects to grab, transform, and bundle ---------------------
-objects {
-    // switch from 'typical' config syntax like "objects {..}" to setting
-    // a variable/leaf-node with standard groovy assignment (necessary to set a list rather than map)
-    queryPipelines = [
-            fusionClient.getQueryPipeline('Components_TYPEAHEAD_DW_QPL_v4', source.application),
-    ]
+// --------------------- components/objects to grab, transform, and bundle: typically objects.json, configsets, and blobs  ---------------------
+objectsJson {
+    // awkward naming/structure: file is called `objects.json` and has 3 top-level trees called: objects, blobs, configsets
+    // NB: objectsJson.objects.blobs is the definition of blob objects, the "actual" blobs are "files" under: objectsJson.blobs
+    objects {
+        // switch from 'typical' config syntax like "objects {..}" to setting
+        // a variable/leaf-node with standard groovy assignment (necessary to set a list rather than map)
+        queryPipelines = [
+                fusionClient.getQueryPipeline('Components_TYPEAHEAD_DW_QPL_v4', source.application),
+        ]
 
-    indexPipelines = [
-            fusionClient.getIndexPipeline('Components_TYPEAHEAD_DW_IPL_v4', source.application),
-    ]
+        indexPipelines = [
+                fusionClient.getIndexPipeline('Components_TYPEAHEAD_DW_IPL_v4', source.application),
+        ]
 
 
-    collections {
+        collections {
 
-    }
+        }
 
-    dataSources = [
+        dataSources = [
 //        fusionClient.getDataSource('Components_TYPEAHEAD_DW_IPL_v4', source.application),
-    ]
+        ]
 
-    features {
+        features {
 
-    }
+        }
 
-    queryProfiles {
+        queryProfiles {
 
-    }
+        }
 
-    tasks {
+        tasks {
 
-    }
+        }
 
-    blobs = [
-            fusionClient.getBlobDefinitions(source.application, 'file', ),
+        blobs = [
+                fusionClient.getBlobDefinitions(source.application, 'file',),
 /*
             // hard coded version for reference
             [
@@ -104,23 +122,46 @@ objects {
             ]
 
  */
-    ]
+        ]
 
 
-    sparkJobs {
+        sparkJobs {
+
+        }
+
+        metadata {
+            formatVersion = "1"
+            exportedBy = "admin"
+            exportedDate = "2021-07-09T22:28:12.910Z"
+            fusionVersion = destination.version
+            fusionGuid = "d62d4466-a46e-4948-97b4-58597712cc7e"
+        }
+
+        properties = [
+                [
+                        "id"    : "foundry.typeahead.ZKHOST",
+                        "schema": [
+                                "type"       : "string",
+                                "title"      : "ZKHOST",
+                                "description": "ZKHOST",
+                                "hints"      : []
+                        ]
+                ],
+                [
+                        "id"    : "foundry.destination.SIGNALS_AGGR_COLL",
+                        "schema": [
+                                "type"       : "string",
+                                "title"      : "SIGNALS_AGGR_COLL",
+                                "description": "SIGNALS_AGGR_COLL",
+                                "hints"      : []
+                        ]
+                ],
+        ]
 
     }
 
 }
-
-metadata {
-    formatVersion = "1"
-    exportedBy = "admin"
-    exportedDate = "2021-07-09T22:28:12.910Z"
-    fusionVersion = destination.version
-    fusionGuid = "d62d4466-a46e-4948-97b4-58597712cc7e"
-}
-
+// will be compiled into zipfile at 'top' level, next to objects.json and configsets folder
 blobs {
     inclusionCsv {
 //        source = new File('/Users/sean/work/lucidworks/upval/src/main/resources/typeahead/Typeahead_inclusion_list.csv')
@@ -130,36 +171,7 @@ blobs {
     }
 }
 
-propVariables {
-    ZKHOST {
-        path = '$..sparkJobs.readObtions[@key="zkHost"]'
-        title = 'ZK Connect String'
-        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
-    }
-    SIGNALS_AGGR_COLL {
-        path = '$..sparkJobs.readObtions[@key="collection"].value'
-        description = 'ZK Connect String for clicks load spark job (and any solr connectors)'
+configsets {
 
-    }
 }
 
-properties = [
-        [
-                "id"    : "foundry.typeahead.ZKHOST",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "ZKHOST",
-                        "description": "ZKHOST",
-                        "hints"      : []
-                ]
-        ],
-        [
-                "id"    : "foundry.destination.SIGNALS_AGGR_COLL",
-                "schema": [
-                        "type"       : "string",
-                        "title"      : "SIGNALS_AGGR_COLL",
-                        "description": "SIGNALS_AGGR_COLL",
-                        "hints"      : []
-                ]
-        ],
-]

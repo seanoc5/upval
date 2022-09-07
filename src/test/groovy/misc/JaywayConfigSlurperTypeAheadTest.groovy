@@ -2,6 +2,7 @@ package misc
 
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.internal.JsonContext
+import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.transform.JsonObject
 import groovy.json.JsonSlurper
 import spock.lang.Specification
@@ -21,9 +22,9 @@ class JaywayConfigSlurperTypeAheadTest extends Specification {
 
         when:
         ConfigObject config = configSlurper.parse(cfgLocation)
-        def sideCollection = config.objects.collections.sidecar
+        def sideCollection = config.objects.getCollectionDefinitionss.sidecar
         def mainIdxp = config.objects.indexPipelines.main
-        def signalsQryp = config.objects.queryPipelines.signalsHistory
+        def signalsQryp = FusionClient.getQueryPipelines.signalsHistory
 
         then:
         config instanceof ConfigObject
