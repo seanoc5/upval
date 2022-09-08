@@ -43,13 +43,15 @@ if(config.fusionClient) {
     fusionClient = new FusionClient(options)
 }
 
+Map objectsJson = config.objectsJson
+
 def props = config.props
-Map pkgMap = [objects: config.objects, metadata: config.metadata, properties:config.properties]
+Map pkgMap = [objects: objectsJson, metadata: objectsJson.metadata, properties:objectsJson.properties]
 pkgMap.each { key, val ->
     if (val instanceof Map) {
-        log.info "$key) map with keys: ${val.keySet()}"
+        log.info "\t\t$key) map with keys: ${val.keySet()}"
     } else if (val instanceof List) {
-        log.info "$key) list with size: ${val.size()}"
+        log.info "\t\t$key) list with size: ${val.size()}"
     }
 }
 String json = JsonOutput.prettyPrint(JsonOutput.toJson(config.objects))

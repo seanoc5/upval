@@ -76,7 +76,7 @@ deployDataSources(fusionClient, appName, config)
 
 
 public void deployCollections(FusionClient fusionClient, String appName, ConfigObject config) {
-    def existingCollections = fusionClient.getCollections(appName)
+    def existingCollections = fusionClient.getCollectionDefinitions(appName)
     if (existingCollections) {
         config.collections.each { String label, Map collectionConfig ->
             String destId = collectionConfig.id
