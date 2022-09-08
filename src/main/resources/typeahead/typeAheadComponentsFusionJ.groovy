@@ -56,13 +56,13 @@ objectsJson {
         ]
 
         indexPipelines = [
-                fusionClient.getIndexPipeline('Components_TYPEAHEAD_DW_IPL_v4', source.application),
+                fusionClient.getIndexPipelines(source.application, 'Components_TYPEAHEAD_DW_IPL_v4'),
         ]
 
 
-        collections {
-
-        }
+        collections = [
+            fusionClient.getCollectionDefinition(source.application, 'Components_TYPEAHEAD_DW_v4'),
+        ]
 
         dataSources = [
 //        fusionClient.getDataSource('Components_TYPEAHEAD_DW_IPL_v4', source.application),
@@ -129,37 +129,38 @@ objectsJson {
 
         }
 
-        metadata {
-            formatVersion = "1"
-            exportedBy = "admin"
-            exportedDate = "2021-07-09T22:28:12.910Z"
-            fusionVersion = destination.version
-            fusionGuid = "d62d4466-a46e-4948-97b4-58597712cc7e"
-        }
-
-        properties = [
-                [
-                        "id"    : "foundry.typeahead.ZKHOST",
-                        "schema": [
-                                "type"       : "string",
-                                "title"      : "ZKHOST",
-                                "description": "ZKHOST",
-                                "hints"      : []
-                        ]
-                ],
-                [
-                        "id"    : "foundry.destination.SIGNALS_AGGR_COLL",
-                        "schema": [
-                                "type"       : "string",
-                                "title"      : "SIGNALS_AGGR_COLL",
-                                "description": "SIGNALS_AGGR_COLL",
-                                "hints"      : []
-                        ]
-                ],
-        ]
 
     }
 
+
+    metadata {
+        formatVersion = "1"
+        exportedBy = "admin"
+        exportedDate = "2021-07-09T22:28:12.910Z"
+        fusionVersion = destination.version
+        fusionGuid = "d62d4466-a46e-4948-97b4-58597712cc7e"
+    }
+
+    properties = [
+            [
+                    "id"    : "foundry.typeahead.ZKHOST",
+                    "schema": [
+                            "type"       : "string",
+                            "title"      : "ZKHOST",
+                            "description": "ZKHOST",
+                            "hints"      : []
+                    ]
+            ],
+            [
+                    "id"    : "foundry.destination.SIGNALS_AGGR_COLL",
+                    "schema": [
+                            "type"       : "string",
+                            "title"      : "SIGNALS_AGGR_COLL",
+                            "description": "SIGNALS_AGGR_COLL",
+                            "hints"      : []
+                    ]
+            ],
+    ]
 }
 // will be compiled into zipfile at 'top' level, next to objects.json and configsets folder
 blobs {
