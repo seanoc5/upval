@@ -1,0 +1,310 @@
+{
+    "id": "Components_TYPEAHEAD_DW_QPL_v4",
+    "stages": [
+        {
+            "id": "ece2b7eb-2916-4aff-91f2-8664563c825b",
+            "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:entity &&\" + q)\n}",
+            "shareState": true,
+            "type": "javascript-query",
+            "skip": false,
+            "label": "Only Return Entity Documents",
+            "condition": "request.hasParam(\"entityOnly\") && request.getFirstParam(\"entityOnly\").equals(\"true\");\n// This stage is used to the make the results only entity documents. The Components_TYPEAHEAD_DC_entity_QPF_v4 will send a entityOnly=true",
+            "secretSourceStageId": "ece2b7eb-2916-4aff-91f2-8664563c825b"
+        },
+        {
+            "id": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff",
+            "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:history && \" + q)\n}",
+            "shareState": true,
+            "type": "javascript-query",
+            "skip": false,
+            "label": "Only Return History Documents",
+            "condition": "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n// This stage is used to the make the results only history documents. The Components_TYPEAHEAD_DC_history_QPF_v4 will send a parameter historyOnly=true",
+            "secretSourceStageId": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff"
+        },
+        {
+            "id": "9615c4bf-bd84-4c61-9ff3-2c07c73dc582",
+            "numRecommendations": 10,
+            "numSignals": 100,
+            "aggrType": "click@doc_id,filters,query",
+            "boostId": "id",
+            "boostingMethod": "query-param",
+            "boostingParam": "boost",
+            "queryParams": [
+                {
+                    "key": "qf",
+                    "value": "query_t"
+                },
+                {
+                    "key": "pf",
+                    "value": "query_t^50"
+                },
+                {
+                    "key": "pf",
+                    "value": "query_t~3^20"
+                },
+                {
+                    "key": "pf2",
+                    "value": "query_t^20"
+                },
+                {
+                    "key": "pf2",
+                    "value": "query_t~3^10"
+                },
+                {
+                    "key": "pf3",
+                    "value": "query_t^10"
+                },
+                {
+                    "key": "pf3",
+                    "value": "query_t~3^5"
+                },
+                {
+                    "key": "boost",
+                    "value": "map(query({!field f=query_s v=$q}),0,0,1,20)"
+                },
+                {
+                    "key": "mm",
+                    "value": "50%"
+                },
+                {
+                    "key": "defType",
+                    "value": "edismax"
+                },
+                {
+                    "key": "sort",
+                    "value": "score desc, weight_d desc"
+                },
+                {
+                    "key": "fq",
+                    "value": "weight_d:[* TO *]"
+                }
+            ],
+            "rollupField": "doc_id_s",
+            "rollupWeightField": "weight_d",
+            "weightExpression": "math:log(weight_d + 1) + 10 * math:log(score+1)",
+            "rollupWeightStrategy": "max",
+            "queryParamToBoost": "q",
+            "includeEnrichedQuery": false,
+            "type": "recommendation",
+            "skip": false,
+            "secretSourceStageId": "9615c4bf-bd84-4c61-9ff3-2c07c73dc582"
+        },
+        {
+            "id": "3e16eb81-b5e6-47fd-b8c4-a1ff94ed47d4",
+            "fieldFacets": [
+                {
+                    "field": "ta_type",
+                    "limit": 100,
+                    "minCount": 1,
+                    "missing": false
+                },
+                {
+                    "field": "type",
+                    "limit": 100,
+                    "minCount": 1,
+                    "missing": false
+                }
+            ],
+            "rangeFacets": [],
+            "type": "facet",
+            "skip": false,
+            "secretSourceStageId": "3e16eb81-b5e6-47fd-b8c4-a1ff94ed47d4",
+            "properties": {
+                "autoCreated": true
+            }
+        },
+        {
+            "id": "5f4e1208-afe4-4fc7-941e-15872d5642f3",
+            "params": [
+                {
+                    "key": "defType",
+                    "value": "edismax",
+                    "policy": "append"
+                }
+            ],
+            "type": "set-params",
+            "skip": false,
+            "secretSourceStageId": "5f4e1208-afe4-4fc7-941e-15872d5642f3"
+        },
+        {
+            "id": "14fb0ccb-943e-43c2-a5b2-16889cadb2eb",
+            "params": [
+                {
+                    "key": "hl",
+                    "value": "true",
+                    "policy": "append"
+                },
+                {
+                    "key": "hl.fl",
+                    "value": "value_t",
+                    "policy": "append"
+                }
+            ],
+            "type": "set-params",
+            "skip": true,
+            "label": "Highlighting",
+            "secretSourceStageId": "14fb0ccb-943e-43c2-a5b2-16889cadb2eb"
+        },
+        {
+            "id": "9340b52e-11a4-4e1d-a5ef-e4c9b753de70",
+            "script": "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  logger.info('***Terms q=' + q)\n\n  var s = q.split(' ');\n  var prefix = s[s.length - 1];\n\n  request.putSingleParam('terms', true);\n  request.putSingleParam('terms.prefix', [prefix]);\n  request.putSingleParam('terms.fl', ['value_t']);\n\n  //Ensures that the term itself won't be suggested\n  request.putSingleParam('terms.lower', [prefix]);\n  request.putSingleParam('terms.lower.incl', false);\n\n}",
+            "shareState": true,
+            "type": "javascript-query",
+            "skip": false,
+            "label": "Add Terms to Response",
+            "secretSourceStageId": "9340b52e-11a4-4e1d-a5ef-e4c9b753de70"
+        },
+        {
+            "id": "71e7f340-2dc3-41c8-8330-d2991d87e363",
+            "rows": 10,
+            "start": 0,
+            "sortOrder": [
+                {
+                    "type": "field",
+                    "order": "desc",
+                    "value": "score"
+                }
+            ],
+            "queryFields": [
+                {
+                    "field": "value_t"
+                },
+                {
+                    "field": "value_s"
+                },
+                {
+                    "field": "value_phonetic_en"
+                },
+                {
+                    "field": "value_edge"
+                },
+                {
+                    "field": "value_en"
+                }
+            ],
+            "returnFields": [
+                "value_s",
+                "type",
+                "ta_type",
+                "document_url",
+                "image_url",
+                "popularity_d",
+                "signal_count",
+                "indexed_date"
+            ],
+            "returnScore": true,
+            "type": "search-fields",
+            "skip": false,
+            "secretSourceStageId": "71e7f340-2dc3-41c8-8330-d2991d87e363"
+        },
+        {
+            "id": "3ea61720-eb40-4bfc-be00-e4f2db6868fd",
+            "httpMethod": "POST",
+            "allowFederatedSearch": false,
+            "preferredReplicaType": "pull",
+            "type": "solr-query",
+            "skip": false,
+            "responseSignalsEnabled": true,
+            "secretSourceStageId": "3ea61720-eb40-4bfc-be00-e4f2db6868fd"
+        },
+        {
+            "id": "6713beba-089c-47a8-a8c1-c3f0715eafc8",
+            "script": "function(request, response, ctx){\n  // logger.info('\\n\\n***REQUEST INFO = ' + response.getInnerResponse().toString());\n\n  // var q = request.getFirstParam('q');\n  // qmsg = [];\n  // qmsg.push(q);\n  // response.initialEntity.appendStringList('myqis',qmsg);\n\n  // var fq = request.getParam(\"fq\");\n  // fqmsg = [];\n  // for each (var item in fq) {\n  //   fqmsg.push(item);\n  // }\n  // response.initialEntity.appendStringList('myfqs',fqmsg);\n  \n  var qtime = response.getInnerResponse().getQTime().orElse(\"ERROR\").toString();\n  respMsg1 = [];\n  respMsg1.push(qtime);\n  response.initialEntity.appendStringList('qtime',respMsg1);\n\n  var value = response.getInnerResponse().getResponseHeaderParams().toString();\n  // var params = value.get(\"responseHeader\").get(\"params\");\n  // logger.info('\\n\\n***REQUEST INFO = ' + params);\n\n  respMsg2 = [];\n  respMsg2.push(value);\n    response.initialEntity.appendStringList('params',respMsg2);\n}",
+            "shareState": true,
+            "type": "javascript-query",
+            "skip": false,
+            "label": "Add response details to response messages",
+            "secretSourceStageId": "6713beba-089c-47a8-a8c1-c3f0715eafc8"
+        }
+    ],
+    "properties": {
+        "supportedMode": "all",
+        "secretSourcePipelineId": "Components_TYPEAHEAD_DW_QPL_v4"
+    },
+    "updates": [
+        {
+            "userId": "admin",
+            "timestamp": "2021-02-11T21:37:29.428Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-08T18:38:00.845Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-22T17:43:37.798Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:22:13.280Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:22:48.281Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:23:29.733Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:26:03.034Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:26:49.732Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:27:55.671Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:28:57.489Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-29T23:29:16.721Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-03-31T17:49:53.039Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-04-01T15:35:35.841Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-04-13T20:29:12.245Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-04-13T21:16:33.004Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:18:06.923Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:18:27.747Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:24:18.969Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:24:21.775Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:27:01.975Z"
+        },
+        {
+            "userId": "admin",
+            "timestamp": "2021-05-10T17:27:52.558Z"
+        }
+    ]
+}
