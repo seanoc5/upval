@@ -2,12 +2,15 @@ package misc
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
+import java.nio.channels.SeekableByteChannel
 import java.nio.charset.StandardCharsets
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+
 /**
  * testing how to create zipfile with zip entries
  */
@@ -70,6 +73,39 @@ class ApacheCompressZipTest extends Specification {
         then:
         outFile.exists()
         outFile.size() > 10
+
+    }
+
+    def "create seekable in-memory zip file"() {
+        given:
+        Map<String, String> thingsToSave = [
+                file1: 'this is the first text file text to store',
+                file2: 'second text file text to store here',
+        ]
+        SeekableByteChannel channel = new SeekableInMemoryByteChannel()
+        ZipArchiveOutputStream zaos = new ZipArchiveOutputStream(channel)
+
+        when:
+        thingsToSave.each { name, txt ->
+            ZipArchiveEntry entry = new ZipArchiveEntry(name)
+            entry.setSize(txt.size())
+            zaos.putArchiveEntry(entry)
+
+            // https://simplesolution.dev/java-create-zip-file-using-apache-commons-compress/
+            InputStream iois = IOUtils.toInputStream(txt, StandardCharsets.UTF_8);
+            IOUtils.copy(iois, zaos)
+            zaos.closeArchiveEntry()
+        }
+
+        List<ZipArchiveEntry> entries = zaos.entries
+        ZipArchiveEntry entry1 = entries[0]
+        ZipArchiveEntry entry2 = entries[1]
+
+        then:
+        zaos instanceof ZipArchiveOutputStream
+        entry1 instanceof ZipArchiveEntry
+        entry1.getName()==thingsToSave.keySet()[0]
+        zaos.close()            // is this necessary/good? memory goes away after test, so this might be unneeded
 
     }
 
