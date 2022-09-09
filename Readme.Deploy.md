@@ -75,6 +75,20 @@ Unknown transformations for DC_Large at the moment. Assume there are minor blob 
 Unknown transformations for DC_Large at the moment. Assume there are minor blob changes?
 
 
+## Simple Component (TA Query Pipeline)
+- app = [propName:'AppName', templateRules:[from:'TYPEAHEAD_DW']]
+- comp = [propName:'ComponentName', templateRules:[from:'Components']]
+- ver = '4'
+- 
+
+### Transforms
+- objects.queryPipelines[0].id = "${baseId}_QPL_v${ver}"
+
+- objects.indexPipelines[0].id = "${baseId}_IPL_v${ver}"
+  - Components_TYPEAHEAD_DW_IPL_v4 
+  - TYPEAHEAD_DW
+
+
 ### Notes from Andrew:
     remove /^lw_.*/ pipelines
     remove /.*debug.*/  objects
