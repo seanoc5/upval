@@ -23,7 +23,8 @@ log.info "Starting ${this.class.name} with args: ${args.findAll {!it.startsWith(
 
 // ------------------ Configuration -------------------
 OptionAccessor options = DeployArgParser.parse(this.class.name, args)
-File cfgFile = new File(options.config)
+//File cfgFile = new File(options.config)       // clibuilder casts arg to file, no need to do so again here...
+File cfgFile = options.config
 if(cfgFile.exists()){
     log.info "Reading config file: ${cfgFile.absolutePath}"
 } else {
