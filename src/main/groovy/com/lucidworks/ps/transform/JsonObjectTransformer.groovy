@@ -205,6 +205,15 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
 
+    /**
+     * placeholder code to consider using string templates
+     * @param srcValue
+     * @param srcPattern
+     * @param destPath
+     * @param destPattern
+     * @return
+     * TODO-- implement/complete this functionality
+     */
     String transformWithStringTemplate(def srcValue, def srcPattern, def destPath, def destPattern) {
         String msg = "String template replace/transform Not implemented yet!! Throwing error and running away...  Improper Attempt to transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern)"
         log.error msg
