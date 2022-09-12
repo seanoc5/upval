@@ -3,6 +3,9 @@ package misc
 
 import spock.lang.Specification
 
+/**
+ * minimal tests, just a placeholder, stopped development early in process... look elsewhere
+ */
 class ObjectTransformerGeneralTest extends Specification {
 
 
