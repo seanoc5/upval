@@ -1,5 +1,6 @@
 package com.lucidworks.ps.solr
 
+import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.model.fusion.Application
 import com.lucidworks.ps.model.solr.ConfigSet
 import com.lucidworks.ps.model.solr.ConfigSetCollection
@@ -20,4 +21,19 @@ class ConfigSetCollectionTest extends Specification {
         configSetCollection.configsetMap.keySet().toArray() == ['test', 'test_signals', 'test_signals_aggr']
 
     }
+
+    def "get configset from running fusion"() {
+        given:
+        FusionClient fusionClient = new FusionClient()
+
+        when:
+        ConfigSetCollection configSetCollection = app.configsets
+        ConfigSet testConfigSet = configSetCollection.configsetMap['test']
+
+        then:
+        configSetCollection.deploymentName == 'test'
+        configSetCollection.configsetMap.keySet().toArray() == ['test', 'test_signals', 'test_signals_aggr']
+
+    }
+
 }
