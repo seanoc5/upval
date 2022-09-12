@@ -137,6 +137,13 @@ class JsonObject {
         return matchingPaths
     }
 
+
+    /**
+     * Helper method called by more general `findItems()` -- focused on finding nodes by their value
+     * @param valuePattern accepts either string or pattern. If arg is pattern, then a regex match is performed, if String: then string.contains()
+     * @param flatMapToSearch - map of things to search
+     * @return map of matches
+     */
     Map<String, Object> findItemsByValue(def valuePattern, Map<String, Object> flatMapToSearch) {
         Map<String, Object> matchingItems = null
         if (!valuePattern || valuePattern == '.*') {
