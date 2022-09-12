@@ -7,13 +7,24 @@ import spock.lang.Specification
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
  * @created :   6/24/22, Friday
- * @description:
+ * @description: check transform operations
  */
 
 /**
  * @ deprecated ?? revisit to see if there is anything current/useful here...
  */
 class JsonObjectTransformeDeployTest extends Specification {
+    /** simple source map/json to test basic transforms */
+    Map srcMap = [id           : 'srcId', name: 'srcName',
+                  srcProperties: [prop1: 1, prop2: 'foo']
+    ]
+
+    def "should change leaf node values with JsonObject"(){
+//        given:
+
+    }
+
+
     def "should find expected number of matching rename DC_Large objects.json items"() {
         given:
         File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
@@ -52,14 +63,14 @@ class JsonObjectTransformeDeployTest extends Specification {
 
     def "should rename DC_Large objects.json items"() {
         given:
-        File appZip = new File(getClass().getResource('/apps/DC_Large/DC_Large.zip').toURI())
+        File appZip = new File(getClass().getResource('/apps/DC_Large.zip').toURI())
         Map objectsMap = Application.getObjectsJsonMap(appZip)
         Map destMap = objectsMap.clone()
-        assert  destMap==null
+        assert destMap == null
         // todo -- do we need to do something for groovy lazymaps? seems they are empty until accessed? try simple keyseet access here to get a good clone...?
         Set srcKeys = objectsMap.keySet()
         destMap = objectsMap.clone()
-        assert destMap.keySet().toArray()==['objects','properties','metadata']
+        assert destMap.keySet().toArray() == ['objects', 'properties', 'metadata']
         JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap, destMap)
         def rules = [copy: [
                 [sourcePath           : '.*',
