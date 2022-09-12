@@ -41,7 +41,7 @@ objects {
     indexPipelines {
         fileUploadPipeline = 'Components_TYPEAHEAD_DW_IPL_v4'
 
-        // testGithub = slurper.parse("${source.gitRepo}/indexpipeline.main.v1.json".toURL())  // testing getting json from url, slurping it, and including it in the config
+         testGithub = slurper.parse("${source.gitRepo}/indexpipeline.main.v1.json".toURL())  // testing getting json from url, slurping it, and including it in the config
     }
 
     /*
