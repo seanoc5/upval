@@ -3,6 +3,11 @@
 **NOTE:** this may have naming issues....
 Deploy currently refers to the transform process -- in preparation for actually deploying a component
 
+## Overview
+Deploy is the working term for getting functionality (aka package) into a destination Fusion.
+See Packaging for code and process to build a package.
+
+## Transform operations for deployment
 
 
 ##  DC_Large
