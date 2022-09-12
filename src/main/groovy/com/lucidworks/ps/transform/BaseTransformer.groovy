@@ -84,7 +84,7 @@ abstract class BaseTransformer {
 //    abstract List<Map<String, Object>> performCopyRules(List<Map> rules)
 
     /**
-     * process all of the given 'sest' rules
+     * process all of the given 'set' rules
      * @param rules
      * @return
      */
