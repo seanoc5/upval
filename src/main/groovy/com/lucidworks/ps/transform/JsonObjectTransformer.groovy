@@ -80,12 +80,21 @@ class JsonObjectTransformer extends BaseTransformer {
                 boolean valMatches = false
                 if (valuePattern instanceof Pattern) {
                     def valMatch = (itemValue =~ valuePattern)
-                    if (valMatch.matches()) {
+//                    def valFound = valuePattern.matcher(itemValue).find()
+                    if (valMatch.find()) {
+//                    if (valMatch.matches()) {
                         log.debug "Add matcher to return thingie here? not unless things are slow with re-matching in doing the actual rule..."
                         valMatches = true
+                    } else {
+                        log.debug "\t\tNo regex (pattern: $valuePattern) match on item: $itemValue -- item path: $itemPath"
                     }
                 } else {
                     valMatches = ((String) itemValue).contains(valuePattern)
+                    if(valMatches){
+                        log.info "\t\tString match ($valuePattern): in item:$itemValue (path: $itemPath) "
+                    } else {
+                        log.debug "\t\tNo string match (pattern: $valuePattern) match on item: $itemValue -- item path: $itemPath"
+                    }
                 }
                 return valMatches
             }
@@ -128,7 +137,8 @@ class JsonObjectTransformer extends BaseTransformer {
 
             log.info "\t\tCOPY rule: src path: (${srcPath}) into destination entry:(${destPath ?: 'clone of source'} -- transform: ${srcValPattern ?: 'none'}"
             Map<String, Object> srcPaths = findAllItemsMatching(srcPath, srcValPattern, srcFlatpaths)
-            log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern" + srcPaths.collect{"\n\t\t${it.key}"}
+            log.info "\t\tfound ${srcPaths.size()} source paths out of (${srcFlatpaths.size()}) matching pattern: $srcValPattern" +
+                    srcPaths.collect{"\n\t\tpath: ${it.key}  -- value: ${it.value}"}
 
             srcPaths.each { String flatPath, def srcValue ->
                 Map<String, Object> destPaths = null
@@ -172,7 +182,12 @@ class JsonObjectTransformer extends BaseTransformer {
                 break
 
             case TX_REGEX_REPLACE:
-                log.debug "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destValuePattern]"
+                log.info "\t\t$transformType) transform source:[$srcValue] to dest:[$destValue] with destPattern:[$destValuePattern]"
+                if(srcPattern instanceof Pattern) {
+                    log.debug "\t\tGood -- regex replace, and we have a pattern"
+                } else {
+                    log.info "\t\tcurious... -- regex replace, but we have a 'pattern' that is not a true Pattern (${srcPattern.class.simpleName}"
+                }
                 destValue = ((String) srcValue).replaceAll(srcPattern, destValuePattern)
                 if (destValue == srcValue) {
                     log.info "Dest value:[$destValue] is the same/unchanged from srcValue:[$srcValue] using srcPattern:[$srcPattern] and destPattern:[$destValuePattern] -- is this a problem?"
