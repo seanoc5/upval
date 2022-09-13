@@ -42,7 +42,7 @@ class JsonObjectTransformeDeployTest extends Specification {
         given:
         JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
         def rules = [
-                copy: [[from    : ~/^src.*/, to: '${foundry.ta.sourceName}'],],
+                copy: [[from    : ~/^src.*/, to: '\${foundry.ta.sourceName}'],],
         ]
 
         when:

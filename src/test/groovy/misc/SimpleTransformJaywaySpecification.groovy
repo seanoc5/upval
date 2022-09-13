@@ -6,27 +6,12 @@ import groovy.json.JsonSlurper
 import spock.lang.Specification
 
 class SimpleTransformJaywaySpecification extends Specification {
-    Map srcMap = null
-    Map destMap = null
-    DocumentContext srcContext = null
-    DocumentContext destContext = null
-    Map rules = null
-
-    /**
-     * use the same setup for all the tests (is this an antipattern??)
-     *
-     * @return
-     */
-    def setup(){
-        JsonSlurper slurper = new JsonSlurper()
-        srcMap = slurper.parseText(src)
-        srcContext = JsonPath.parse(srcMap)         // useful? necessary? for set value
-
-        destMap = slurper.parseText(dest)
-        destContext = JsonPath.parse(destMap)         // useful? necessary? for set value
-
-        rules = slurper.parseText(configsJsonPath)
-    }
+    JsonSlurper slurper = new JsonSlurper()
+    Map srcMap =  slurper.parseText(src)
+    Map destMap =  slurper.parseText(dest)
+    DocumentContext srcContext = JsonPath.parse(srcMap)
+    DocumentContext destContext = JsonPath.parse(destMap)
+    Map rules = slurper.parseText(configsJsonPath)
 
 
     def "check jayway read basics"() {
@@ -58,17 +43,12 @@ class SimpleTransformJaywaySpecification extends Specification {
     }
 
 
-/*
-    def "test string parsing reading, writing, and deletion"(){
+    def "transform leaf nodes with variables"(){
         given:
-        DocumentContext jaywayDocContext = JsonPath.parse(m)
-            def foo = jaywayDocContext.read(allPath)
-        String allPath = '$.keys()'
-        def result = Helper.flatten(m)
+        String idPath = '$.id'
 
 
     }
-*/
 
 
     public static String src = '''

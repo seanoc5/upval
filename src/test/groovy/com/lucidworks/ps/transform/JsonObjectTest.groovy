@@ -25,19 +25,12 @@ class JsonObjectTest extends Specification {
 
     String singleLineSource = 'function myFunc() {\\n\\tvar a = \\"foo\\";\\n\\tconsole.log(a);\\n}'
 
-    Map srcMap          // reset for each test by 'setup' method, need it to be annotated with Shared???
+    Map srcMap = [
+            a            : [one: 'one', two: 'two'],
+            b            : ['three', 'four'],
+            compositeList: ['comp1', 'comp2', [submapkey1: 'comp map 1 val']]
+    ]
 
-    /**
-     * using setup to refresh the source map for each test (is there a better approach??)
-     */
-    void setup() {
-        // todo -- refactor, and make one all-purpose source map (see other map defined below)
-        srcMap = [
-                a            : [one: 'one', two: 'two'],
-                b            : ['three', 'four'],
-                compositeList: ['comp1', 'comp2', [submapkey1: 'comp map 1 val']]
-        ]
-    }
 
     def "escaped source should be multiline and unescaped should not"() {
         expect:
