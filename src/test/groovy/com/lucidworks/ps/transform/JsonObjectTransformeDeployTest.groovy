@@ -16,12 +16,43 @@ import spock.lang.Specification
 class JsonObjectTransformeDeployTest extends Specification {
     /** simple source map/json to test basic transforms */
     Map srcMap = [id           : 'srcId', name: 'srcName',
-                  srcProperties: [prop1: 1, prop2: 'foo']
+                  srcProperties: [prop1: 1, prop2: 'fooProperty 2']
     ]
 
-    def "should change leaf node values with JsonObject"(){
-//        given:
+    def "should change leaf node values with JsonObject"() {
+        given:
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        def rules = [
+                copy: [
+                        [from    : ~/src/, to: 'acme'],
+                        [from    : ~/foo/, to: 'bar'],
+                ],
+        ]
 
+        when:
+        def updatedObjects = transformer.transform(rules)
+
+        then:
+        updatedObjects.size() == 1
+        updatedObjects.copyResults.size() == 3
+        ((Map)updatedObjects.copyResults[0]).keySet()[0].toString()=='/id'
+        ((Map)updatedObjects.copyResults[0]).values()[0].toString()=='acmeId'
+    }
+    def "should change leaf node values to variables with JsonObject"() {
+        given:
+        JsonObjectTransformer transformer = new JsonObjectTransformer(srcMap)
+        def rules = [
+                copy: [[from    : ~/^src.*/, to: '${foundry.ta.sourceName}'],],
+        ]
+
+        when:
+        def updatedObjects = transformer.transform(rules)
+
+        then:
+        updatedObjects.size() == 1
+        updatedObjects.copyResults.size() == 3
+        ((Map)updatedObjects.copyResults[0]).keySet()[0].toString()=='/id'
+        ((Map)updatedObjects.copyResults[0]).values()[0].toString()=='acmeId'
     }
 
 

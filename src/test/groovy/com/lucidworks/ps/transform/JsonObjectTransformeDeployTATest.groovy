@@ -1,9 +1,8 @@
 package com.lucidworks.ps.transform
 
-import com.lucidworks.ps.model.fusion.Application
+
 import groovy.json.JsonSlurper
 import spock.lang.Specification
-
 /**
  * @author :    sean
  * @mailto :    seanoc5@gmail.com
@@ -24,7 +23,7 @@ class JsonObjectTransformeDeployTATest extends Specification {
         ]
         ]
 
-        URL url = getClass().getResource('/components/ta-objects.json')
+        URL url = getClass().getResource('/components/typeahead/ta-objects.json')
         Map objectsMap = new JsonSlurper().parse(url)
         JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap)
 
@@ -51,7 +50,7 @@ class JsonObjectTransformeDeployTATest extends Specification {
         ConfigObject config = configSlurper.parse(configUrl)
         assert config.appName == myAppName
 
-        URL url = getClass().getResource('/components/ta-objects.json')
+        URL url = getClass().getResource('/components/typeahead/ta-objects.json')
         Map objectsMap = new JsonSlurper().parse(url)
         JsonObjectTransformer transformer = new JsonObjectTransformer(objectsMap)
 
