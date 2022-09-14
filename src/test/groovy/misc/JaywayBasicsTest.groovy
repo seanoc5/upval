@@ -87,12 +87,13 @@ class JaywayBasicsTest extends Specification {
 
     def "perform variable substitution on values"() {
         given:
-        JsonContext pathsContext = JsonPath.parse(src)
+//        JsonContext pathsContext = JsonPath.parse(src)
         Map varSubstitutions = [
-                '$.id': [from: 'sample', to: 'MyIdHere']
+                'id': [from: 'sample', to: 'MyIdHere'],
+                ~'description': [from: 'Sample', to: 'AcmeTypeahead'],
         ]
         varSubstitutions.each { String subsPath, Map subsMap ->
-            List matchingPaths = pathsContext.read(subsPath)
+            List matchingPaths = transformerJayway.getPathMatches(subsPath)
             matchingPaths.each { String matchedPath ->
                 String origValue = transformerJayway.read(matchedPath)
                 println "Path: ($matchedPath) -- orig val:($origValue)"
