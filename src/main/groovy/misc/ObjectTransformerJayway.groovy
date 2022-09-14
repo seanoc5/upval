@@ -1,7 +1,9 @@
 package misc
 
+import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import com.jayway.jsonpath.internal.JsonContext
 import net.minidev.json.JSONArray
@@ -21,47 +23,33 @@ import java.util.regex.Pattern
  */
 class ObjectTransformerJayway {
     static Logger log = Logger.getLogger(this.class.name);
-//    Map sourceMap
-//    DocumentContext srcContext
+    Map sourceMap
+    Configuration pathsConf = Configuration.builder().options(Option.AS_PATH_LIST).build();
+    JsonContext jsonPathsContext = null
+    JsonContext srcContext = null
+    JSONArray allJsonPaths = null
+    public static final String ALL_PATH = '$..*'            // convenience constant for Jayway "give me everything" search path
 
-//    Map destinationMap
-//    DocumentContext destContext
+    ObjectTransformerJayway(Map srcMap) {
+        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
+        sourceMap = srcMap
 
-//    Map rules
+        srcContext = JsonPath.parse(sourceMap)
+        jsonPathsContext = JsonPath.using(pathsConf).parse(sourceMap)
+        allJsonPaths = jsonPathsContext.read(ALL_PATH)
+    }
+
 
     /**
-     * todo -- working on moving to functional approach (static calls)
+     * Search the expanded list of 'ALL' paths, and check if the (String) VALUE matches
+     * NOTE: assumes string value matches only, as the main goal is for variable substitution, which is mostly names
+     * @param matchValue
+     * @return list of matching paths (to do work on: set, copy, delete,...)
      */
-//    ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
-//        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
-//        sourceMap = srcMap
-//        destinationMap = destMap
-//
-//        srcContext = JsonPath.parse(sourceMap)
-//        destContext = JsonPath.parse(destinationMap)
-//
-//        this.rules = rules
-//    }
-
-    /**
-     * process the configuration rules, currently `set` and `copy`
-     * @return
-     * todo -- remove me, moving to functional-friendly approach (static calls)
-     */
-//    Map<String, List<Map<String, Object>>> transform() {
-//        Map resultsMap = [:]
-//        List<Map<String, Object>> myset = setValues(sourceMap, rules, destinationMap)
-//        resultsMap['set'] = myset
-//        List<Map<String, Object>> myCopy = copyValues(sourceMap, rules, destinationMap)
-//        resultsMap['copy'] = myCopy
-//        return destinationMap
-//    }
-
-
-    static List<String> getPathsByValue(JsonContext jsonContext, JSONArray pathsArray, def matchValue) {
+    List<String> getPathsByValue(def matchValue) {
         List matches = []
-        pathsArray.each { path ->
-            String val = jsonContext.read(path)         // todo -- only dealing with Strings at the moment...
+        allJsonPaths.each { path ->
+            String val = srcContext.read(path)         // todo -- only dealing with Strings at the moment...
             if (matchValue instanceof String) {
                 if (val.contains(matchValue)) {
                     matches << path
@@ -77,18 +65,39 @@ class ObjectTransformerJayway {
         return matches
     }
 
-    static List<String> getPathMatches(JSONArray pathsArray, def matchValue) {
+
+    /**
+     * Search the expanded list of 'ALL' paths, and check if the (String) PATH matches
+     * NOTE: assumes string value matches only, as the main goal is for variable substitution, which is mostly names
+     * @param matchValue String or regex Pattern to match path segments on
+     * @return list of matching paths (to do work on: set, copy, delete,...)
+     * Note: returning list of paths is bracket format rather than dot-notation:
+     * e.g. "$.properties.collection" -> "$['properties']['collections']", this treats the whole path as a single string,
+     * so if you want to cross path segments, be aware of the quotes and brackets
+     */
+    List<String> getPathMatches(def matchValue) {
         List matches = null
         if (matchValue instanceof String) {
-            matches = pathsArray.findAll { String path -> path.contains(matchValue) }
+            matches = allJsonPaths.findAll { String path -> path.contains(matchValue) }
         } else if (matchValue instanceof Pattern) {
-            matches = pathsArray.findAll { it =~ matchValue }
+            matches = allJsonPaths.findAll { it =~ matchValue }
         } else {
             throw new IllegalArgumentException("Match value ($matchValue) was not a String or Pattern, it was: ${matchValue.class.name} -- bailing!!")
         }
         return matches
     }
 
+
+    /**
+     * convenience wrapper around jayway, potentially useful for future improvements or extensions
+     * @param jaywayPath
+     * @return (String?) value returned from jayway path
+     */
+    def read(String jaywayPath){
+        def val = srcContext.read(jaywayPath)
+        log.debug "Read from jayway path ($jaywayPath) and got value: ($val)"
+        return val
+    }
 
     /**
      * Static (functional-friendly?) method to apply transform rules
@@ -243,4 +252,41 @@ class ObjectTransformerJayway {
         }
         return change
     }
+
+//    Map sourceMap
+//    DocumentContext srcContext
+
+//    Map destinationMap
+//    DocumentContext destContext
+
+//    Map rules
+
+    /**
+     * todo -- working on moving to functional approach (static calls)
+     */
+//    ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
+//        log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
+//        sourceMap = srcMap
+//        destinationMap = destMap
+//
+//        srcContext = JsonPath.parse(sourceMap)
+//        destContext = JsonPath.parse(destinationMap)
+//
+//        this.rules = rules
+//    }
+
+    /**
+     * process the configuration rules, currently `set` and `copy`
+     * @return
+     * todo -- remove me, moving to functional-friendly approach (static calls)
+     */
+//    Map<String, List<Map<String, Object>>> transform() {
+//        Map resultsMap = [:]
+//        List<Map<String, Object>> myset = setValues(sourceMap, rules, destinationMap)
+//        resultsMap['set'] = myset
+//        List<Map<String, Object>> myCopy = copyValues(sourceMap, rules, destinationMap)
+//        resultsMap['copy'] = myCopy
+//        return destinationMap
+//    }
+
 }
