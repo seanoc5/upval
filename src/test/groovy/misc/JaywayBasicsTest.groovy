@@ -39,15 +39,16 @@ class JaywayBasicsTest extends Specification {
   ]
 }
 '''
-
+    Map srcMap = new JsonSlurper().parseText(src)
     JsonContext jsonContext = JsonPath.parse(src)
+    ObjectTransformerJayway transformerJayway = new ObjectTransformerJayway(srcMap)
     String ALL_PATH = '$..*'            // jayway path syntax for "all nodes/paths"
 
 
     def "check jayway read basics"() {
         when:
-        def id = jsonContext.read('$.id')
-        def propCollection = jsonContext.read('$.properties.collection')
+        def id = transformerJayway.read('$.id')
+        def propCollection = transformerJayway.read('$.properties.collection')
 
         then:
         id == 'sample-s3-id'
@@ -56,21 +57,18 @@ class JaywayBasicsTest extends Specification {
 
     def "test all jsonPaths and values"() {
         given:
-        Configuration conf = Configuration.builder().options(Option.AS_PATH_LIST).build();
-        JsonContext jsonPathsContext = JsonPath.using(conf).parse(src)
-
-
-        when:
-        JSONArray paths = jsonPathsContext.read(ALL_PATH)
+        JSONArray paths = transformerJayway.allJsonPaths
         String firstPath = paths[0]
         String lastPath = paths[-1]
 
-        List values = jsonContext.read(ALL_PATH)
-        String firstValue = jsonContext.read(firstPath)
-        String lastValue = jsonContext.read(lastPath)
+        when:
 
-        List pathMatchesProperties = ObjectTransformerJayway.getPathMatches(paths, 'properties')
-        List pathMatchesRegex = ObjectTransformerJayway.getPathMatches(paths, ~/(created|modified)/)
+        List values = transformerJayway.srcContext.read(ALL_PATH)
+        String firstValue = transformerJayway.srcContext.read(firstPath)
+        String lastValue = transformerJayway.srcContext.read(lastPath)
+
+        List pathMatchesProperties = transformerJayway.getPathMatches('properties')
+        List pathMatchesRegex = transformerJayway.getPathMatches(~/(created|modified)/)
 
         then:
         paths instanceof JSONArray
@@ -84,28 +82,31 @@ class JaywayBasicsTest extends Specification {
         lastValue.startsWith('2022')
 
         pathMatchesProperties.size() == 6
-        pathMatchesRegex.size()==2
+        pathMatchesRegex.size() == 2
     }
 
     def "perform variable substitution on values"() {
         given:
-        JsonContext jsonContext = JsonPath.parse(src)
+        JsonContext pathsContext = JsonPath.parse(src)
         Map varSubstitutions = [
-                '$.id': [from:'sample', to:'MyIdHere']
+                '$.id': [from: 'sample', to: 'MyIdHere']
         ]
         varSubstitutions.each { String subsPath, Map subsMap ->
-            List matchingPaths = jsonContext.read(subsPath)
-            matchingPaths.each {String matchedPath ->
-                String origValue =
+            List matchingPaths = pathsContext.read(subsPath)
+            matchingPaths.each { String matchedPath ->
+                String origValue = transformerJayway.read(matchedPath)
+                println "Path: ($matchedPath) -- orig val:($origValue)"
+            }
         }
         when:
-        List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, 'sample')
-        List<String> regexMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, ~/[lL]ucidworks/)
+        List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(pathsContext, paths, 'sample')
+        List<String> regexMatches = ObjectTransformerJayway.getPathsByValue(pathsContext, paths, ~/[lL]ucidworks/)
 
         then:
         stringMatches.size() == 3
         regexMatches.size() == 2
     }
+
     def "perform variable substitution"() {
         given:
         Configuration conf = Configuration.builder().options(Option.AS_PATH_LIST).build();
@@ -124,12 +125,12 @@ class JaywayBasicsTest extends Specification {
 
     def "jayway read more advanced"() {
         when:
-        def updates = jsonContext.read('$..updates')
-        def userIds = jsonContext.read('$..updates[*].userId')
-        def updateAdmin = jsonContext.read('$..updates[?(@.userId=="admin")]')
-        def updateAdminTimeStamps = jsonContext.read('$..updates[?(@.userId=="admin")].timestamp')        // always returns a list?
-        def updatePos1 = jsonContext.read('$..updates[1]')
-        def fooVal = jsonContext.read('$..*[?(@.*=="foo")]')
+        def updates = pathsContext.read('$..updates')
+        def userIds = pathsContext.read('$..updates[*].userId')
+        def updateAdmin = pathsContext.read('$..updates[?(@.userId=="admin")]')
+        def updateAdminTimeStamps = pathsContext.read('$..updates[?(@.userId=="admin")].timestamp')        // always returns a list?
+        def updatePos1 = pathsContext.read('$..updates[1]')
+        def fooVal = pathsContext.read('$..*[?(@.*=="foo")]')
 
 
         then:
