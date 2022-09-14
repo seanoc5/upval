@@ -265,7 +265,8 @@ class JsonObject {
                 // if child existed (above) check if we are currently at the leaf node, if so: set the value
                 if (isLeafTarget(depth, numSegments)) {
                     log.debug "\t\t$depth) found leaf node currentSegment:$currentSegment in path: $path, set to value: $valToSet"
-                    def r = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
+                    def r = setLeafNodeValue(depth, currentSegment, path, valToSet, child)          // todo -- double check code here, seems like I want child, not element...?
+//                    def r = setLeafNodeValue(depth, currentSegment, path, valToSet, element)
                     result = ["${path}": r]
                     element = null      // redundant? should fail on for loop condition: depth < numSegments
                 } else {
@@ -316,7 +317,7 @@ class JsonObject {
      */
     static Object setLeafNodeValue(int depth, String currentSegment, String path, def valToSet, element) {
         def result
-        log.debug "$depth) We are at the leafNode (seg: $currentSegment) in path($path) to set the value ($valToSet) in element ($element)..."
+        log.info "$depth) We are at the leafNode (seg: $currentSegment) in path($path) to set the value ($valToSet) in element ($element)..."
         if (element instanceof List) {
             if (currentSegment.isInteger()) {
                 log.debug "Set LIST value ($valToSet) in element($element) with position: $currentSegment"
@@ -386,7 +387,8 @@ class JsonObject {
      * @return boolean (leaf node or no?)
      */
     static boolean isLeafTarget(int depth, int numSegments) {
-        depth == (numSegments - 1)
+        boolean isleaf = depth == (numSegments - 1)
+        return  isleaf
     }
 
 

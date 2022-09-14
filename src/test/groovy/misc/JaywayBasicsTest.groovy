@@ -1,63 +1,144 @@
 package misc
 
+import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.internal.JsonContext
-import com.lucidworks.ps.transform.JsonObject
-import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import net.minidev.json.JSONArray
 import spock.lang.Specification
 
 class JaywayBasicsTest extends Specification {
+    String src = '''
+{
+  "id": "sample-s3-id",
+  "created": "2021-04-21T19:04:31.111Z",
+  "modified": "2021-09-18T00:03:54.998Z",
+  "connector": "lucidworks.fs",
+  "type": "lucidworks.fs",
+  "description": "Sample F4 Filesystem based connector to import JSON filesdata",
+  "pipeline": "sample-pipeline",
+  "parserId": "sample-parser",
+  "properties": {
+    "includeDirectories": false,
+    "collection": "MyCollection",
+    "addFileMetadata": false,
+    "initialFilePaths": [
+      "/tmp/hsdupload/"
+    ]
+  },
+  "updates": [
+    {
+      "userId": "ashumway",
+      "timestamp": "2022-02-08T18:36:17.933Z"
+    },
+    {
+      "userId": "admin",
+      "timestamp": "2022-02-08T18:36:17.940Z"
+    }
+  ]
+}
+'''
+
+    JsonContext jsonContext = JsonPath.parse(src)
+    String ALL_PATH = '$..*'            // jayway path syntax for "all nodes/paths"
 
 
     def "check jayway read basics"() {
-        given:
-        Map map = [leafa  : 'myleaf',
-                   listb  : [9, 8, 7, 'bar'],
-                   submapc: [foo: 'bar']]
-
         when:
-        def leafa = JsonPath.read(map, '$.leafa')
-        def listb = JsonPath.read(map, '$.listb')
-
+        def id = jsonContext.read('$.id')
+        def propCollection = jsonContext.read('$.properties.collection')
 
         then:
-        leafa == 'myleaf'
-        listb == [9, 8, 7, 'bar']
+        id == 'sample-s3-id'
+        propCollection == 'MyCollection'
     }
 
-
-    def "jayway read more advanced"() {
+    def "test all jsonPaths and values"() {
         given:
-        Map map = [leafa  : 'myleaf',
-                   listb  : [
-                           [id: 1, tag: 'a'],
-                           [id: 2, tag: 'b'],
-                           [id: 3, tag: 'c'],
-                   ],
-                   updates: [
-                           ["userId": "admin", "timestamp": "2021-04-14T06:28:02.447Z"],
-                           ["userId": "ashumway", "timestamp": "2021-12-16T19:22:31.713Z"],
-                   ],
-                   map2   : [submap3: [1, 2, 3], subleaf4: 'foo']
-        ]
+        Configuration conf = Configuration.builder().options(Option.AS_PATH_LIST).build();
+        JsonContext jsonPathsContext = JsonPath.using(conf).parse(src)
+
 
         when:
-        def updates = JsonPath.read(map, '$..updates')
-        def userIds = JsonPath.read(map, '$..updates[*].userId')
-        def updateAdmin = JsonPath.read(map, '$..updates[?(@.userId=="admin")]')
-        def updateAdminTimeStamps = JsonPath.read(map, '$..updates[?(@.userId=="admin")].timestamp')        // always returns a list?
-        def updatePos1 = JsonPath.read(map, '$..updates[1]')
-        def fooVal = JsonPath.read(map, '$..*[?(@.*=="foo")]')
+        JSONArray paths = jsonPathsContext.read(ALL_PATH)
+        String firstPath = paths[0]
+        String lastPath = paths[-1]
+
+        List values = jsonContext.read(ALL_PATH)
+        String firstValue = jsonContext.read(firstPath)
+        String lastValue = jsonContext.read(lastPath)
+
+        List pathMatchesProperties = ObjectTransformerJayway.getPathMatches(paths, 'properties')
+        List pathMatchesRegex = ObjectTransformerJayway.getPathMatches(paths, ~/(created|modified)/)
+
+        then:
+        paths instanceof JSONArray
+        paths.size() == 21
+        paths[0] == '$[\'id\']'
+        firstPath == '$[\'id\']'
+        paths[-1] == lastPath
+
+        values.size() == 21
+        firstValue == 'sample-s3-id'
+        lastValue.startsWith('2022')
+
+        pathMatchesProperties.size() == 6
+        pathMatchesRegex.size()==2
+    }
+
+    def "perform variable substitution on values"() {
+        given:
+        JsonContext jsonContext = JsonPath.parse(src)
+        Map varSubstitutions = [
+                '$.id': [from:'sample', to:'MyIdHere']
+        ]
+        varSubstitutions.each { String subsPath, Map subsMap ->
+            List matchingPaths = jsonContext.read(subsPath)
+            matchingPaths.each {String matchedPath ->
+                String origValue =
+        }
+        when:
+        List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, 'sample')
+        List<String> regexMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, ~/[lL]ucidworks/)
+
+        then:
+        stringMatches.size() == 3
+        regexMatches.size() == 2
+    }
+    def "perform variable substitution"() {
+        given:
+        Configuration conf = Configuration.builder().options(Option.AS_PATH_LIST).build();
+        JsonContext jsonPathsContext = JsonPath.using(conf).parse(src)
+        JsonContext jsonContext = JsonPath.parse(src)
+        JSONArray paths = jsonPathsContext.read(ALL_PATH)
+
+        when:
+        List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, 'sample')
+        List<String> regexMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, ~/[lL]ucidworks/)
+
+        then:
+        stringMatches.size() == 3
+        regexMatches.size() == 2
+    }
+
+    def "jayway read more advanced"() {
+        when:
+        def updates = jsonContext.read('$..updates')
+        def userIds = jsonContext.read('$..updates[*].userId')
+        def updateAdmin = jsonContext.read('$..updates[?(@.userId=="admin")]')
+        def updateAdminTimeStamps = jsonContext.read('$..updates[?(@.userId=="admin")].timestamp')        // always returns a list?
+        def updatePos1 = jsonContext.read('$..updates[1]')
+        def fooVal = jsonContext.read('$..*[?(@.*=="foo")]')
 
 
         then:
         updates.size() == 1
         userIds.size() == 2
-        userIds == ['admin', 'ashumway']
+        userIds == ['ashumway', 'admin']
         updateAdmin.userId == ['admin']
-        updatePos1.userId == ['ashumway']
-        updateAdminTimeStamps[0].startsWith('2021')
+        updatePos1.userId == ['admin']
+        updateAdminTimeStamps[0].startsWith('2022')
     }
 
 
@@ -177,36 +258,5 @@ class JaywayBasicsTest extends Specification {
     }
 */
 
-    /*public static*/
-    String src = '''
-{
-  "id": "sample-s3-id",
-  "created": "2021-04-21T19:04:31.111Z",
-  "modified": "2021-09-18T00:03:54.998Z",
-  "connector": "lucidworks.fs",
-  "type": "lucidworks.fs",
-  "description": "Sample F4 Filesystem based connector to import JSON filesdata",
-  "pipeline": "sample-pipeline",
-  "parserId": "sample-parser",
-  "properties": {
-    "includeDirectories": false,
-    "collection": "MyCollection",
-    "addFileMetadata": false,
-    "initialFilePaths": [
-      "/tmp/hsdupload/"
-    ]
-  },
-  "updates": [
-    {
-      "userId": "ashumway",
-      "timestamp": "2022-02-08T18:36:17.933Z"
-    },
-    {
-      "userId": "admin",
-      "timestamp": "2022-02-08T18:36:17.940Z"
-    }
-  ]
-}
-'''
 
 }

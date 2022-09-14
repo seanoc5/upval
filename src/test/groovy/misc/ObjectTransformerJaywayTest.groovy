@@ -5,24 +5,16 @@ import groovy.json.JsonSlurper
 import spock.lang.Specification
 
 class ObjectTransformerJaywayTest extends Specification {
-    Map srcMap = null
-    Map destMap = null
-    Map rules = null
+    JsonSlurper slurper = new JsonSlurper()
 
-    /**
-     * use the same setup for all the tests (is this an antipattern??)
-     *
-     * @return
-     */
-    def setup(){
-        JsonSlurper slurper = new JsonSlurper()
-        srcMap = slurper.parseText(src)
-        destMap = slurper.parseText(dest)
-        rules = slurper.parseText(configsJsonPathSlashyFormat)
-    }
+    Map srcMap = slurper.parseText(src)
+    Map destMap = slurper.parseText(dest)
+//    Map rules = [copy:
+
+    Map rules = slurper.parseText(configsJsonPathSlashyFormat)
 
 
-    def "Transformer should transform src with rules and dest template via static call"(){
+    def "Transformer should transform src with rules and dest template via static call"() {
 
         when:
         def result = ObjectTransformerJayway.transform(srcMap, rules, destMap)
@@ -38,19 +30,19 @@ class ObjectTransformerJaywayTest extends Specification {
 
     def "should ransform with static calls"() {
         when:
-        def foo = ObjectTransformerJayway.transform(srcMap, rules, destMap)
+        def jaywayTransformer = ObjectTransformerJayway.transform(srcMap, rules, destMap)
 
         then:
-        foo.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
+        jaywayTransformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
     }
 
-    /**
-     * @deprecated ignore me--testing passing around enclosures
-     * @return
-     */
-    def "lamda experiment"(){
+/**
+ * @deprecated ignore me--testing passing around enclosures
+ * @return
+ */
+    def "lamda experiment"() {
         given:
-        def lambdaNorma = {Object it -> return it.class.name}
+        def lambdaNorma = { Object it -> return it.class.name }
         String myLambdaStr = '{Object it -> return "foo:...${it}"}'
 
         when:
@@ -63,7 +55,6 @@ class ObjectTransformerJaywayTest extends Specification {
         lambdaEval.class.name == 'Script1$_run_closure1'
         resultEval == 'foo:...Foo'
     }
-
 
 
     public static String src = '''
@@ -126,46 +117,6 @@ class ObjectTransformerJaywayTest extends Specification {
     }
 }
 '''
-    public static String configsJsonPathSlashyFormat = '''
-{
-    "transformerClass": "SimlpeTransform",
-    "copy": {
-        "/id": "/id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f/ldap_user_filter",
-        "/properties/searchProperties/groupSearchProp/userFilter": "/properties.f.ldap_group_filter"
-    },
-    "set": {
-        "/type": "lucidworks.ldap",
-        "/connector": "lucidworks.ldap",
-        "/created": "${new Date()}",
-        "/modified": "${new Date()}",
-        "/properties/security":"$[testmap:true]"
-    },
-    "remove": {
-
-    }
-}
-'''
 
 
-    public static String configsSlashy = '''
-{
-    "transformerClass": "SimlpeTransform",
-    "set": {
-        "/type": "lucidworks.ldap",
-        "/connector": "lucidworks.ldap",
-        "/created": "${new Date()}",
-        "/modified": "${new Date()}",
-    },
-    "copy": {
-        "/id": "/id",
-        "/pipeline": "/pipeline",
-        "/parserId": "/parserId",
-        "/properties/searchProperties/userSearchProp/userFilter": "/properties/f.ldap_user_filter",
-        "/properties/searchProperties/groupSearchProp/userFilter": "/properties/f.ldap_group_filter"
-    }
-}
-'''
 }

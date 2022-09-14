@@ -66,9 +66,8 @@ class JsonObjectPackagingTest extends Specification {
 
         def rules = [
                 copy: [
-                        [sourcePath           : '.*',
-                         sourceItemPattern    : '~Components',
-                         destinationExpression: 'MyTypeAhead'],
+                        [from: ~/Components/, to  : 'ta.appplicationName'],      // components is source appname, create variable to prompt for AppName on import
+                        [from: ~/TYPEAHEAD_DW/, to  : 'ta.label'],               // create variable for label/name of this typeahead deployment
                 ],]
 
         when:
@@ -78,7 +77,8 @@ class JsonObjectPackagingTest extends Specification {
         then:
         results instanceof Map
         results.copyResults instanceof List
-        results.copyResults.size() == 3
+        results.copyResults.size() == 7
+        idxpMinimal.id
     }
 
 
@@ -124,9 +124,7 @@ class JsonObjectPackagingTest extends Specification {
         srcMap.a.four.bizz == 1
         srcMap.a.four.buzz == 2
     }
-*/
 
-/*
     def "basic SET values sanity checks with datatables"() {
         when:
         def  origValue = JsonObject.getObjectNodeValue(srcMap, path, separator)
@@ -143,9 +141,7 @@ class JsonObjectPackagingTest extends Specification {
         '/b/0/'                        | '/'       | 'new value' | 'new value'
         '/componsiteList/2/submapkey1' | '/'       | 'new value' | 'new value'
     }
-*/
 
-/*
     def "should remove items by path"() {
         Map m = [a: [b: [c: [d1: 'delete me', d2: 2]]]]
         def flatties = JsonObject.flattenWithLeafObject(m)

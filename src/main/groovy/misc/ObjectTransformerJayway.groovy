@@ -3,9 +3,13 @@ package misc
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
+import com.jayway.jsonpath.internal.JsonContext
+import net.minidev.json.JSONArray
 import org.apache.log4j.Logger
 
 import java.text.SimpleDateFormat
+import java.util.regex.Pattern
+
 /**
  * Use <a href='https://github.com/json-path/JsonPath'>Jayway</a> based transformer to apply rules to a JsonSlurper.parse* object (i.e. map of maps/lists)
  * todo -- handle an initial list rather than the assumed map (with possible lists as children)
@@ -26,7 +30,6 @@ class ObjectTransformerJayway {
 //    Map rules
 
     /**
-     * @deprecated
      * todo -- working on moving to functional approach (static calls)
      */
 //    ObjectTransformerJayway(Map srcMap, Map destMap, Map rules) {
@@ -44,7 +47,6 @@ class ObjectTransformerJayway {
      * process the configuration rules, currently `set` and `copy`
      * @return
      * todo -- remove me, moving to functional-friendly approach (static calls)
-     * @deprecated
      */
 //    Map<String, List<Map<String, Object>>> transform() {
 //        Map resultsMap = [:]
@@ -54,6 +56,39 @@ class ObjectTransformerJayway {
 //        resultsMap['copy'] = myCopy
 //        return destinationMap
 //    }
+
+
+    static List<String> getPathsByValue(JsonContext jsonContext, JSONArray pathsArray, def matchValue) {
+        List matches = []
+        pathsArray.each { path ->
+            String val = jsonContext.read(path)         // todo -- only dealing with Strings at the moment...
+            if (matchValue instanceof String) {
+                if (val.contains(matchValue)) {
+                    matches << path
+                    println "Path($path) match (String: $matchValue) -- value:${val}"
+                }
+            } else if (matchValue instanceof Pattern) {
+                if (val =~ matchValue) {
+                    matches << path
+                    println "Path($path) match (Regex: $matchValue) -- value:${val}"
+                }
+            }
+        }
+        return matches
+    }
+
+    static List<String> getPathMatches(JSONArray pathsArray, def matchValue) {
+        List matches = null
+        if (matchValue instanceof String) {
+            matches = pathsArray.findAll { String path -> path.contains(matchValue) }
+        } else if (matchValue instanceof Pattern) {
+            matches = pathsArray.findAll { it =~ matchValue }
+        } else {
+            throw new IllegalArgumentException("Match value ($matchValue) was not a String or Pattern, it was: ${matchValue.class.name} -- bailing!!")
+        }
+        return matches
+    }
+
 
     /**
      * Static (functional-friendly?) method to apply transform rules
