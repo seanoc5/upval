@@ -84,19 +84,20 @@ class JaywayBasicsTest extends Specification {
         lastValue.startsWith('2022')
 
         pathMatchesProperties.size() == 6
-        pathMatchesRegex.size()==2
+        pathMatchesRegex.size() == 2
     }
 
     def "perform variable substitution on values"() {
         given:
         JsonContext jsonContext = JsonPath.parse(src)
         Map varSubstitutions = [
-                '$.id': [from:'sample', to:'MyIdHere']
+                '$.id': [from: 'sample', to: 'MyIdHere']
         ]
         varSubstitutions.each { String subsPath, Map subsMap ->
             List matchingPaths = jsonContext.read(subsPath)
-            matchingPaths.each {String matchedPath ->
-                String origValue =
+            matchingPaths.each { String matchedPath ->
+//                String origValue =
+            }
         }
         when:
         List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(jsonContext, paths, 'sample')
@@ -106,11 +107,12 @@ class JaywayBasicsTest extends Specification {
         stringMatches.size() == 3
         regexMatches.size() == 2
     }
+
     def "perform variable substitution"() {
         given:
         Configuration conf = Configuration.builder().options(Option.AS_PATH_LIST).build();
         JsonContext jsonPathsContext = JsonPath.using(conf).parse(src)
-        JsonContext jsonContext = JsonPath.parse(src)
+//        JsonContext jsonContext = JsonPath.parse(src)
         JSONArray paths = jsonPathsContext.read(ALL_PATH)
 
         when:
