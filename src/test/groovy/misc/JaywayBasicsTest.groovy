@@ -25,7 +25,10 @@ class JaywayBasicsTest extends Specification {
     "addFileMetadata": false,
     "initialFilePaths": [
       "/tmp/hsdupload/"
-    ]
+    ],
+    "oldFusion": {
+      "foo": "bar"
+    }
   },
   "updates": [
     {
@@ -89,19 +92,33 @@ class JaywayBasicsTest extends Specification {
         given:
 //        JsonContext pathsContext = JsonPath.parse(src)
         Map varSubstitutions = [
-                'id': [from: 'sample', to: 'MyIdHere'],
-                ~'description': [from: 'Sample', to: 'AcmeTypeahead'],
+                update: [[path: '$.id', from: 'sample', to: 'MyIdHere'],
+                         [from: 'sample', to: 'Acme'],
+                         [from: ~'/tmp/([^/+])/', to: '/opt/uploads/$1']
+                ],
+                rename: [
+                        [from: 'oldFusion', to: 'newFusion']
+                ],
         ]
-        varSubstitutions.each { String subsPath, Map subsMap ->
-            List matchingPaths = transformerJayway.getPathMatches(subsPath)
-            matchingPaths.each { String matchedPath ->
-                String origValue = transformerJayway.read(matchedPath)
-                println "Path: ($matchedPath) -- orig val:($origValue)"
+        varSubstitutions.each { String operation, Map instructions ->
+            if (operation == 'update') {
+                List matchingPaths = []
+                String path = instructions.path
+                if (path) {
+                    matchingPaths = transformerJayway.getPathMatches(path)
+                    println "Found paths: $matchingPaths"
+                }
+                String matchValue
+//                if(
+                matchingPaths.each { String matchedPath ->
+                    String origValue = transformerJayway.read(matchedPath)
+                    println "Path: ($matchedPath) -- orig val:($origValue)"
+                }
             }
         }
         when:
-        List<String> stringMatches = ObjectTransformerJayway.getPathsByValue(pathsContext, paths, 'sample')
-        List<String> regexMatches = ObjectTransformerJayway.getPathsByValue(pathsContext, paths, ~/[lL]ucidworks/)
+        List<String> stringMatches = transformerJayway.getPathsByValue('sample')
+        List<String> regexMatches = transformerJayway.getPathsByValue(~/[lL]ucidworks/)
 
         then:
         stringMatches.size() == 3
