@@ -10,6 +10,7 @@ import net.minidev.json.JSONArray
 import org.apache.log4j.Logger
 
 import java.text.SimpleDateFormat
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
@@ -97,6 +98,31 @@ class ObjectTransformerJayway {
         def val = srcContext.read(jaywayPath)
         log.debug "Read from jayway path ($jaywayPath) and got value: ($val)"
         return val
+    }
+
+
+    /**
+     * method to make a change to the value at a path (as opposed to renamePath()).
+     * @param originalValue String value for source of update
+     * @param from String or Pattern to indicate what part(s) of the source should be involved (especially for regexes and capture groups)
+     * @param to 'instructions' on how to create the updated value
+     */
+    def update(String originalValue, def from, def to){
+        log.info "Original value: '$originalValue' :: from:($from) -> to:($to)"
+        def newValue
+        if(from instanceof Pattern){
+            Matcher matcher = ((Pattern)from).matcher(originalValue)
+            if(matcher.matches()){
+                log.info "\t\tMatch! matcher: $matcher"
+            } else {
+                log.warn "No match: $matcher"
+            }
+        } else if(from instanceof String){
+            newValue = originalValue.replaceAll(from, to)
+            log.info "New Value: $newValue"
+        } else {
+            log.warn "'from' was not a string nor a pattern, what do we do???"
+        }
     }
 
     /**
