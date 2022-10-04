@@ -8,7 +8,7 @@ class ObjectTransformerJaywayTest extends Specification {
     JsonSlurper slurper = new JsonSlurper()
 
     Map srcMap = slurper.parseText(src)
-    Map destMap = slurper.parseText(dest)
+    Map destMap = slurper.parseText(dest)           // todo -- remove destMap, revert back to just
 //    Map rules = [copy:
 
     Map rules = slurper.parseText(configsJsonPathDollarDotFormat)
@@ -19,10 +19,11 @@ class ObjectTransformerJaywayTest extends Specification {
         ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap)
 
         when:
-        def ldaps = transformer.getPathsByValue('ldap')
+        List<String> paths = transformer.getPathsByValue('ldap')
+        Map resultMap = transformer.read(paths)
 
         then:
-        ldaps.size() > 1
+        resultMap.size() > 1
 
     }
 
