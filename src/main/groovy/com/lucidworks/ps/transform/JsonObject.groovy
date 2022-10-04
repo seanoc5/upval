@@ -99,7 +99,7 @@ class JsonObject {
     Map<String, Object> findItemsByPath(def pathPattern, Map<String, Object> flatMapToSearch) {
         Map<String, Object> matchingPaths = null
         if (!pathPattern || pathPattern == '.*') {
-            log.info "\t\tpathPattern:($pathPattern) indicates using 'all' provided flatmap items in arg (${flatMapToSearch.keySet().size()})"
+            log.debug "\t\tpathPattern:($pathPattern) indicates using 'all' provided flatmap items in arg (${flatMapToSearch.keySet().size()})"
             matchingPaths = flatMapToSearch
         } else {
             String argType = pathPattern.getClass().simpleName
@@ -350,7 +350,10 @@ class JsonObject {
             // todo -- what makes sense for method return? testing approach of returning valToSet (srcMap should be updated in place)
             result = valToSet
         } else if (element instanceof String || element instanceof Integer) {
-            element[currentSegment] = valToSet
+            element = valToSet
+//            element[currentSegment] = valToSet
+            log.info "\t\tset element to $valToSet"
+            result = valToSet
 
         } else {
             String msg = "Unknown element type (${element.getClass().simpleName}), bailing!"
