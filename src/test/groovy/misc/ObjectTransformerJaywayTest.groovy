@@ -11,8 +11,20 @@ class ObjectTransformerJaywayTest extends Specification {
     Map destMap = slurper.parseText(dest)
 //    Map rules = [copy:
 
-    Map rules = slurper.parseText(configsJsonPathSlashyFormat)
+    Map rules = slurper.parseText(configsJsonPathDollarDotFormat)
 
+
+    def "simple manual transform"(){
+        given:
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap)
+
+        when:
+        def ldaps = transformer.getPathsByValue('ldap')
+
+        then:
+        ldaps.size() > 1
+
+    }
 
     def "Transformer should transform src with rules and dest template via static call"() {
 

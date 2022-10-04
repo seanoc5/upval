@@ -48,6 +48,10 @@ class JaywayBasicsTest extends Specification {
     String ALL_PATH = '$..*'            // jayway path syntax for "all nodes/paths"
 
 
+    def "read all leafnodes"(){
+
+    }
+
     def "check jayway read basics"() {
         when:
         def id = transformerJayway.read('$.id')
@@ -100,19 +104,22 @@ class JaywayBasicsTest extends Specification {
                         [from: 'oldFusion', to: 'newFusion']
                 ],
         ]
-        varSubstitutions.each { String operation, Map instructions ->
+        varSubstitutions.each { String operation, List<Map<String, Object>> instructions ->
             if (operation == 'update') {
-                List matchingPaths = []
-                String path = instructions.path
-                if (path) {
-                    matchingPaths = transformerJayway.getPathMatches(path)
-                    println "Found paths: $matchingPaths"
-                }
-                String matchValue
+                instructions.each { Map instructionMap ->
+                    log.info "$operation) Instruction map: $instructionMap "
+                    List matchingPaths = []
+                    String path = instructions.path
+                    if (path) {
+                        matchingPaths = transformerJayway.getPathMatches(path)
+                        println "Found paths: $matchingPaths"
+                    }
+                    String matchValue
 //                if(
-                matchingPaths.each { String matchedPath ->
-                    String origValue = transformerJayway.read(matchedPath)
-                    println "Path: ($matchedPath) -- orig val:($origValue)"
+                    matchingPaths.each { String matchedPath ->
+                        String origValue = transformerJayway.read(matchedPath)
+                        println "Path: ($matchedPath) -- orig val:($origValue)"
+                    }
                 }
             }
         }

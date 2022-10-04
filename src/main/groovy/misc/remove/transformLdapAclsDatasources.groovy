@@ -1,12 +1,10 @@
-import misc.ObjectTransformerJayway
-import com.lucidworks.ps.upval.ExtractFusionObjectsForIndexing
-import groovy.json.JsonBuilder
-import groovy.json.JsonSlurper
-import org.apache.log4j.Logger
+package misc.remove
 /**
  * early-going code exploring how to map-transform a 'thing',
  * chose ldap-acls because it has significant (but fairly easy) structural changes from f4->f5
+ * @deprecated -- long out of sync, commenting out, and leaving for update or removal
  */
+/*
 Logger log = Logger.getLogger(this.class.name);
 
 log.info "start script ${this.class.name}..."
@@ -45,3 +43,4 @@ if (objectsJsonFile.exists()) {
     }
 
 }
+*/

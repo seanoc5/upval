@@ -61,6 +61,8 @@ class ObjectTransformerJayway {
                     matches << path
                     println "Path($path) match (Regex: $matchValue) -- value:${val}"
                 }
+            } else {
+                log.warn "MatchBalue($matchValue) is not a string NOR a pattern, but rather: (${matchValue.class.name}). No idea what to do with that..."
             }
         }
         return matches
@@ -127,7 +129,7 @@ class ObjectTransformerJayway {
 
     /**
      * Static (functional-friendly?) method to apply transform rules
-     * @param srcMap map of elements (can contain list children, yes?) to transform, with optional destination template (for default 'new' values)
+     * @param rulesMap map of elements (can contain list children, yes?) to transform, with optional destination template (for default 'new' values)
      * @param rules map of rule types (copy,set,remove,...?) and patterns to match
      * <br><b>Note:</b>
      * <ul> <li>'copy' rules will match flattened-path elements (regex pattern) and copy the value there to the same path in the destination map</li>
@@ -139,22 +141,22 @@ class ObjectTransformerJayway {
      *
      * Note: current assumption is that the rules will be processed in the order of: copy -> set -> remove to allow for bulk copying, overriden by explicit sets, and remove commands have final authority
      */
-    static Map<String, List<Map<String, Object>>> transform(Map srcMap, Map rules, Map destinationTemplate = [:]) {
+    static Map<String, List<Map<String, Object>>> transform(Map rulesMap, Map rules, Map destinationTemplate = [:]) {
         Map resultsMap = destinationTemplate
 
         // ---------- COPY -------------
-        List<Map<String, Object>> myCopy = copyValues(srcMap, rules, destinationTemplate)
+        List<Map<String, Object>> myCopy = copyValues(rulesMap, rules, destinationTemplate)
         resultsMap = resultsMap + myCopy
 
         // ---------- SET -------------
-        List<Map<String, Object>> myset = setValues(srcMap, rules, destinationTemplate)
+        List<Map<String, Object>> myset = setValues(rulesMap, rules, destinationTemplate)
         resultsMap = resultsMap + myset
 
         // ---------- REMOVE -------------
         if (rules.remove) {
             log.warn "Untested code/functionality at the moment... write tests, fix broken stuff... remove rules: ${rules.remove}"
         }
-        List<Map<String, Object>> myRemove = removeItems(srcMap, rules, destinationTemplate)
+        List<Map<String, Object>> myRemove = removeItems(rulesMap, rules, destinationTemplate)
 
 
         return resultsMap
@@ -194,6 +196,7 @@ class ObjectTransformerJayway {
         }
         return changes
     }
+
 
     /**
      * Copy values from source to destination with an optional destinationTemplate holding defaults

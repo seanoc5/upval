@@ -1,25 +1,22 @@
 package com.lucidworks.ps.transform
-
-
-import groovy.json.JsonSlurper
-import misc.ObjectTransformerJayway
-import spock.lang.Specification
-
 /**
  * outdated transform test using older jsonpath format
  * @deprecated
  * todo change to use current path with slashes...?
  */
+/*
 class FStoS3ObjectTransformerTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
 
-    /**
+    */
+/**
      * use the same setup for all the tests (is this an antipattern??)
      *
      * @return
-     */
+     *//*
+
     def setup(){
         JsonSlurper slurper = new JsonSlurper()
         srcMap = slurper.parseText(src)
@@ -126,7 +123,7 @@ class FStoS3ObjectTransformerTest extends Specification {
         "$.properties$.searchProperties$.groupSearchProp$.userFilter": "$.properties.f.ldap_group_filter"
     }
     "remove": {
-    
+
 }
 '''
 
@@ -150,3 +147,4 @@ class FStoS3ObjectTransformerTest extends Specification {
 }
 '''
 }
+*/

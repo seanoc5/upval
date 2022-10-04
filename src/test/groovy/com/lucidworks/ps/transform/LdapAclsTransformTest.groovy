@@ -1,20 +1,18 @@
 package com.lucidworks.ps.transform
-
-
-import groovy.json.JsonSlurper
-import misc.ObjectTransformerJayway
-import spock.lang.Specification
+/*
 
 class LdapAclsTransformTest extends Specification {
     Map srcMap = null
     Map destMap = null
     Map rules = null
 
-    /**
+    */
+/**
      * use the same setup for all the tests (is this an antipattern??)
      *
      * @return
-     */
+     *//*
+
     def setup() {
         JsonSlurper slurper = new JsonSlurper()
         def f4LdapAclsFile = getClass().getClassLoader().getResourceAsStream("examples/F4.ldap-acls.example.json");
@@ -41,6 +39,7 @@ class LdapAclsTransformTest extends Specification {
     }
 
 
+*/
 /*
     def "Transform"() {
         given:
@@ -52,6 +51,8 @@ class LdapAclsTransformTest extends Specification {
         then:
 //        transformer.getByMapPath('/id', destMap) == 'my_abc_acl'
         transformer.getValueByMapPath('/type', destMap) == 'lucidworks.ldap'
-    }*/
+    }*//*
+
 
 }
+*/
