@@ -16,29 +16,30 @@ import spock.lang.Specification
 class JsonObjectPackagingTest extends Specification {
 
 
-    Map idxpMinimal = [id      : "Components_TYPEAHEAD_DW_IPL_v4",
-                       "stages": [
-                               [
-                                       "id"                 : "mjsi-Components_TYPEAHEAD_DW-MlF",
-                                       "ref"                : "lib/index/FusionServiceLib.js",
-                                       "type"               : "managed-js-index",
-                                       "skip"               : false,
-                                       "label"              : "MJS: load FusionServices.js",
-                                       "secretSourceStageId": "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
-                               ],
+    Map idxpMinimal = [
+            id      : "Components_TYPEAHEAD_DW_IPL_v4",
+            "stages": [
+                    [
+                            "id"                 : "mjsi-Components_TYPEAHEAD_DW-MlF",
+                            "ref"                : "lib/index/FusionServiceLib.js",
+                            "type"               : "managed-js-index",
+                            "skip"               : false,
+                            "label"              : "MJS: load FusionServices.js",
+                            "secretSourceStageId": "b3736ea6-c8a8-4180-950a-1c5f47a80f49"
+                    ],
 
-                               [
-                                       "id"                 : "jsq-Components_TYPEAHEAD_DW-ORHD",
-                                       "script"             : "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:history && \" + q)\n}",
-                                       "shareState"         : true,
-                                       "type"               : "javascript-query",
-                                       "skip"               : false,
-                                       "label"              : "Only Return History Documents",
-                                       "condition"          : "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n" +
-                                               "// This stage is used to the make the results only history documents. The Components_TYPEAHEAD_DC_history_QPF will send a parameter historyOnly=true",
-                                       "secretSourceStageId": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff"
-                               ],
-                       ],
+                    [
+                            "id"                 : "jsq-Components_TYPEAHEAD_DW-ORHD",
+                            "script"             : "function (request, response, ctx) {\n \n  var q = request.getFirstParam('q')\n  request.putSingleParam('q', \"ta_type:history && \" + q)\n}",
+                            "shareState"         : true,
+                            "type"               : "javascript-query",
+                            "skip"               : false,
+                            "label"              : "Only Return History Documents",
+                            "condition"          : "request.hasParam(\"historyOnly\") && request.getFirstParam(\"historyOnly\").equals(\"true\");\n" +
+                                    "// This stage is used to the make the results only history documents. The Components_TYPEAHEAD_DC_history_QPF will send a parameter historyOnly=true",
+                            "secretSourceStageId": "2e25eeaa-ac2b-4e42-8603-39dea784d9ff"
+                    ],
+            ],
     ]
 
 
@@ -66,8 +67,8 @@ class JsonObjectPackagingTest extends Specification {
 
         def rules = [
                 copy: [
-                        [from: ~/Components/, to  : 'ta.appplicationName'],      // components is source appname, create variable to prompt for AppName on import
-                        [from: ~/TYPEAHEAD_DW/, to  : 'ta.label'],               // create variable for label/name of this typeahead deployment
+                        [from: ~/Components/, to: '\\$ta.appplicationName'],      // components is source appname, create variable to prompt for AppName on import
+                        [from: ~/TYPEAHEAD_DW/, to: 'ta.label'],               // create variable for label/name of this typeahead deployment
                 ],]
 
         when:
@@ -78,7 +79,7 @@ class JsonObjectPackagingTest extends Specification {
         results instanceof Map
         results.copyResults instanceof List
         results.copyResults.size() == 7
-        idxpMinimal.id
+        idxpMinimal.id== '${ta.application}_${ta.label}_DW_IPL_v4'      // todo -- currently broken... working on it
     }
 
 
