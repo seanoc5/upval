@@ -41,10 +41,10 @@ class ComponentPackagingTest extends Specification {
 
     def "create simple query pipeline package WITH variable substitution"() {
         given:
-        def qryp = fusionClient.getQueryPipeline(qryp)
+        def qrypMap = fusionClient.getQueryPipeline(qryp)
         Map<String, Object> metdata = fusionClient.createtObjectsMetadata('4.2.6', 'ta-foundry-with-vars')
         Map objMap = [
-                objects : [queryPipelines: [qryp]],
+                objects : [queryPipelines: [qrypMap]],
                 metadata: metdata,
         ]
         JsonObject jsonObject = new JsonObject(objMap)
