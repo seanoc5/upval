@@ -49,20 +49,38 @@ class ObjectTransformerJayway {
      */
     List<String> getPathsByValue(def matchValue) {
         List matches = []
-        allJsonPaths.each { path ->
-            String val = srcContext.read(path)         // todo -- only dealing with Strings at the moment...
-            if (matchValue instanceof String) {
-                if (val.contains(matchValue)) {
-                    matches << path
-                    println "Path($path) match (String: $matchValue) -- value:${val}"
-                }
-            } else if (matchValue instanceof Pattern) {
-                if (val =~ matchValue) {
-                    matches << path
-                    println "Path($path) match (Regex: $matchValue) -- value:${val}"
+        allJsonPaths.each { String path ->
+            boolean leafNode = true
+            def val = srcContext.read(path)         // todo -- only dealing with Strings at the moment...
+            if (val instanceof String) {
+                log.debug "String value: $val"
+            } else if (val instanceof Number) {
+                log.debug "Number value: $val"
+            } else if (val instanceof Map) {
+                leafNode = false
+                log.info "\t\tMap (skip getPathsByValue): $val"
+            } else if (val instanceof Collection) {
+                leafNode = false
+                log.info "\t\tCollection (skip getPathsByValue): $val"
+            } else {
+                log.warn "Not string or number: ${val.class.simpleName} :: $val"
+            }
+            if (leafNode) {
+                if (matchValue instanceof String) {
+                    if (val?.toString().contains(matchValue)) {
+                        matches << path
+                        log.info "Path($path) match (String contains: $matchValue) -- value:${val}"
+                    }
+                } else if (matchValue instanceof Pattern) {
+                    if (val =~ matchValue) {        // todo -- cast to string?
+                        matches << path
+                        log.info "Path($path) match (REGEX Pattern: $matchValue) -- value:${val}"
+                    }
+                } else {
+                    log.warn "MatchBalue($matchValue) is not a string NOR a pattern, but rather: (${matchValue.class.name}). No idea what to do with that..."
                 }
             } else {
-                log.warn "MatchBalue($matchValue) is not a string NOR a pattern, but rather: (${matchValue.class.name}). No idea what to do with that..."
+                log.debug "Skipping non leafnode: $path"
             }
         }
         return matches
@@ -100,6 +118,21 @@ class ObjectTransformerJayway {
         def val = srcContext.read(jaywayPath)
         log.debug "Read from jayway path ($jaywayPath) and got value: ($val)"
         return val
+    }
+
+
+    /**
+     * convenience method to return map of path->valu
+     * @param paths
+     * @return map of path->value
+     */
+    Map<String, Object> read(List<String> paths){
+        Map m = paths.collectEntries{String path ->
+            def val = srcContext.read(path)
+            log.info "\t\t$path -> $val"
+            [(path):val]
+        }
+        return m
     }
 
 
@@ -177,13 +210,12 @@ class ObjectTransformerJayway {
 
         setRules.each { String destPath, String value ->
             String valToSet = evaluateValue(value)
-
+            String origDestValue = null
             try {
-                String origDestValue = destContext.read(destPath)
+                origDestValue = destContext.read(destPath)
                 log.info "\t\toverriding orignal dest value ($origDestValue) with set value ($valToSet)"
             } catch (PathNotFoundException pnfe) {
                 log.warn "Path wasn't found: $pnfe"
-                log.debug "test"
             }
 
             // make the change here...
