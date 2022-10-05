@@ -14,12 +14,36 @@ class ObjectTransformerJaywayTest extends Specification {
     Map rules = slurper.parseText(configsJsonPathDollarDotFormat)
 
 
-    def "simple manual transform"(){
+    def "simple find occurences of values"() {
         given:
-        ObjectTransformerJayway transformer = new ObjectTransformerJayway(srcMap)
+        JsonSlurper slurper = new JsonSlurper()
+        URL idxpUrl = getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json')
+        Map idxpMap = slurper.parse(idxpUrl)
+//        DocumentContext jaywayContext = JsonPath.parse(idxpMap)
+
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(idxpMap)
 
         when:
-        List<String> paths = transformer.getPathsByValue('ldap')
+        List<String> paths = transformer.getPathsByValue('Components_')
+        Map resultMap = transformer.read(paths)
+
+        then:
+        resultMap.size() > 1
+
+    }
+
+    def "simple update sourceMap values"() {
+        given:
+        JsonSlurper slurper = new JsonSlurper()
+        Map idxpMap = slurper.parse(getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json'))
+        List<Map<String, Object>> updateRules = [
+                [from: 'Components_', to: '${AppName}'],
+                [from: ~'Components_', to: '${AppName}'],
+        ]
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(idxpMap)
+
+        when:
+        List<String> paths = transformer.getPathsByValue('Components_')
         Map resultMap = transformer.read(paths)
 
         then:
