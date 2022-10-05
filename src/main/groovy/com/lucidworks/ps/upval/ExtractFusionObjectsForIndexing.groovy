@@ -68,7 +68,9 @@ public class ExtractFusionObjectsForIndexing {
 
             }
         } else {
-            throw new IllegalArgumentException("No valid source file: $appOrJson")
+            String msg = "No valid source file: $appOrJson"
+            log.warn msg
+            throw new IllegalArgumentException(msg)
         }
 
         return parsedMap
