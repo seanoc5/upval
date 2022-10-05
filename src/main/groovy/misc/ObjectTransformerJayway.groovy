@@ -58,10 +58,10 @@ class ObjectTransformerJayway {
                 log.debug "Number value: $val"
             } else if (val instanceof Map) {
                 leafNode = false
-                log.info "\t\tMap (skip getPathsByValue): $val"
+                log.debug "\t\tMap (skip getPathsByValue): $val"
             } else if (val instanceof Collection) {
                 leafNode = false
-                log.info "\t\tCollection (skip getPathsByValue): $val"
+                log.debug "\t\tCollection (skip getPathsByValue): $val"
             } else {
                 log.warn "Not string or number: ${val.class.simpleName} :: $val"
             }
@@ -77,7 +77,7 @@ class ObjectTransformerJayway {
                         log.info "Path($path) match (REGEX Pattern: $matchValue) -- value:${val}"
                     }
                 } else {
-                    log.warn "MatchBalue($matchValue) is not a string NOR a pattern, but rather: (${matchValue.class.name}). No idea what to do with that..."
+                    log.info "\t\tMatchValue($matchValue) is not a string NOR a pattern, but rather: (${matchValue.class.name}). No idea what to do with that..."
                 }
             } else {
                 log.debug "Skipping non leafnode: $path"
@@ -227,6 +227,31 @@ class ObjectTransformerJayway {
             changes << change
         }
         return changes
+    }
+
+
+    /**
+     * update the srcMap (from the constructor) with update rules
+     * @param updateRules list of Map of rules for updating (optional path, value to match, and value-or-variable to set)
+     * @return changes made (for review)
+     */
+    List<Map<String, Object>> updateSourceValues(List<Map<String,Object>> updateRules) {
+        List<Map<String, Object>> changes = []
+        log.info "\t\tUpdate rules: $updateRules"
+
+        updateRules.eachWithIndex { Map rule, int idx ->
+            log.info "\t\t$idx) Rule: ${rule}"
+            performUpdateRule(rule)
+            log.info "\t\tRule: $rule"
+//            changes << performCopyRule(rule, srcMap, destinationTemplate)
+        }
+        return changes
+    }
+
+
+    def performUpdateRule(Map rule) {
+//        if(rule.
+        log.info "Perform rule: $rule -- todo: more code"
     }
 
 
