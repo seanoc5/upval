@@ -9,6 +9,7 @@ import spock.lang.Specification
 
 /**
  * test suite to cover component packing operations
+ * set environment variables fuser and fpass appropriately to override placeholder values (see below)
  */
 class ComponentPackagingTest extends Specification {
     // NOTE: this breaks best practice for unit tests, but we are pulling connection info from the environment, so set these values in the system env variables when running these tests, otherwise expect them to fail...
@@ -31,7 +32,7 @@ class ComponentPackagingTest extends Specification {
 
         when:
         File outFile = File.createTempFile("Compackage.test.simple", ".zip")
-        println(outFile.absolutePath)           // print out temp file path in case tester wants to actually import into a running fusion for sanity check...
+        println "Created temporary output file: ${outFile.absolutePath}"           // print out temp file path in case tester wants to actually import into a running fusion for sanity check...
         ZipOutputStream zos = fusionClient.createImportableZipArchive(outFile.newOutputStream(), objMap)
 
         then:
@@ -56,7 +57,8 @@ class ComponentPackagingTest extends Specification {
 
         when:
         File outFile = File.createTempFile("Compackage.test.with-variables", ".zip")
-        println(outFile.absolutePath)
+        println "Created temporary output file: ${outFile.absolutePath}"           // print out temp file path in case tester wants to actually import into a running fusion for sanity check...
+
         ZipOutputStream zos = fusionClient.createImportableZipArchive(outFile.newOutputStream(), objMap)
 
         then:
@@ -75,7 +77,8 @@ class ComponentPackagingTest extends Specification {
 
         when:
         File outFile = File.createTempFile("Compackage.test.simple", ".zip")
-        println(outFile.absolutePath)
+        println "Created temporary output file: ${outFile.absolutePath}"           // print out temp file path in case tester wants to actually import into a running fusion for sanity check...
+
         ZipOutputStream zos = fusionClient.createImportableZipArchive(outFile.newOutputStream(), objMap)
 
         then:
