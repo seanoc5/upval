@@ -38,7 +38,7 @@ Map rules = config.transform
 log.info "Transform rules: $rules"
 
 // ------------------ Get source object -------------------
-File srcFile = new File(options.source)
+File srcFile = options.source
 Map objectsMap = new JsonSlurper().parse(srcFile)
 // todo -- allow transformer to accept JsonObject
 //JsonObject jsonObject = new JsonObject(srcFile)
