@@ -20,7 +20,7 @@ variables {
     // from foundry component
     ZKHOST = "ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181"
     SIGNALS_AGGR_COLL = "SIGNALS_AGGR_COLLECTION"
-    FEATURE_NAME = "TYPEAHEAD_DW"
+    FEATURE_NAME = "${ta.featurename}"
     TYPE_FIELD_1 = "TYPE_FIELD_1"
     TYPE_FIELD_2 = "TYPE_FIELD_2"
     APP = "Components"
