@@ -52,7 +52,18 @@ class ComponentPackagingTest extends Specification {
         def componentMatches = jsonObject.findItems('', /Components/)
 
         Map variables = [
-                'foundry.FEATURE_NAME': [from: 'TYPEAHEAD_DW', to: '']
+                'foundry.FEATURE_NAME': [from: 'TYPEAHEAD_DW', to: 'typeahead_dw'],
+                "foundry.typeahead.ZKHOST": [to:"ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181",],
+                "foundry.destination.SIGNALS_AGGR_COLL": [to: "SIGNALS_AGGR_COLLECTION",],
+                "foundry.FEATURE_NAME": [to:"TYPEAHEAD_DW",],
+                "foundry.typeahead.TYPE_FIELD_1": [to:"TYPE_FIELD_1",],
+//                "foundry.typeahead.TYPE_FIELD_2": "TYPE_FIELD_2",
+//                "foundry.typeahead.TYPE_FIELD_3": "TYPE_FIELD_3",
+//                "foundry.typeahead.TYPE_FIELD_4": "TYPE_FIELD_4",
+//                "foundry.typeahead.TYPE_FIELD_5": "TYPE_FIELD_5",
+                "foundry.destination.APP": [from:"Components", to:'__DestAppHere__'],
+                "foundry.destination.COLLECTION": "typeahead"
+
         ]
 
         when:
