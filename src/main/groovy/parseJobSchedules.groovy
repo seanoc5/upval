@@ -38,7 +38,7 @@ jobsWithTriggers.each { Map<String, Object> job ->
 
     log.debug "Job): $job"
     if (job.triggers.size() > 1) {
-        log.info "${resource} Multipe jobs: ${job.triggers}"
+        log.info "${resource} Multipe job triggerss: ${job.triggers}"
     }
     String json = null
     if (exportDir) {
