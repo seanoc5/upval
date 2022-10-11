@@ -50,6 +50,7 @@ class JsonObjectTransformer extends BaseTransformer {
 //        }
     }
 
+
     /**
      * walk through all flattened entries, and look at the
      * @param pattern
@@ -111,6 +112,23 @@ class JsonObjectTransformer extends BaseTransformer {
         return matchingFlatPaths
     }
 
+
+    Map<String, String> performVariableSubstitution(Map<String, Map<String, String>> variables){
+        Map<String, String> outputVariables = [:]
+        variables.each { String varName, Map<String, String> transformMap ->
+            String from = transformMap.from
+            String defaultValue = transformMap.default ?: 'replaceme'
+            def matches = this.findAllItemsMatching('.*', from, destFlatpaths)
+            matches.each {String path, Object foo ->
+                log.info "\t\tsubstitute: $path ($foo) -> from:($from) => varname: $varName"
+                def postSet = doSet(varName, path)
+                log.debug "post set: $postSet"
+            }
+            log.info "var:$varName) transform:$transformMap"
+            outputVariables.put(varName, defaultValue)
+        }
+        return outputVariables
+    }
 
     /**
      * get a group of copy rules, iterate through them
@@ -220,53 +238,12 @@ class JsonObjectTransformer extends BaseTransformer {
     }
 
 
-    /**
-     * placeholder code to consider using string templates
-     * @param srcValue
-     * @param srcPattern
-     * @param destPath
-     * @param destPattern
-     * @return
-     * TODO-- implement/complete this functionality
-     */
-    String transformWithStringTemplate(def srcValue, def srcPattern, def destPath, def destPattern) {
-        String msg = "String template replace/transform Not implemented yet!! Throwing error and running away...  Improper Attempt to transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern)"
-        log.error msg
-        throw new IllegalArgumentException(msg)
-
-        // todo -- look at String templating: https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html
-        StringBuilder valToSet = new StringBuilder()
-        log.info "We have a destination value (assume it is a transform pattern...: $destValuePattern"
-        def valMatch = (value =~ srcValPattern)
-        if (valMatch.matches()) {
-            def groups = valMatch[0]
-            if (groups.size() > 1) {
-                log.warn "More code here: stringbuilder for destination pattern..."
-                int i = 1
-                groups[1..-1].each {
-                    log.info "\t\tReplace $i: " + groups[i]
-                    i++
-                }
-                JsonObject.setObjectNodeValue(destinationObject, srcValue + "--should have been modified....")
-            } else {
-                log.info "found a match but no groups....?"
-            }
-            log.info "\t\tbuild destination value, matcher: ${[0]}"
-        } else {
-            log.warn "We have a destination value, but no match... what do we do? panic?? source path: [$flatPath] srcval: $value :: destValPattern: $destValuePattern"
-        }
-        //                        } else {
-        //                            log.debug "\t\tNo destValuePattern so just straight value ($srcValue) copy from srcpath($flatPath) to dest object"
-        //                            JsonObject.setObjectNodeValue(destinationObject, flatPath, srcValue)
-        //                            log.debug "Dest object map: ${destinationObject.keySet()}"
-        //                        }
-    }
-
 
     public static final String TX_STRAIGHT_COPY = 'straightCopy'
     public static final String TX_STRING_REPLACE = 'stringReplace'
     public static final String TX_REGEX_REPLACE = 'regexReplace'
     public static final String TX_TEMPLATE = 'template'
+
 
     String getTransformType(def srcValue, def srcPattern, def destPath, def destPattern) {
         String txType = null
@@ -376,8 +353,11 @@ class JsonObjectTransformer extends BaseTransformer {
 
     @Override
     Map<String, Object> doSet(def valToSet, String destNodePath) {
-        log.warn "Implement me!! blank operation at the moment"
-        return null
+        def preSet = destFlatpaths["${destNodePath}"]
+        destFlatpaths["${destNodePath}"] = '${' + valToSet + '}'
+        def postSet = destFlatpaths["${destNodePath}"]
+        log.info "dest path: $destNodePath -> $valToSet"
+        return [path: destNodePath, preSet: preSet, postSet:postSet]
     }
 
     @Override
@@ -465,4 +445,48 @@ class JsonObjectTransformer extends BaseTransformer {
         }
         return destPaths
     }
+
+    /**
+     * placeholder code to consider using string templates
+     * @param srcValue
+     * @param srcPattern
+     * @param destPath
+     * @param destPattern
+     * @return
+     * TODO-- implement/complete this functionality
+     */
+    String transformWithStringTemplate(def srcValue, def srcPattern, def destPath, def destPattern) {
+        String msg = "String template replace/transform Not implemented yet!! Throwing error and running away...  Improper Attempt to transform source: ($srcValue) to dest:($destValue) with destPattern:($destPattern)"
+        log.error msg
+        throw new IllegalArgumentException(msg)
+
+        // todo -- look at String templating: https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html
+        StringBuilder valToSet = new StringBuilder()
+        log.info "We have a destination value (assume it is a transform pattern...: $destValuePattern"
+        def valMatch = (value =~ srcValPattern)
+        if (valMatch.matches()) {
+            def groups = valMatch[0]
+            if (groups.size() > 1) {
+                log.warn "More code here: stringbuilder for destination pattern..."
+                int i = 1
+                groups[1..-1].each {
+                    log.info "\t\tReplace $i: " + groups[i]
+                    i++
+                }
+                JsonObject.setObjectNodeValue(destinationObject, srcValue + "--should have been modified....")
+            } else {
+                log.info "found a match but no groups....?"
+            }
+            log.info "\t\tbuild destination value, matcher: ${[0]}"
+        } else {
+            log.warn "We have a destination value, but no match... what do we do? panic?? source path: [$flatPath] srcval: $value :: destValPattern: $destValuePattern"
+        }
+        //                        } else {
+        //                            log.debug "\t\tNo destValuePattern so just straight value ($srcValue) copy from srcpath($flatPath) to dest object"
+        //                            JsonObject.setObjectNodeValue(destinationObject, flatPath, srcValue)
+        //                            log.debug "Dest object map: ${destinationObject.keySet()}"
+        //                        }
+    }
+
+
 }
