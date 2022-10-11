@@ -25,7 +25,7 @@ class ManagedSchemaTest extends Specification {
         then:
         schema.fieldTypes.size() == 2
         schema.schemaFields.size() == 2
-        schema.knownfields.size() == 5
+        schema.knownfields.size() == 4
         schema.lukeFields.size() == 4
         usedFields.keySet().toList() == ['title', '_version_', 'body']
         unUsedFields.size() == 1
