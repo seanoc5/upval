@@ -1,10 +1,9 @@
 package com.lucidworks.ps.components
 
 import com.lucidworks.ps.clients.FusionClient
-import com.lucidworks.ps.transform.JsonObject
+import com.lucidworks.ps.transform.JsonObjectTransformer
 import org.apache.tools.zip.ZipOutputStream
 import spock.lang.Specification
-
 //import java.util.zip.ZipOutputStream
 
 /**
@@ -48,23 +47,22 @@ class ComponentPackagingTest extends Specification {
                 objects : [queryPipelines: [qrypMap]],
                 metadata: metdata,
         ]
-        JsonObject jsonObject = new JsonObject(objMap)
-        def componentMatches = jsonObject.findItems('', /Components/)
+//        JsonObject jsonObject = new JsonObject(objMap)
+        JsonObjectTransformer transformer = new JsonObjectTransformer(objMap)
 
         Map variables = [
-                'foundry.FEATURE_NAME': [from: 'TYPEAHEAD_DW', to: 'typeahead_dw'],
-                "foundry.typeahead.ZKHOST": [to:"ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181",],
-                "foundry.destination.SIGNALS_AGGR_COLL": [to: "SIGNALS_AGGR_COLLECTION",],
-                "foundry.FEATURE_NAME": [to:"TYPEAHEAD_DW",],
-                "foundry.typeahead.TYPE_FIELD_1": [to:"TYPE_FIELD_1",],
+                'foundry.FEATURE_NAME': [from: 'TYPEAHEAD_DW', default: 'typeahead_dw'],
+                "foundry.destination.SIGNALS_AGGR_COLL": [from: "SIGNALS_AGGR_COLLECTION", default:'SourceApp_signals_aggr'],
+                "foundry.destination.APP": [from:"Components", default:'__DestAppHere__'],
+                "foundry.destination.COLLECTION": [from:'COLLECTION', default:"typeahead"],
+//                "foundry.typeahead.ZKHOST": [to:"ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181",],
+//                "foundry.typeahead.TYPE_FIELD_1": [to:"TYPE_FIELD_1",],
 //                "foundry.typeahead.TYPE_FIELD_2": "TYPE_FIELD_2",
 //                "foundry.typeahead.TYPE_FIELD_3": "TYPE_FIELD_3",
 //                "foundry.typeahead.TYPE_FIELD_4": "TYPE_FIELD_4",
 //                "foundry.typeahead.TYPE_FIELD_5": "TYPE_FIELD_5",
-                "foundry.destination.APP": [from:"Components", to:'__DestAppHere__'],
-                "foundry.destination.COLLECTION": "typeahead"
-
         ]
+        Map<String, String> outputVariables = transformer.performVariableSubstitution(variables)
 
         when:
         File outFile = File.createTempFile("Compackage.test.with-variables", ".zip")
@@ -75,6 +73,7 @@ class ComponentPackagingTest extends Specification {
         then:
         zos instanceof ZipOutputStream            // false??? why?
         zos.finished == true
+        outputVariables.size()==variables.size()
     }
 
     def "create moderate query and index pipeline with variable substitution"() {
