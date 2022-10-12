@@ -178,11 +178,11 @@ class ObjectTransformerJayway {
         Map resultsMap = destinationTemplate
 
         // ---------- COPY -------------
-        List<Map<String, Object>> myCopy = copyValues(rulesMap, rules, destinationTemplate)
+        List<Map<String, Object>> myCopy = copyValues(rulesMap, rules)
         resultsMap = resultsMap + myCopy
 
         // ---------- SET -------------
-        List<Map<String, Object>> myset = setValues(rulesMap, rules, destinationTemplate)
+        List<Map<String, Object>> myset = setValues(rulesMap, rules)
         resultsMap = resultsMap + myset
 
         // ---------- REMOVE -------------
@@ -203,6 +203,7 @@ class ObjectTransformerJayway {
      * @return list of rule results
      */
     static List<Map<String, Object>> setValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
+//    static List<Map<String, Object>> setValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         List<Map<String, Object>> changes = []
         def setRules = rules['set']
         DocumentContext srcContext = JsonPath.parse(srcMap)
@@ -212,16 +213,16 @@ class ObjectTransformerJayway {
             String valToSet = evaluateValue(value)
             String origDestValue = null
             try {
-                origDestValue = destContext.read(destPath)
+                origDestValue = srcContext.read(destPath)
                 log.info "\t\toverriding orignal dest value ($origDestValue) with set value ($valToSet)"
             } catch (PathNotFoundException pnfe) {
                 log.warn "Path wasn't found: $pnfe"
             }
 
             // make the change here...
-            DocumentContext dc = destContext.set(destPath, valToSet)
+            DocumentContext dc = srcContext.set(destPath, valToSet)
             // confirm the updated value here (optional??)
-            String newDestValue = destContext.read(destPath)
+            String newDestValue = srcContext.read(destPath)
             Map change = [srcValue: value, destPath: destPath, origDestValue: origDestValue, newDestValue: newDestValue]
             log.info "\t\tSet '$destPath' in destinationMap to  rule value: '$value'  -- returned doc context:$dc"
             changes << change
@@ -262,17 +263,18 @@ class ObjectTransformerJayway {
      * @param destinationTemplate
      * @return change list (destinationTemplate is created/updated as we go...?
      */
-    static List<Map<String, Object>> copyValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
+    static List<Map<String, Object>> copyValues(Map srcMap, Map rules) {
+//    static List<Map<String, Object>> copyValues(Map srcMap, Map rules, Map destinationTemplate = [:]) {
         List<Map<String, Object>> changes = []
         DocumentContext srcContext = JsonPath.parse(srcMap)
-        DocumentContext destContext = JsonPath.parse(destinationTemplate)
+//        DocumentContext destContext = JsonPath.parse(destinationTemplate)
 
         def copyRules = rules['copy']
         log.info "\t\tCopy rules: $copyRules"
 
         copyRules.each { Map.Entry rule ->
             log.info "Rule class: ${rule.getClass().simpleName}"
-            performCopyRule(rule, srcMap, [:], srcContext, destContext)
+            performCopyRule(rule, srcMap, [:], srcContext)
             log.info "\t\tRule: $rule"
 //            changes << performCopyRule(rule, srcMap, destinationTemplate)
         }
@@ -318,6 +320,7 @@ class ObjectTransformerJayway {
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(date)
     }
 
+//    static Map performCopyRule(Map.Entry copyRule, def src, def dest, DocumentContext srcContext) {
     static Map performCopyRule(Map.Entry copyRule, def src, def dest, DocumentContext srcContext, DocumentContext destContext) {
         Map change = [:]
         String srcPath = copyRule.key
