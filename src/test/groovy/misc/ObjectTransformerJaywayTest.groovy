@@ -34,7 +34,6 @@ class ObjectTransformerJaywayTest extends Specification {
 
     def "simple update sourceMap values"() {
         given:
-        JsonSlurper slurper = new JsonSlurper()
         Map idxpMap = slurper.parse(getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json'))
         List<Map<String, Object>> updateRules = [
                 [from: 'Components_', to: '${AppName}'],
