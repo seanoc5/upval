@@ -119,6 +119,7 @@ class JsonObjectTransformer extends BaseTransformer {
             String from = transformMap.from
             String defaultValue = transformMap.default ?: 'replaceme'
             def matches = this.findAllItemsMatching('.*', from, destFlatpaths)
+            log.info "\t\tVAR SUBS: from:$from -> to (varName):$varName :: var default value: $defaultValue -- matches: $matches"
             matches.each {String path, Object foo ->
                 log.info "\t\tsubstitute: $path ($foo) -> from:($from) => varname: $varName"
                 def postSet = doSet(varName, path)
