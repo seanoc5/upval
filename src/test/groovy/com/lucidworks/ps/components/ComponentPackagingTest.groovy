@@ -1,7 +1,11 @@
 package com.lucidworks.ps.components
 
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.internal.JsonContext
 import com.lucidworks.ps.clients.FusionClient
 import com.lucidworks.ps.transform.JsonObjectTransformer
+import groovy.json.JsonSlurper
+import misc.ObjectTransformerJayway
 import org.apache.tools.zip.ZipOutputStream
 import spock.lang.Specification
 //import java.util.zip.ZipOutputStream
@@ -76,40 +80,22 @@ class ComponentPackagingTest extends Specification {
         outputVariables.size()==variables.size()
     }
 
-    def "ObjectTransformerJayway query pipeline package WITH variable substitution"() {
+    def "ObjectTransformerJayway query pipeline variable substitution"() {
         given:
         def qrypMap = fusionClient.getQueryPipeline(qryp)
-        Map<String, Object> metdata = fusionClient.createtObjectsMetadata('4.2.6', 'ta-foundry-with-vars')
-        Map objMap = [
-                objects : [queryPipelines: [qrypMap]],
-                metadata: metdata,
-        ]
-//        JsonObject jsonObject = new JsonObject(objMap)
-        JsonObjectTransformer transformer = new JsonObjectTransformer(objMap)
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(qrypMap)
 
         Map variables = [
                 'foundry.FEATURE_NAME': [from: 'TYPEAHEAD_DW', default: 'typeahead_dw'],
                 "foundry.destination.SIGNALS_AGGR_COLL": [from: "SIGNALS_AGGR_COLLECTION", default:'SourceApp_signals_aggr'],
                 "foundry.destination.APP": [from:"Components", default:'__DestAppHere__'],
                 "foundry.destination.COLLECTION": [from:'COLLECTION', default:"typeahead"],
-//                "foundry.typeahead.ZKHOST": [to:"ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181",],
-//                "foundry.typeahead.TYPE_FIELD_1": [to:"TYPE_FIELD_1",],
-//                "foundry.typeahead.TYPE_FIELD_2": "TYPE_FIELD_2",
-//                "foundry.typeahead.TYPE_FIELD_3": "TYPE_FIELD_3",
-//                "foundry.typeahead.TYPE_FIELD_4": "TYPE_FIELD_4",
-//                "foundry.typeahead.TYPE_FIELD_5": "TYPE_FIELD_5",
         ]
-        Map<String, String> outputVariables = transformer.performVariableSubstitution(variables)
 
         when:
-        File outFile = File.createTempFile("Compackage.test.with-variables", ".zip")
-        println "Created temporary output file: ${outFile.absolutePath}"           // print out temp file path in case tester wants to actually import into a running fusion for sanity check...
-
-        ZipOutputStream zos = fusionClient.createImportableZipArchive(outFile.newOutputStream(), objMap)
+        Map<String, String> outputVariables = transformer.performVariableSubstitution(variables)
 
         then:
-        zos instanceof ZipOutputStream            // false??? why?
-        zos.finished == true
         outputVariables.size()==variables.size()
     }
 
@@ -133,5 +119,25 @@ class ComponentPackagingTest extends Specification {
         zos.finished == true
 
     }
+
+
+
+    // todo -- can't find a way to match "any" element with a given value, value selector seems to need a 'thing' to look in, no ?(@.*...) or similar
+    def "jayway transform TA objects"() {
+        given:
+        JsonSlurper slurper = new JsonSlurper()
+        URL url = getClass().getResource('/components/typeahead/ta-objects.json')
+        Map objectsMap = slurper.parse(url)
+        JsonContext jsonContext = JsonPath.parse(url)
+
+        when:
+        Map objects = objectsMap.objects
+
+        then:
+        objectsMap.keySet().size() == 3
+        objectsMap.objects
+    }
+
+
 
 }

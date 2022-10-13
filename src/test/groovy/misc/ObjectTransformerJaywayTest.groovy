@@ -16,6 +16,12 @@ class ObjectTransformerJaywayTest extends Specification {
 
     def "simple find occurences of values"() {
         given:
+        List<String> answertKeys = [
+                        '$[\'id\']',
+                        '$[\'stages\'][0][\'condition\']',
+                        '$[\'stages\'][1][\'condition\']',
+                        '$[\'properties\'][\'secretSourcePipelineId\']'
+                ]
         JsonSlurper slurper = new JsonSlurper()
         URL idxpUrl = getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json')
         Map idxpMap = slurper.parse(idxpUrl)
@@ -28,7 +34,10 @@ class ObjectTransformerJaywayTest extends Specification {
         Map resultMap = transformer.read(paths)
 
         then:
-        resultMap.size() > 1
+        resultMap.size() == answertKeys.size()
+        resultMap.keySet().containsAll(answertKeys)
+        resultMap.get('$[\'id\']') == 'Components_TYPEAHEAD_DW_QPL_v4'
+
 
     }
 
@@ -51,9 +60,9 @@ class ObjectTransformerJaywayTest extends Specification {
     }
 
     def "Transformer should transform src with rules and dest template via static call"() {
-
         when:
-        def result = ObjectTransformerJayway.transform(srcMap, rules, destMap)
+//        def result = ObjectTransformerJayway.transform(srcMap, rules, destMap)
+        def result = ObjectTransformerJayway.transform(srcMap, rules)
 
         then:
         result.size() == 0      // todo replace me
@@ -61,10 +70,9 @@ class ObjectTransformerJaywayTest extends Specification {
         transformer.getValueByJsonPath('$.type', destMap) == 'lucidworks.ldap'
         transformer.getValueByJsonPath('$.connector', destMap) == 'lucidworks.ldap'
         transformer.getValueByJsonPath('$.created', destMap).contains('2022')
-
     }
 
-    def "should ransform with static calls"() {
+    def "should transform with static calls"() {
         when:
         def jaywayTransformer = ObjectTransformerJayway.transform(srcMap, rules, destMap)
 

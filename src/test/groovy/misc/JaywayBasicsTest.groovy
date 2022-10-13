@@ -48,9 +48,10 @@ class JaywayBasicsTest extends Specification {
     String ALL_PATH = '$..*'            // jayway path syntax for "all nodes/paths"
 
 
-    def "read all leafnodes"(){
+//    def "read all leafnodes"(){
+//
+//    }
 
-    }
 
     def "check jayway read basics"() {
         when:
@@ -206,34 +207,6 @@ class JaywayBasicsTest extends Specification {
 
     }
 
-    // todo -- can't find a way to match "any" element with a given value, value selector seems to need a 'thing' to look in, no ?(@.*...) or similar
-    def "jayway transform TA objects"() {
-        given:
-        JsonSlurper slurper = new JsonSlurper()
-        URL url = getClass().getResource('/components/typeahead/ta-objects.json')
-        Map objectsMap = slurper.parse(url)
-        // upval JsonObject -- for debugging, not needed
-//        JsonObject jsonObject = new JsonObject(objectsMap)
-
-        // Jayway context
-        JsonContext jsonContext = JsonPath.parse(url)
-//        String jpath = '$..*[[?(@.from_user =~ /.*\$.*/i)]'
-//        Map transforms = ['$.collections
-
-
-        when:
-        Map objects = objectsMap.objects
-        // just some debugging, can remove JsonObject from this Jayway test
-//        def varObjects = jsonObject.findItems('', '$')
-//        varObjects.each { key, val ->
-//            println("key: $key -> $val")
-//        }
-
-        then:
-        objectsMap.keySet().size() == 3
-        objectsMap.objects
-    }
-
 
     def "delete entries simple"() {
         given:
@@ -256,6 +229,18 @@ class JaywayBasicsTest extends Specification {
         postDelete instanceof Collection
         postDelete.size() == 0
 
+    }
+
+    /** cannot do this... need a path object, no existing "all paths...? */
+    def "confirm no filtering by value alone"(){
+        when:
+        String bar = '$..[?(@id =~ /Components_/)]'
+        def foo = transformerJayway.read(bar)
+
+        then:
+        thrown(com.jayway.jsonpath.InvalidPathException)
+        bar.containsIgnoreCase('@')
+        foo == null         // path above is invalid, nothing returned for foo
     }
 
 
