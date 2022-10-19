@@ -59,12 +59,6 @@ class ComponentPackagingTest extends Specification {
                 "foundry.destination.SIGNALS_AGGR_COLL": [from: "SIGNALS_AGGR_COLLECTION", default:'SourceApp_signals_aggr'],
                 "foundry.destination.APP": [from:"Components", default:'__DestAppHere__'],
                 "foundry.destination.COLLECTION": [from:'COLLECTION', default:"typeahead"],
-//                "foundry.typeahead.ZKHOST": [to:"ZOOKEEPER-0.ZOOKEEPER-headless:2181,ZOOKEEPER-1.ZOOKEEPER-headless:2181,ZOOKEEPER-2.ZOOKEEPER-headless:2181",],
-//                "foundry.typeahead.TYPE_FIELD_1": [to:"TYPE_FIELD_1",],
-//                "foundry.typeahead.TYPE_FIELD_2": "TYPE_FIELD_2",
-//                "foundry.typeahead.TYPE_FIELD_3": "TYPE_FIELD_3",
-//                "foundry.typeahead.TYPE_FIELD_4": "TYPE_FIELD_4",
-//                "foundry.typeahead.TYPE_FIELD_5": "TYPE_FIELD_5",
         ]
         Map<String, String> outputVariables = transformer.performVariableSubstitution(variables)
 

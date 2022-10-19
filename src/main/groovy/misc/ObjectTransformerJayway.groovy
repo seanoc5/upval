@@ -24,6 +24,7 @@ import java.util.regex.Pattern
  */
 class ObjectTransformerJayway {
     static Logger log = Logger.getLogger(this.class.name);
+    public static final String ALL = 'ALL'
     Map sourceMap
     Configuration pathsConf = Configuration.builder().options(Option.AS_PATH_LIST).build();
     JsonContext jsonPathsContext = null
@@ -42,6 +43,39 @@ class ObjectTransformerJayway {
 
 
     /**
+     * Get a list of
+     * @param matchPath
+     * @param matchValue
+     * @return
+     */
+    List<String> getPaths(def matchPath = ALL, def matchValue = ALL) {
+        log.info "Find paths matching path:($matchPath) and/or value: ($matchValue)..."
+
+        List<String> paths = []
+        if (matchPath == ALL) {
+            paths = allJsonPaths
+            log.info "Matching all json paths... ${paths.size()} total count"
+        } else {
+            paths = getPathMatches(matchPath)
+            log.info "\t\tPaths matching path ($matchPath): $paths"
+        }
+        List<String> valPaths = []
+        if (matchPath == ALL) {
+            valPaths = allJsonPaths
+            log.info "Matching all path values... ${paths.size()} total count"
+
+        } else {
+            valPaths = getPathsByValue(matchValue)
+            log.info "\t\tPaths matching value ($matchValue): $valPaths"
+        }
+
+        List<String> results = paths.intersect(valPaths)
+        log.info "\t\t getPaths($matchPath, $matchValue) results: $results"
+
+        return results
+    }
+
+    /**
      * Search the expanded list of 'ALL' paths, and check if the (String) VALUE matches
      * NOTE: assumes string value matches only, as the main goal is for variable substitution, which is mostly names
      * @param matchValue
@@ -54,6 +88,8 @@ class ObjectTransformerJayway {
             def val = srcContext.read(path)         // todo -- only dealing with Strings at the moment...
             if (val instanceof String) {
                 log.debug "String value: $val"
+            } else if (val instanceof Boolean) {
+                log.debug "Boolean value: $val"
             } else if (val instanceof Number) {
                 log.debug "Number value: $val"
             } else if (val instanceof Map) {
@@ -114,7 +150,7 @@ class ObjectTransformerJayway {
      * @param jaywayPath
      * @return (String?) value returned from jayway path
      */
-    def read(String jaywayPath){
+    def read(String jaywayPath) {
         def val = srcContext.read(jaywayPath)
         log.debug "Read from jayway path ($jaywayPath) and got value: ($val)"
         return val
@@ -126,11 +162,11 @@ class ObjectTransformerJayway {
      * @param paths
      * @return map of path->value
      */
-    Map<String, Object> read(List<String> paths){
-        Map m = paths.collectEntries{String path ->
+    Map<String, Object> read(List<String> paths) {
+        Map m = paths.collectEntries { String path ->
             def val = srcContext.read(path)
             log.info "\t\t$path -> $val"
-            [(path):val]
+            [(path): val]
         }
         return m
     }
@@ -142,17 +178,17 @@ class ObjectTransformerJayway {
      * @param from String or Pattern to indicate what part(s) of the source should be involved (especially for regexes and capture groups)
      * @param to 'instructions' on how to create the updated value
      */
-    def update(String originalValue, def from, def to){
+    def update(String originalValue, def from, def to) {
         log.info "Original value: '$originalValue' :: from:($from) -> to:($to)"
         def newValue
-        if(from instanceof Pattern){
-            Matcher matcher = ((Pattern)from).matcher(originalValue)
-            if(matcher.matches()){
+        if (from instanceof Pattern) {
+            Matcher matcher = ((Pattern) from).matcher(originalValue)
+            if (matcher.matches()) {
                 log.info "\t\tMatch! matcher: $matcher"
             } else {
                 log.warn "No match: $matcher"
             }
-        } else if(from instanceof String){
+        } else if (from instanceof String) {
             newValue = originalValue.replaceAll(from, to)
             log.info "New Value: $newValue"
         } else {
@@ -236,7 +272,7 @@ class ObjectTransformerJayway {
      * @param updateRules list of Map of rules for updating (optional path, value to match, and value-or-variable to set)
      * @return changes made (for review)
      */
-    List<Map<String, Object>> updateSourceValues(List<Map<String,Object>> updateRules) {
+    List<Map<String, Object>> updateSourceValues(List<Map<String, Object>> updateRules) {
         List<Map<String, Object>> changes = []
         log.info "\t\tUpdate rules: $updateRules"
 
@@ -253,6 +289,37 @@ class ObjectTransformerJayway {
     def performUpdateRule(Map rule) {
 //        if(rule.
         log.info "Perform rule: $rule -- todo: more code"
+    }
+
+
+    /**
+     * Replace (in-placee) values with Fusion import-object variables
+     * <br><b>NOTE: this will modify the srcMap</b>
+     * <br> i.e. for typeahead packaging 'Component_' in an id should become '${ta.APPNAME}'
+     * <br> then a variables.json file can devine ta.APPNAME andd the import process will provide a dialog for the importer to accept defaults, or set values
+     * @param variables a map of variable name -> transform map.
+     * <br> transformMap will have 'from' (for matching value in leaf nodes), or 'rename' to change a path name,
+     * <br> and 'default' is optional, which will become the 'default' value in the exported variables.json
+     * @return list of variable names and default values, intended to write to a file to match up with a zip file for importing
+     */
+    Map<String, String> performVariableSubstitution(Map<String, Map<String, String>> variables) {
+        Map<String, String> outputVariables = [:]
+        variables.each { String varName, Map<String, String> transformMap ->
+            String matchValue = transformMap.from     // optional filter of matching by value (should have either path from, but both are fine as well)
+//            String matchPath = transformMap.path     // optional filter of matching by path
+            String defaultValue = transformMap.default ?: 'replaceme'
+
+            def matches = this.findAllItemsMatching('.*', matchValue, destFlatpaths)
+            log.info "\t\tVAR SUBS: from:$matchValue -> to (varName):$varName :: var default value: $defaultValue -- matches: $matches"
+            matches.each { String path, Object foo ->
+                log.info "\t\tsubstitute: $path ($foo) -> from:($matchValue) => varname: $varName"
+                def postSet = doSet(varName, path)
+                log.debug "post set: $postSet"
+            }
+            log.info "var:$varName) transform:$transformMap"
+            outputVariables.put(varName, defaultValue)
+        }
+        return outputVariables
     }
 
 

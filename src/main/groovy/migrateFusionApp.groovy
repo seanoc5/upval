@@ -38,11 +38,15 @@ apps.each { Map appMap ->
     String appName = appMap.name
     FusionResponseWrapper fusionResponseWrapper = fusionClient.addAppIfMissing(appMap)
 
-    try {
-        Map<String, List<Object>> connectorsStatus = fusionClient.addConnectorPluginsIfMissing(sourceFusionOjectsMap)
-        log.debug "Connectors status: $connectorsStatus"
-    } catch (Exception e){
-        log.warn "Problem getting connectors (blocked access to repo?): $e "
+    if(fusionClient.majorVersion > 4) {
+        try {
+            Map<String, List<Object>> connectorsStatus = fusionClient.addConnectorPluginsIfMissing(sourceFusionOjectsMap)
+            log.debug "Connectors status: $connectorsStatus"
+        } catch (Exception e) {
+            log.warn "Problem getting connectors (blocked access to repo?): $e "
+        }
+    } else {
+        log.warn "Code to add missing connectors in lower (pre F5) Fusion versions not implemented. Consider manually adding before migrating this app..."
     }
 
     List<FusionResponseWrapper> addCollResults = fusionClient.addCollectionsIfMissing(appName, sourceFusionOjectsMap)

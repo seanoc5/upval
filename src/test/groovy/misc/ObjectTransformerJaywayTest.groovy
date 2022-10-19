@@ -41,6 +41,32 @@ class ObjectTransformerJaywayTest extends Specification {
 
     }
 
+    def "find occurences of paths AND values"() {
+        given:
+        List<String> answertKeys = [
+//                        '$[\'id\']',
+                        '$[\'stages\'][0][\'condition\']',
+                        '$[\'stages\'][1][\'condition\']',
+//                        '$[\'properties\'][\'secretSourcePipelineId\']'
+                ]
+        JsonSlurper slurper = new JsonSlurper()
+        URL idxpUrl = getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json')
+        Map idxpMap = slurper.parse(idxpUrl)
+
+        ObjectTransformerJayway transformer = new ObjectTransformerJayway(idxpMap)
+
+        when:
+        List<String> paths = transformer.getPaths('$[\'stages\']', 'Components_')
+        Map resultMap = transformer.read(paths)
+
+        then:
+        resultMap.size() == answertKeys.size()
+        resultMap.keySet().containsAll(answertKeys)
+//        resultMap.get(answertKeys[0]) == 'Components_TYPEAHEAD_DW_QPL_v4'
+        resultMap.get(answertKeys[0]) == '''request.hasParam("entityOnly") && request.getFirstParam("entityOnly").equals("true");
+// This stage is used to the make the results only entity documents. The Components_TYPEAHEAD_DC_entity_QPF_v4 will send a entityOnly=true'''
+    }
+
     def "simple update sourceMap values"() {
         given:
         Map idxpMap = slurper.parse(getClass().getResource('/components/typeahead/Components_TYPEAHEAD_DW_QPL_v4.json'))
