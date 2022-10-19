@@ -30,7 +30,8 @@ class ObjectTransformerJayway {
     JsonContext jsonPathsContext = null
     JsonContext srcContext = null
     JSONArray allJsonPaths = null
-    public static final String ALL_PATH = '$..*'            // convenience constant for Jayway "give me everything" search path
+    public static final String ALL_PATH = '$..*'
+    // convenience constant for Jayway "give me everything" search path
 
     ObjectTransformerJayway(Map srcMap) {
         log.debug "Constructor: (Map srcMap, Map destMap, Map transformConfig, String pathSeparator)..."
