@@ -153,13 +153,20 @@ def getProtocol(){
 
     def "should perform dynamic evalation in configslurper parse"(){
         given:
+        URL baseUrl = getClass().getResource('.')
         URL configUrl = getClass().getResource('/configs/simpleConfig.groovy')
         URL simpleObjects = getClass().getResource('/components/simpleObjects.json')
         File so = new File(simpleObjects.toURI())
+        File simpleCfg = new File(configUrl.toURI())
 //        println "Simple objects: ${so.absolutePath} -- ${so.exists()}"
         ConfigSlurper configSlurper = new ConfigSlurper()
 
+        String foo = 'C:\\Users\\bentc\\IdeaProjects\\upval\\src\\test\\resources\\configs\\simpleConfig.groovy'
+        File fooFile = new File(foo)
+//        def cfgTest = configSlurper.parse(fooFile.toURL())
+
         when:
+        def bar = 'test'
         def cfg = configSlurper.parse(configUrl)
 
         then:
