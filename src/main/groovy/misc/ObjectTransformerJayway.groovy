@@ -310,6 +310,7 @@ class ObjectTransformerJayway {
 //            String matchPath = transformMap.path     // optional filter of matching by path
             String defaultValue = transformMap.default ?: 'replaceme'
 
+            // todo -- fixme -- some problems here, need to revisit - no destFlatpaths defined...
             def matches = this.findAllItemsMatching('.*', matchValue, destFlatpaths)
             log.info "\t\tVAR SUBS: from:$matchValue -> to (varName):$varName :: var default value: $defaultValue -- matches: $matches"
             matches.each { String path, Object foo ->
