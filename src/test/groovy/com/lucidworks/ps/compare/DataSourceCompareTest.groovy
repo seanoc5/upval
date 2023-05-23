@@ -65,6 +65,7 @@ class DataSourceCompareTest extends Specification {
 
         similarities.size()==1
         similarities[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left class:(java.lang.String) and right class:(java.lang.String)'
+//        similarities[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left class:(java.lang.String) and right class:(java.lang.String)'
 
     }
 
