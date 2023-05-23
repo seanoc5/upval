@@ -46,7 +46,7 @@ class FusionApplicationComparator {
      * @param thingsToCompare
      * @return
      */
-    Map<String, CompareCollectionResults> compare(List<String> thingsToCompare, List valueDiffsToIgnore) {
+    Map<String, CompareCollectionResults> compare(List<String> thingsToCompare = DEFAULTTHINGSTOCOMPARE, List valueDiffsToIgnore = []) {
         log.info "Compare things matching: (${thingsToCompare}) -- Value Diffs to ignore: $valueDiffsToIgnore"
 
         thingsToCompare.each { String thingType ->
@@ -85,7 +85,7 @@ class FusionApplicationComparator {
                     } else if (leftThings instanceof Map) {
                         log.warn "TODO:: Process map (Left:${leftThings.keySet().size()}) for thing type: $thingType"
                     } else {
-                        log.warn "No a list? Is this features?..."
+                        log.warn "Not a list? Is this features?..."
                     }
                 } else {
                     String msg = "Left thing type (${leftThings.class.name}) different than right things type (${rightThings.class.name})"

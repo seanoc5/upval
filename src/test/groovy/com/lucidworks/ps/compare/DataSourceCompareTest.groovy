@@ -54,6 +54,7 @@ class DataSourceCompareTest extends Specification {
         BaseComparator comparator = new BaseComparator(label, left, right, ignoreValues)
         CompareJsonObjectResults results = comparator.compare()
         def similarities = results.similarities.findAll {it.differenceType==ComparisonResult.SIMILAR}
+        ComparisonResult cr = similarities[0]
 
         then:
         comparator.leftOnlyKeys.size()==0
@@ -64,8 +65,9 @@ class DataSourceCompareTest extends Specification {
         results.differences[0].description=='Values are DIFFERENT: left:(us-west-1) and right:(us-west-2)'
 
         similarities.size()==1
-        similarities[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left class:(java.lang.String) and right class:(java.lang.String)'
-//        similarities[0].description == 'Ignore value differences==true, objects have same class, so are SIMILAR: left class:(java.lang.String) and right class:(java.lang.String)'
+        cr.differenceType == ComparisonResult.SIMILAR
+        cr.compareLabel == '/properties/proxyConfig/proxyEndpoint'
+        cr.description.contains('Ignore value differences==true, objects have same class, so are SIMILAR:')
 
     }
 
