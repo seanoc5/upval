@@ -39,16 +39,24 @@ repositories {
 // implementation, runtimeOnly, testImplementation, and testRuntimeOnly
 // note: apache HttpClient included with Solr as dep
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:3.0.10'
+    // https://mvnrepository.com/artifact/org.apache.groovy/groovy-all
+    implementation 'org.apache.groovy:groovy-all:4.0.11'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.4-M1-groovy-4.0'
+
+
 
     // https://mvnrepository.com/artifact/io.rest-assured/rest-assured
-    implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.5.1'
+//    implementation group: 'io.rest-assured', name: 'rest-assured', version: '4.5.1'
 
     // https://mvnrepository.com/artifact/de.danielbechler/java-object-diff
-    implementation group: 'de.danielbechler', name: 'java-object-diff', version: '0.95'
+//    implementation group: 'de.danielbechler', name: 'java-object-diff', version: '0.95'
 
-    testImplementation platform("org.spockframework:spock-bom:2.0-groovy-3.0")
-    implementation group: 'org.spockframework', name: 'spock-core', version: '2.1-groovy-3.0'
+//    testImplementation platform("org.spockframework:spock-bom:2.0-groovy-3.0")
+//    implementation group: 'org.spockframework', name: 'spock-core', version: '2.1-groovy-3.0'
 
      // https://mvnrepository.com/artifact/org.apache.solr/solr-solrj
      implementation group: 'org.apache.solr', name: 'solr-solrj', version: '8.11.1'
@@ -65,8 +73,8 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/org.glassfish/javax.json
-    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
-    implementation 'javax.json:javax.json-api:1.1.4'
+//    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+//    implementation 'javax.json:javax.json-api:1.1.4'
 
     // https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
     // todo -- revisit version 2.4.0 vs 2.7.0, the latter seems to clash with solr jayway, and
@@ -74,9 +82,9 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core
-    implementation group: 'org.xmlunit', name: 'xmlunit-core', version: '2.9.0'
+//    implementation group: 'org.xmlunit', name: 'xmlunit-core', version: '2.9.0'
     // https://mvnrepository.com/artifact/org.xmlunit/xmlunit-matchers
-    implementation group: 'org.xmlunit', name: 'xmlunit-matchers', version: '2.9.0'
+//    implementation group: 'org.xmlunit', name: 'xmlunit-matchers', version: '2.9.0'
 
     // depreceted?
 //    implementation 'org.apache.commons:commons-lang3:3.12.0'
